@@ -81,6 +81,11 @@ app.get('/admin/payments', async (req, res) => {
     }
 });
 
+// Route admin HTML
+app.get('/admin', (req, res) => {
+    res.sendFile(__dirname + '/admin.html');
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
 });
