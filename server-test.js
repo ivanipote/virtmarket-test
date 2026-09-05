@@ -17,7 +17,7 @@ app.post('/create-payment', async (req, res) => {
         const response = await fetch('https://api.jeko.africa/partner_api/payment_links', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${process.env.JEKO_API_KEY}`,
+                'X-API-KEY': process.env.JEKO_API_KEY,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
