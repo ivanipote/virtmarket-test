@@ -215,7 +215,7 @@
         }
 
         /* ============================================================ */
-        /* SNIP OVERLAY - Style Tech Neon (intégré dans la page)        */
+        /* SNIP OVERLAY - Style Tech Neon                               */
         /* ============================================================ */
 
         .snip-overlay {
@@ -244,7 +244,6 @@
             to { opacity: 1; }
         }
 
-        /* ===== FOND ANIMÉ ===== */
         .snip-overlay .bg-animation {
             position: absolute;
             top: 0;
@@ -298,7 +297,6 @@
             75% { transform: translate(40px, 20px) scale(1.05); }
         }
 
-        /* ===== CARTE SNIP ===== */
         .snip-card {
             position: relative;
             z-index: 1;
@@ -466,21 +464,41 @@
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
+            body { padding-top: 68px; padding-bottom: 80px; }
+            .pay-header { padding: 10px 14px; }
+            .pay-header .pay-title { font-size: 16px; }
+            .pay-header .back-btn { width: 36px; height: 36px; font-size: 16px; }
+            .pay-main { padding: 12px 14px; }
+            .product-card { padding: 24px 18px 20px 18px; border-radius: 20px; }
+            .product-card h2 { font-size: 20px; }
+            .product-card .product-icon { font-size: 44px; }
+            .recap-item { font-size: 14px; padding: 8px 0; }
+            .recap-item .value.amount { font-size: 18px; }
+            .btn-pay { font-size: 16px; padding: 14px; }
             .snip-card { padding: 28px 20px 24px 20px; }
             .snip-title { font-size: 20px; }
             .snip-icon { font-size: 40px; }
             .snip-donor-details .row { font-size: 13px; }
-            .product-card { padding: 24px 18px 20px 18px; }
+            .toast-container { font-size: 14px; padding: 12px 20px; }
         }
 
         @media (max-width: 400px) {
+            body { padding-top: 60px; }
+            .pay-header { padding: 8px 10px; }
+            .pay-header .pay-title { font-size: 14px; }
+            .pay-header .back-btn { width: 32px; height: 32px; font-size: 14px; }
+            .product-card { padding: 18px 14px 16px 14px; border-radius: 16px; }
+            .product-card h2 { font-size: 17px; }
+            .product-card .product-icon { font-size: 36px; }
+            .recap-item { font-size: 13px; padding: 6px 0; }
+            .recap-item .value.amount { font-size: 16px; }
+            .btn-pay { font-size: 14px; padding: 12px; border-radius: 14px; }
             .snip-card { padding: 20px 14px 18px 14px; }
             .snip-title { font-size: 17px; }
             .snip-icon { font-size: 32px; }
             .snip-donor-details .row { font-size: 12px; flex-direction: column; align-items: center; gap: 2px; }
-            .product-card { padding: 18px 14px 16px 14px; }
-            .product-card h2 { font-size: 17px; }
-            .btn-pay { font-size: 14px; padding: 12px; }
+            .toast-container { font-size: 13px; padding: 10px 16px; bottom: 16px; }
+            .spinner-dot { width: 8px; height: 8px; }
         }
     </style>
 </head>
@@ -529,7 +547,7 @@
         </div>
     </main>
 
-    <!-- ===== SNIP OVERLAY (intégré) ===== -->
+    <!-- ===== SNIP OVERLAY ===== -->
     <div class="snip-overlay" id="snipOverlay">
         <div class="bg-animation">
             <div class="orb"></div>
@@ -585,7 +603,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ pay.html avec snip overlay chargé');
+            console.log('✅ pay.html chargé (nouveau lien Jèko)');
 
             // ===== RÉFÉRENCES =====
             const displayName = document.getElementById('displayName');
@@ -616,21 +634,29 @@
                 }, 4000);
             }
 
-            // ===== PAYER =====
+            // ===== PAYER (avec nouveau lien Jèko) =====
             payBtn.addEventListener('click', function() {
                 if (!amount || amount < 1) {
                     showToast('⚠️ Montant invalide.', 'error');
                     return;
                 }
 
-                // ✅ Remplir les infos du snip
+                // ✅ NOUVEAU LIEN JEKO AVEC CHAMP PERSONNALISÉ
+                // Le nom sera saisi sur la page Jèko et renvoyé via webhook
+                const paymentLink = `https://pay.jeko.africa/pl/700549f1-c3bb-4191-8cbe-6f1ff2438ad9?amount=${amount}`;
+
+                console.log('🔗 Lien Jèko :', paymentLink);
+                console.log('👤 Donateur :', name);
+                console.log('💰 Montant :', amount);
+
+                // Remplir le snip
                 snipName.textContent = name;
                 snipAmount.textContent = amount.toLocaleString() + ' FCFA';
 
-                // ✅ Afficher l'overlay (la page reste en arrière-plan)
+                // Afficher l'overlay
                 snipOverlay.classList.add('active');
 
-                // ✅ Messages dynamiques
+                // Messages dynamiques
                 const messages = [
                     'Préparation du paiement...',
                     'Connexion à Jèko...',
@@ -643,18 +669,15 @@
                     snipStatus.textContent = messages[index];
                 }, 1800);
 
-                // ✅ Redirection après 5 secondes
-                const paymentLink = `https://pay.jeko.africa/pl/1892f9ee-ab1f-4859-929b-dd9985e94b9e?amount=${amount}`;
-
+                // Redirection après 5 secondes
                 setTimeout(() => {
                     snipStatus.textContent = '🔄 Redirection...';
                     clearInterval(statusInterval);
                     window.location.href = paymentLink;
                 }, 5000);
-
-                console.log('🔗 Redirection vers:', paymentLink);
             });
 
+            console.log('✅ pay.html initialisé');
             console.log('👤 Nom:', name);
             console.log('💰 Montant:', amount);
 
