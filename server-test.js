@@ -152,12 +152,15 @@ app.post('/webhook', async (req, res) => {
 
         console.log('✅ Signature valide');
 
-        // 2️⃣ Ajouter le nom du donateur depuis la description
+        // 2️⃣ Extraire le nom depuis counterpartLabel
         const body = req.body;
-        const description = body.description || '';
-        const nameMatch = description.match(/Soutien Virtual Market - (.*?)(?: -|$)/);
-        if (nameMatch) {
-            body.flex1 = nameMatch[1].trim();
+        const donorName = body.counterpartLabel || null;
+
+        if (donorName && donorName !== '') {
+            body.flex1 = donorName;
+            console.log(`👤 Donateur : ${donorName}`);
+        } else {
+            body.flex1 = null;
         }
 
         // 3️⃣ Sauvegarder en base
@@ -176,7 +179,6 @@ app.post('/webhook', async (req, res) => {
         res.sendStatus(500);
     }
 });
-
 // ============================================================
 // ROUTE : PAGE ADMIN (HTML) 
 // ============================================================
