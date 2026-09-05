@@ -3,102 +3,445 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Market - Test</title>
+    <title>💳 Paiement - Virtual Market</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-            text-align: center;
-            background: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 76px;
+            padding-bottom: 90px;
         }
-        .product-card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+        /* ===== HEADER ===== */
+        .pay-header {
+            background: #0F8B5D;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(15, 139, 93, 0.2);
         }
-        .product-image {
-            font-size: 64px;
-            margin: 16px 0;
-        }
-        .product-name {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 8px 0;
-        }
-        .product-price {
-            font-size: 32px;
-            color: #2d7d46;
-            font-weight: bold;
-        }
-        .btn-pay {
-            background: #2d7d46;
-            color: white;
+
+        .pay-header .back-btn {
+            background: rgba(255, 255, 255, 0.15);
             border: none;
-            padding: 16px 40px;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 16px;
-            transition: background 0.3s;
-        }
-        .btn-pay:hover {
-            background: #1a5a33;
-        }
-        #status {
-            margin-top: 16px;
-            padding: 12px;
-            border-radius: 8px;
-            display: none;
-            background: #d4edda;
-            color: #155724;
-        }
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #2d7d46;
+            color: white;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            vertical-align: middle;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pay-header .back-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .pay-header .pay-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .pay-header .pay-title i {
             margin-right: 8px;
         }
+
+        .pay-header .empty-space {
+            width: 40px;
+        }
+
+        /* ===== MAIN ===== */
+        .pay-main {
+            flex: 1;
+            padding: 16px 20px 20px 20px;
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ===== CARD PRODUIT ===== */
+        .product-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px 28px 28px 28px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(15, 139, 93, 0.06);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .product-card .product-icon {
+            text-align: center;
+            font-size: 56px;
+            margin-bottom: 4px;
+        }
+
+        .product-card .product-icon i {
+            background: linear-gradient(135deg, #0F8B5D, #0A6B47);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .product-card h2 {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: #0F8B5D;
+            margin-bottom: 2px;
+        }
+
+        .product-card .product-sub {
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        /* ===== DIVIDER ===== */
+        .pay-divider {
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #0F8B5D, #4ade80);
+            border-radius: 10px;
+            margin: 4px auto 16px auto;
+        }
+
+        /* ===== RÉCAPITULATIF ===== */
+        .recap-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f2f5;
+            font-size: 15px;
+        }
+
+        .recap-item:last-child {
+            border-bottom: none;
+        }
+
+        .recap-item .label {
+            color: #6b7280;
+        }
+
+        .recap-item .value {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .recap-item .value.amount {
+            color: #0F8B5D;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        /* ===== BOUTON PAYER ===== */
+        .btn-pay {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0F8B5D, #0A6B47);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-pay:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(15, 139, 93, 0.25);
+        }
+
+        .btn-pay:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-pay i {
+            font-size: 18px;
+        }
+
+        /* ===== LOADING OVERLAY ===== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-overlay .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #4ade80;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .loading-overlay p {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 16px;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+        }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            background: #0F8B5D;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            display: none;
+            animation: slideUp 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast-container.error {
+            background: #dc3545;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            body { padding-top: 68px; padding-bottom: 80px; }
+            .pay-header { padding: 10px 14px; }
+            .pay-header .pay-title { font-size: 16px; }
+            .pay-header .back-btn { width: 36px; height: 36px; font-size: 16px; }
+            .pay-main { padding: 12px 14px; }
+            .product-card { padding: 24px 18px 20px 18px; border-radius: 20px; }
+            .product-card h2 { font-size: 20px; }
+            .product-card .product-icon { font-size: 44px; }
+            .recap-item { font-size: 14px; padding: 8px 0; }
+            .recap-item .value.amount { font-size: 18px; }
+            .btn-pay { font-size: 16px; padding: 14px; }
+            .toast-container { font-size: 14px; padding: 12px 20px; }
+        }
+
+        @media (max-width: 400px) {
+            body { padding-top: 60px; }
+            .pay-header { padding: 8px 10px; }
+            .pay-header .pay-title { font-size: 14px; }
+            .pay-header .back-btn { width: 32px; height: 32px; font-size: 14px; }
+            .product-card { padding: 18px 14px 16px 14px; border-radius: 16px; }
+            .product-card h2 { font-size: 17px; }
+            .product-card .product-icon { font-size: 36px; }
+            .recap-item { font-size: 13px; padding: 6px 0; }
+            .recap-item .value.amount { font-size: 16px; }
+            .btn-pay { font-size: 14px; padding: 12px; border-radius: 14px; }
+            .loading-overlay p { font-size: 15px; }
+            .loading-overlay .spinner { width: 40px; height: 40px; }
         }
     </style>
 </head>
 <body>
-    <div class="product-card">
-        <div class="product-image">👟</div>
-        <div class="product-name">Chaussure Nike</div>
-        <div class="product-price">1 FCFA</div>
-        <button class="btn-pay" id="payBtn">Acheter maintenant</button>
-        <div id="status">✅ Redirection vers Jèko...</div>
+
+    <!-- ===== HEADER ===== -->
+    <header class="pay-header">
+        <button class="back-btn" onclick="window.location.href='/virtmak.html'">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <span class="pay-title"><i class="fas fa-hand-holding-heart"></i> Confirmation</span>
+        <span class="empty-space"></span>
+    </header>
+
+    <!-- ===== CONTENU ===== -->
+    <main class="pay-main">
+        <div class="product-card">
+            <div class="product-icon">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <h2>Virtual Market</h2>
+            <p class="product-sub">Soutien au développement</p>
+
+            <div class="pay-divider"></div>
+
+            <!-- Récapitulatif -->
+            <div class="recap-item">
+                <span class="label"><i class="fas fa-user" style="color:#0F8B5D;width:20px;"></i> Donateur</span>
+                <span class="value" id="displayName">-</span>
+            </div>
+            <div class="recap-item">
+                <span class="label"><i class="fas fa-heart" style="color:#0F8B5D;width:20px;"></i> Montant</span>
+                <span class="value amount" id="displayAmount">-</span>
+            </div>
+            <div class="recap-item" style="border-bottom: none; padding-bottom: 4px;">
+                <span class="label"><i class="fas fa-credit-card" style="color:#0F8B5D;width:20px;"></i> Paiement sécurisé</span>
+                <span class="value">Jèko <i class="fas fa-shield-alt" style="color:#0F8B5D;"></i></span>
+            </div>
+
+            <!-- Bouton -->
+            <button class="btn-pay" id="payBtn">
+                <i class="fas fa-hand-holding-heart"></i> Payer maintenant
+            </button>
+
+            <p style="text-align:center;font-size:12px;color:#9ca3af;margin-top:12px;">
+                <i class="fas fa-lock" style="color:#0F8B5D;"></i> Paiement sécurisé
+            </p>
+        </div>
+    </main>
+
+    <!-- ===== LOADING OVERLAY ===== -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>🔄 Redirection vers la plateforme de paiement...</p>
     </div>
 
+    <!-- ===== TOAST ===== -->
+    <div class="toast-container" id="toast"></div>
+
+    <!-- ============================================================= -->
+    <!-- SCRIPTS                                                        -->
+    <!-- ============================================================= -->
     <script>
-        document.getElementById('payBtn').addEventListener('click', function() {
-            const btn = this;
-            const status = document.getElementById('status');
-            
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> Redirection...';
-            status.style.display = 'block';
-            status.textContent = '✅ Redirection vers Jèko...';
-            
-            // ✅ Lien Jèko réutilisable avec montant fixe 1 FCFA
-            const paymentLink = 'https://pay.jeko.africa/pl/1892f9ee-ab1f-4859-929b-dd9985e94b9e?amount=1';
-            
-            setTimeout(() => {
-                window.location.href = paymentLink;
-            }, 1000);
+        document.addEventListener('DOMContentLoaded', function() {
+
+            console.log('✅ pay.html chargé');
+
+            // ===== RÉFÉRENCES =====
+            const displayName = document.getElementById('displayName');
+            const displayAmount = document.getElementById('displayAmount');
+            const payBtn = document.getElementById('payBtn');
+            const toast = document.getElementById('toast');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            // ===== RÉCUPÉRER LES PARAMÈTRES URL =====
+            const urlParams = new URLSearchParams(window.location.search);
+            const name = urlParams.get('name') || 'Donateur anonyme';
+            const amount = parseInt(urlParams.get('amount')) || 100;
+
+            // ===== AFFICHER LES INFOS =====
+            displayName.textContent = name;
+            displayAmount.textContent = amount.toLocaleString() + ' FCFA';
+
+            // ===== TOAST =====
+            function showToast(message, type = 'success') {
+                toast.textContent = message;
+                toast.className = 'toast-container' + (type === 'error' ? ' error' : '');
+                toast.style.display = 'block';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 4000);
+            }
+
+            // ===== PAYER =====
+            payBtn.addEventListener('click', async function() {
+                if (!amount || amount < 1) {
+                    showToast('⚠️ Montant invalide.', 'error');
+                    return;
+                }
+
+                // ✅ Désactiver le bouton
+                payBtn.disabled = true;
+                payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Préparation...';
+
+                try {
+                    // ✅ Appeler le serveur pour créer un lien de paiement dynamique
+                    const response = await fetch('/create-payment-link', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: name,
+                            amount: amount
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Erreur lors de la création du paiement');
+                    }
+
+                    if (!data.checkout_url) {
+                        throw new Error('Aucune URL de paiement reçue');
+                    }
+
+                    console.log('✅ Lien de paiement généré:', data.checkout_url);
+
+                    // ✅ Afficher le loader
+                    loadingOverlay.classList.add('active');
+
+                    // ✅ Redirection vers Jèko
+                    setTimeout(() => {
+                        window.location.href = data.checkout_url;
+                    }, 600);
+
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    showToast('❌ ' + error.message, 'error');
+                    payBtn.disabled = false;
+                    payBtn.innerHTML = '<i class="fas fa-hand-holding-heart"></i> Payer maintenant';
+                }
+            });
+
+            console.log('✅ pay.html initialisé');
+            console.log('👤 Nom:', name);
+            console.log('💰 Montant:', amount);
+
         });
     </script>
+
 </body>
 </html>
