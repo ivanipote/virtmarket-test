@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paiement réussi !</title>
+    <title>✅ Paiement réussi !</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,6 +32,9 @@
             border-radius: 8px;
             margin: 16px 0;
         }
+        .product-detail p {
+            margin: 4px 0;
+        }
         .btn-home {
             background: #2d7d46;
             color: white;
@@ -48,6 +51,60 @@
         .btn-home:hover {
             background: #1a5a33;
         }
+        .btn-admin {
+            background: #1a2a6c;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s;
+            margin-top: 8px;
+        }
+        .btn-admin:hover {
+            background: #0d1a4a;
+        }
+        #loadingStatus {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #fff3cd;
+            color: #856404;
+            display: none;
+        }
+        #paymentDetails {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            color: #155724;
+            display: none;
+            text-align: left;
+            font-size: 14px;
+        }
+        #paymentDetails strong {
+            display: inline-block;
+            width: 100px;
+        }
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2d7d46;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -57,10 +114,68 @@
         <div class="product-detail">
             <p style="font-size: 24px; margin: 0;">👟</p>
             <p style="font-size: 18px; font-weight: bold; margin: 4px 0;">Chaussure Nike</p>
-            <p style="color: #2d7d46; font-size: 20px; font-weight: bold; margin: 4px 0;">2 FCFA</p>
+            <p style="color: #2d7d46; font-size: 20px; font-weight: bold; margin: 4px 0;">1 FCFA</p>
         </div>
         <p style="color: #555;">Votre produit est maintenant débloqué ! 🎉</p>
+
+        <div id="loadingStatus">
+            <span class="loader"></span> Vérification du paiement...
+        </div>
+
+        <div id="paymentDetails">
+            <p><strong>ID Transaction:</strong> <span id="txId">-</span></p>
+            <p><strong>Montant:</strong> <span id="txAmount">-</span></p>
+            <p><strong>Moyen:</strong> <span id="txMethod">-</span></p>
+            <p><strong>Statut:</strong> <span id="txStatus" style="color:#2d7d46;">✅ Confirmé</span></p>
+            <p><strong>Date:</strong> <span id="txDate">-</span></p>
+        </div>
+
         <a href="/" class="btn-home">🏠 Retour à l'accueil</a>
+        <br>
+        <a href="/admin/payments" class="btn-admin" target="_blank">📊 Voir tous les paiements</a>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const loadingStatus = document.getElementById('loadingStatus');
+            const paymentDetails = document.getElementById('paymentDetails');
+
+            // 1️⃣ Récupérer l'ID de la transaction depuis l'URL (si présent)
+            const urlParams = new URLSearchParams(window.location.search);
+            const transactionId = urlParams.get('transaction_id');
+
+            if (transactionId) {
+                loadingStatus.style.display = 'block';
+                loadingStatus.innerHTML = '<span class="loader"></span> Vérification du paiement...';
+
+                try {
+                    // 2️⃣ Vérifier le paiement via le serveur
+                    const response = await fetch(`/api/payment/status/${transactionId}`);
+                    const data = await response.json();
+
+                    loadingStatus.style.display = 'none';
+
+                    if (data.success && data.payment) {
+                        const p = data.payment;
+                        document.getElementById('txId').textContent = p.transaction_id || p.id || '-';
+                        document.getElementById('txAmount').textContent = (p.amount || 0) + ' FCFA';
+                        document.getElementById('txMethod').textContent = p.payment_method || p.gateway || 'Wave';
+                        document.getElementById('txStatus').textContent = p.status === 'success' ? '✅ Confirmé' : '⏳ ' + p.status;
+                        document.getElementById('txDate').textContent = p.executed_at ? new Date(p.executed_at).toLocaleString() : '-';
+                        paymentDetails.style.display = 'block';
+                    } else {
+                        // Si pas de détails, on affiche juste la page de succès
+                        console.log('ℹ️ Détails du paiement non trouvés, page de succès standard');
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur vérification paiement:', error);
+                    loadingStatus.style.display = 'none';
+                }
+            } else {
+                // Pas de transaction_id, on affiche juste la page de succès
+                console.log('ℹ️ Aucun ID de transaction, page de succès standard');
+            }
+        });
+    </script>
 </body>
 </html>
