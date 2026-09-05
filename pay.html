@@ -386,54 +386,27 @@
                 }, 4000);
             }
 
-            // ===== PAYER =====
-            payBtn.addEventListener('click', async function() {
+            // ===== PAYER (version avec lien statique) =====
+            payBtn.addEventListener('click', function() {
                 if (!amount || amount < 1) {
                     showToast('⚠️ Montant invalide.', 'error');
                     return;
                 }
 
-                // ✅ Désactiver le bouton
-                payBtn.disabled = true;
-                payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Préparation...';
+                // ✅ Lien statique Jèko réutilisable avec montant dynamique
+                const paymentLink = `https://pay.jeko.africa/pl/1892f9ee-ab1f-4859-929b-dd9985e94b9e?amount=${amount}`;
 
-                try {
-                    // ✅ Appeler le serveur pour créer un lien de paiement dynamique
-                    const response = await fetch('/create-payment-link', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            name: name,
-                            amount: amount
-                        })
-                    });
+                console.log('🔗 Redirection vers:', paymentLink);
+                console.log('👤 Donateur:', name);
+                console.log('💰 Montant:', amount);
 
-                    const data = await response.json();
+                // Afficher le loader
+                loadingOverlay.classList.add('active');
 
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Erreur lors de la création du paiement');
-                    }
-
-                    if (!data.checkout_url) {
-                        throw new Error('Aucune URL de paiement reçue');
-                    }
-
-                    console.log('✅ Lien de paiement généré:', data.checkout_url);
-
-                    // ✅ Afficher le loader
-                    loadingOverlay.classList.add('active');
-
-                    // ✅ Redirection vers Jèko
-                    setTimeout(() => {
-                        window.location.href = data.checkout_url;
-                    }, 600);
-
-                } catch (error) {
-                    console.error('❌ Erreur:', error);
-                    showToast('❌ ' + error.message, 'error');
-                    payBtn.disabled = false;
-                    payBtn.innerHTML = '<i class="fas fa-hand-holding-heart"></i> Payer maintenant';
-                }
+                // Redirection vers Jèko
+                setTimeout(() => {
+                    window.location.href = paymentLink;
+                }, 600);
             });
 
             console.log('✅ pay.html initialisé');
