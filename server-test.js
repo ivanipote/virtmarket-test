@@ -14,6 +14,8 @@ app.get('/', (req, res) => {
 // Route pour créer un paiement Jèko
 app.post('/create-payment', async (req, res) => {
     try {
+        console.log('📝 Création d\'un paiement Jèko...');
+
         const response = await fetch('https://api.jeko.africa/v1/checkout/sessions', {
             method: 'POST',
             headers: {
@@ -21,10 +23,10 @@ app.post('/create-payment', async (req, res) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                amount: 2,
+                amount: 200, // 200 centimes = 2 FCFA
                 currency: 'XOF',
-                success_url: 'http://localhost:3000/verify',
-                cancel_url: 'http://localhost:3000/',
+                success_url: 'https://virtmarket-test.onrender.com/verify',
+                cancel_url: 'https://virtmarket-test.onrender.com/',
                 metadata: {
                     product: 'Chaussure Nike',
                     price: 2
@@ -33,8 +35,20 @@ app.post('/create-payment', async (req, res) => {
         });
 
         const data = await response.json();
+        console.log('📦 Réponse Jèko :', data);
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Erreur API Jèko');
+        }
+
+        if (!data.checkout_url) {
+            throw new Error('Aucune URL de paiement reçue');
+        }
+
         res.json({ checkout_url: data.checkout_url });
+
     } catch (error) {
+        console.error('❌ Erreur :', error.message);
         res.status(500).json({ error: error.message });
     }
 });
