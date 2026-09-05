@@ -9,15 +9,23 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('.'));
 
-// Initialisation de la base de données
-db.initialize().catch(err => console.error('❌ Erreur init DB:', err));
+// ✅ INITIALISATION DE LA BASE DE DONNÉES
+(async function initDatabase() {
+    try {
+        console.log('🔄 Initialisation de la base de données...');
+        await db.initialize();
+        console.log('✅ Base de données initialisée avec succès');
+    } catch (error) {
+        console.error('❌ Erreur lors de l\'initialisation de la base:', error.message);
+    }
+})();
 
 // Route principale → pay.html
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/pay.html');
 });
 
-// Route pour créer un paiement (redirection vers le lien Jèko)
+// Route pour créer un paiement
 app.post('/create-payment', async (req, res) => {
     try {
         console.log('📝 Redirection vers le lien Jèko...');
@@ -29,17 +37,15 @@ app.post('/create-payment', async (req, res) => {
     }
 });
 
-// Route de vérification (page de succès)
+// Route de vérification
 app.get('/verify', (req, res) => {
     res.sendFile(__dirname + '/verifypay.html');
 });
 
-// ✅ Webhook Jèko avec vérification de signature et sauvegarde en base
+// Webhook Jèko
 app.post('/webhook', async (req, res) => {
     console.log('🔔 Webhook reçu');
-
     try {
-        // 1️⃣ Vérifier la signature
         const signature = req.headers['jeko-signature'];
         const payload = JSON.stringify(req.body);
         const expectedSignature = crypto
@@ -53,19 +59,11 @@ app.post('/webhook', async (req, res) => {
         }
 
         console.log('✅ Signature valide');
-
-        // 2️⃣ Sauvegarder le paiement en base
         const savedId = await db.saveJekoPayment(req.body);
-
         if (savedId) {
             console.log(`✅ Paiement enregistré en base (ID: ${savedId})`);
-        } else {
-            console.log('ℹ️ Paiement déjà existant ou erreur');
         }
-
-        // 3️⃣ Répondre à Jèko
         res.sendStatus(200);
-
     } catch (error) {
         console.error('❌ Erreur webhook:', error);
         res.sendStatus(500);
