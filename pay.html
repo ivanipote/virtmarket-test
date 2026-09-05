@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Market - Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+            background: #f5f5f5;
+        }
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .product-image {
+            font-size: 64px;
+            margin: 16px 0;
+        }
+        .product-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        .product-price {
+            font-size: 32px;
+            color: #2d7d46;
+            font-weight: bold;
+        }
+        .btn-pay {
+            background: #2d7d46;
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: background 0.3s;
+        }
+        .btn-pay:hover {
+            background: #1a5a33;
+        }
+        .btn-pay:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2d7d46;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="product-card">
+        <div class="product-image">👟</div>
+        <div class="product-name">Chaussure Nike</div>
+        <div class="product-price">2 FCFA</div>
+        <button class="btn-pay" id="payBtn">Acheter maintenant</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        document.getElementById('payBtn').addEventListener('click', async function() {
+            const btn = this;
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Préparation...';
+            status.style.display = 'none';
+
+            try {
+                const response = await fetch('/create-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.checkout_url) {
+                    status.style.display = 'block';
+                    status.style.background = '#d4edda';
+                    status.style.color = '#155724';
+                    status.innerHTML = '✅ Redirection vers Jèko...';
+                    
+                    setTimeout(() => {
+                        window.location.href = data.checkout_url;
+                    }, 1000);
+                } else {
+                    throw new Error('URL de paiement non reçue');
+                }
+            } catch (error) {
+                status.style.display = 'block';
+                status.style.background = '#f8d7da';
+                status.style.color = '#721c24';
+                status.innerHTML = '❌ Erreur : ' + error.message;
+                btn.disabled = false;
+                btn.innerHTML = 'Acheter maintenant';
+            }
+        });
+    </script>
+</body>
+</html>
