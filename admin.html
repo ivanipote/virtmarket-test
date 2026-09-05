@@ -3,310 +3,909 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Paiements Jèko</title>
+    <title>📊 Admin - Virtual Market</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f6f9;
-            padding: 20px;
+            height: 100vh;
+            overflow: hidden;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+
+        /* ============================================================ */
+        /* HEADER (VERT ARRONDI)                                         */
+        /* ============================================================ */
+        .admin-header {
+            background: #0F8B5D;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 68px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 20px rgba(15, 139, 93, 0.2);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            flex-shrink: 0;
         }
-        .header {
+
+        .admin-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .admin-header .logo i {
+            font-size: 22px;
+        }
+
+        .admin-header .logo span {
+            font-weight: 300;
+            opacity: 0.7;
+        }
+
+        .admin-header .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .admin-header .header-right .solde {
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 6px 16px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            white-space: nowrap;
+        }
+
+        .admin-header .header-right .solde i {
+            margin-right: 6px;
+            color: #4ade80;
+        }
+
+        .admin-header .header-right .btn-refresh {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .admin-header .header-right .btn-refresh:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .admin-header .header-right .btn-refresh:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .admin-header .header-right .btn-refresh .fa-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .admin-header .header-right .btn-home {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .admin-header .header-right .btn-home:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* ============================================================ */
+        /* LAYOUT PRINCIPAL                                             */
+        /* ============================================================ */
+        .admin-layout {
+            display: flex;
+            height: calc(100vh - 68px);
+            margin-top: 68px;
+            gap: 0;
+        }
+
+        /* ============================================================ */
+        /* SIDEBAR (HAUTEUR FIXE, CONTENU SCROLLABLE)                   */
+        /* ============================================================ */
+        .admin-sidebar {
+            width: 300px;
+            min-width: 280px;
+            background: white;
+            border-right: 1px solid #e6e8ef;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .admin-sidebar .sidebar-header {
+            padding: 14px 20px 10px 20px;
+            border-bottom: 1px solid #f0f0f5;
+            flex-shrink: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
         }
-        .header h1 {
-            font-size: 24px;
-            color: #10141f;
-        }
-        .header .badge {
-            background: #17a464;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-        .table-wrapper {
-            background: white;
-            border-radius: 16px;
-            overflow: auto;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-            border: 1px solid #e6e8ef;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 700px;
-            font-size: 14px;
-        }
-        th {
-            background: #fafbfc;
-            padding: 14px 16px;
-            text-align: left;
-            font-weight: 600;
+
+        .admin-sidebar .sidebar-header .sidebar-title {
+            font-size: 12px;
+            font-weight: 700;
             color: #6b7280;
-            border-bottom: 1px solid #e6e8ef;
             text-transform: uppercase;
-            font-size: 11px;
             letter-spacing: 0.5px;
         }
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f0f0f5;
-            color: #3a4152;
-        }
-        tr:hover td {
-            background: #fafbfc;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: 600;
+
+        .admin-sidebar .sidebar-header .sidebar-count {
             font-size: 12px;
+            font-weight: 600;
+            color: #0F8B5D;
+            background: #e6f7ee;
+            padding: 2px 12px;
+            border-radius: 20px;
         }
-        .status-success {
+
+        /* ===== LISTE DES DONATEURS (SCROLLABLE) ===== */
+        .admin-sidebar .donors-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 12px 16px 12px;
+        }
+
+        .admin-sidebar .donors-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar .donors-list::-webkit-scrollbar-thumb {
+            background: #d8dbe4;
+            border-radius: 10px;
+        }
+
+        /* ===== CADRE DONATEUR ===== */
+        .donor-item {
+            background: #f8f9fc;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 6px;
+            border: 1.5px solid #f0f2f5;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .donor-item:hover {
+            border-color: #0F8B5D;
+            background: #f0faf5;
+            transform: translateX(4px);
+        }
+
+        .donor-item.active {
+            border-color: #0F8B5D;
+            background: #e6f7ee;
+            box-shadow: 0 2px 12px rgba(15, 139, 93, 0.08);
+        }
+
+        .donor-item .donor-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a2e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .donor-item .donor-name .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #0F8B5D;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .donor-item .donor-amount {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0F8B5D;
+            font-family: 'Courier New', monospace;
+        }
+
+        .donor-item .donor-amount .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+
+        .donor-item .donor-amount .status-dot.success {
+            background: #22c55e;
+        }
+
+        .donor-item .donor-amount .status-dot.pending {
+            background: #f59e0b;
+        }
+
+        .donor-item .donor-amount .status-dot.error {
+            background: #dc3545;
+        }
+
+        /* ===== EMPTY SIDEBAR ===== */
+        .donors-list .empty-donors {
+            text-align: center;
+            padding: 30px 20px;
+            color: #9ca3af;
+        }
+
+        .donors-list .empty-donors i {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 8px;
+            color: #d8dbe4;
+        }
+
+        /* ============================================================ */
+        /* CONTENU PRINCIPAL (DÉTAIL)                                   */
+        /* ============================================================ */
+        .admin-content {
+            flex: 1;
+            padding: 20px 24px;
+            overflow-y: auto;
+            background: #f5f6f9;
+        }
+
+        .admin-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .admin-content::-webkit-scrollbar-thumb {
+            background: #d8dbe4;
+            border-radius: 10px;
+        }
+
+        /* ===== DÉTAIL DU PAIEMENT ===== */
+        .detail-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px 32px;
+            border: 1px solid #e6e8ef;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .detail-card .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+
+        .detail-card .detail-header .detail-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .detail-card .detail-header .detail-title i {
+            color: #0F8B5D;
+            margin-right: 8px;
+        }
+
+        .detail-card .detail-header .detail-id {
+            font-size: 12px;
+            color: #9ca3af;
+            font-family: 'Courier New', monospace;
+            background: #f8f9fc;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        .detail-card .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fc;
+            font-size: 15px;
+        }
+
+        .detail-card .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-card .detail-row .label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .detail-card .detail-row .value {
+            font-weight: 600;
+            color: #1a1a2e;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+        }
+
+        .detail-card .detail-row .value.amount {
+            color: #0F8B5D;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .detail-card .detail-row .value .status-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .detail-card .detail-row .value .status-badge.success {
             background: #e6f7ee;
             color: #0e7a49;
         }
-        .status-pending {
+
+        .detail-card .detail-row .value .status-badge.pending {
             background: #fff3df;
             color: #b45309;
         }
-        .status-error {
+
+        .detail-card .detail-row .value .status-badge.error {
             background: #fcebea;
             color: #c0342a;
         }
-        .loading-state {
+
+        .detail-card .detail-row .value .tx-id {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-detail {
             text-align: center;
-            padding: 40px;
+            padding: 60px 20px;
             color: #9ca3af;
         }
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #9ca3af;
-        }
-        .empty-state i {
-            font-size: 48px;
+
+        .empty-detail i {
+            font-size: 56px;
             color: #d8dbe4;
             display: block;
             margin-bottom: 12px;
         }
-        .btn-refresh {
-            background: #17a464;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
+
+        .empty-detail h3 {
+            color: #1a1a2e;
+            margin-bottom: 4px;
         }
-        .btn-refresh:hover {
-            background: #0e7a49;
+
+        /* ============================================================ */
+        /* RESPONSIVE                                                    */
+        /* ============================================================ */
+        @media (max-width: 992px) {
+            .admin-sidebar {
+                width: 250px;
+                min-width: 220px;
+            }
         }
-        .btn-home {
-            background: #e6e8ef;
-            color: #3a4152;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background 0.3s;
-        }
-        .btn-home:hover {
-            background: #d8dbe4;
-        }
-        .actions {
-            display: flex;
-            gap: 10px;
-        }
-        .copy-btn {
-            background: none;
-            border: none;
-            color: #9ca3af;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-        .copy-btn:hover {
-            background: #f0f2f5;
-            color: #17a464;
-        }
-        .copy-btn.copied {
-            color: #17a464;
-        }
+
         @media (max-width: 768px) {
-            body { padding: 12px; }
-            .header { flex-direction: column; align-items: stretch; }
-            .header h1 { font-size: 20px; text-align: center; }
-            .actions { justify-content: center; }
-            table { font-size: 12px; min-width: 500px; }
-            th, td { padding: 8px 10px; }
+            .admin-header {
+                padding: 10px 16px;
+                height: 60px;
+                border-radius: 0 0 16px 16px;
+            }
+
+            .admin-header .logo {
+                font-size: 15px;
+            }
+            .admin-header .logo i {
+                font-size: 18px;
+            }
+
+            .admin-header .header-right .solde {
+                font-size: 13px;
+                padding: 4px 12px;
+            }
+
+            .admin-header .header-right .btn-refresh span,
+            .admin-header .header-right .btn-home span {
+                display: none;
+            }
+
+            .admin-header .header-right .btn-refresh {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .admin-header .header-right .btn-home {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .admin-layout {
+                flex-direction: column;
+                height: calc(100vh - 60px);
+                margin-top: 60px;
+            }
+
+            .admin-sidebar {
+                width: 100%;
+                min-width: unset;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid #e6e8ef;
+                flex-shrink: 0;
+            }
+
+            .admin-content {
+                flex: 1;
+                padding: 16px;
+                overflow-y: auto;
+            }
+
+            .detail-card {
+                padding: 20px 18px;
+            }
+            .detail-card .detail-row {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .admin-header {
+                padding: 8px 12px;
+                height: 54px;
+                border-radius: 0 0 12px 12px;
+            }
+
+            .admin-header .logo {
+                font-size: 13px;
+                gap: 6px;
+            }
+            .admin-header .logo i {
+                font-size: 15px;
+            }
+
+            .admin-header .header-right {
+                gap: 8px;
+            }
+
+            .admin-header .header-right .solde {
+                font-size: 11px;
+                padding: 3px 8px;
+            }
+
+            .admin-header .header-right .btn-refresh {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .admin-header .header-right .btn-home {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .admin-layout {
+                height: calc(100vh - 54px);
+                margin-top: 54px;
+            }
+
+            .admin-sidebar {
+                max-height: 35vh;
+            }
+
+            .donor-item {
+                padding: 10px 12px;
+            }
+            .donor-item .donor-name {
+                font-size: 13px;
+            }
+            .donor-item .donor-amount {
+                font-size: 12px;
+            }
+
+            .admin-content {
+                padding: 12px;
+            }
+
+            .detail-card {
+                padding: 16px 14px;
+                border-radius: 16px;
+            }
+            .detail-card .detail-row {
+                font-size: 13px;
+                padding: 6px 0;
+            }
+            .detail-card .detail-row .value.amount {
+                font-size: 17px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 Paiements Jèko</h1>
-            <div class="actions">
-                <span class="badge" id="countBadge">0 paiements</span>
-                <button class="btn-refresh" id="refreshBtn">🔄 Rafraîchir</button>
-                <a href="/" class="btn-home">🏠 Accueil</a>
-            </div>
-        </div>
 
-        <div class="table-wrapper">
-            <div id="loadingState" class="loading-state">⏳ Chargement...</div>
-            <div id="emptyState" class="empty-state" style="display:none;">
-                <i class="fas fa-inbox"></i>
-                <p>Aucun paiement enregistré</p>
-            </div>
-            <div id="tableContainer" style="display:none;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Transaction</th>
-                            <th>Montant</th>
-                            <th>Moyen</th>
-                            <th>Statut</th>
-                            <th>Téléphone</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="paymentsBody"></tbody>
-                </table>
-            </div>
+    <!-- ============================================================ -->
+    <!-- HEADER (VERT ARRONDI)                                         -->
+    <!-- ============================================================ -->
+    <header class="admin-header">
+        <div class="logo">
+            <i class="fas fa-chart-bar"></i>
+            Virtual <span>Market</span>
         </div>
+        <div class="header-right">
+            <span class="solde" id="soldeTotal">
+                <i class="fas fa-wallet"></i> <span id="soldeAmount">0</span> FCFA
+            </span>
+            <button class="btn-refresh" id="refreshBtn">
+                <i class="fas fa-sync-alt"></i> <span>Rafraîchir</span>
+            </button>
+            <a href="/virtmak.html" class="btn-home">
+                <i class="fas fa-home"></i> <span>Accueil</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- ============================================================ -->
+    <!-- LAYOUT PRINCIPAL                                             -->
+    <!-- ============================================================ -->
+    <div class="admin-layout">
+
+        <!-- ===== SIDEBAR (donateurs) ===== -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-title"><i class="fas fa-users"></i> Donateurs</span>
+                <span class="sidebar-count" id="donorCount">0</span>
+            </div>
+
+            <div class="donors-list" id="donorsList">
+                <div class="empty-donors" id="emptyDonors">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucun donateur</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ===== CONTENU PRINCIPAL (détail) ===== -->
+        <main class="admin-content" id="adminContent">
+            <div class="empty-detail" id="emptyDetail">
+                <i class="fas fa-hand-holding-heart"></i>
+                <h3>Aucun paiement sélectionné</h3>
+                <p>Cliquez sur un donateur dans la liste de gauche</p>
+            </div>
+
+            <div id="detailContainer" style="display:none;">
+                <!-- Rempli par JS -->
+            </div>
+        </main>
+
     </div>
 
+    <!-- ============================================================ -->
+    <!-- SCRIPTS                                                        -->
+    <!-- ============================================================ -->
     <script>
-        const PAYMENTS_URL = '/admin/payments';
+        document.addEventListener('DOMContentLoaded', function() {
 
-        async function loadPayments() {
-            const loading = document.getElementById('loadingState');
-            const empty = document.getElementById('emptyState');
-            const table = document.getElementById('tableContainer');
-            const body = document.getElementById('paymentsBody');
-            const badge = document.getElementById('countBadge');
+            console.log('✅ admin.html chargé');
 
-            loading.style.display = 'block';
-            empty.style.display = 'none';
-            table.style.display = 'none';
+            // ===== RÉFÉRENCES =====
+            const donorsList = document.getElementById('donorsList');
+            const emptyDonors = document.getElementById('emptyDonors');
+            const emptyDetail = document.getElementById('emptyDetail');
+            const detailContainer = document.getElementById('detailContainer');
+            const soldeAmount = document.getElementById('soldeAmount');
+            const donorCount = document.getElementById('donorCount');
+            const refreshBtn = document.getElementById('refreshBtn');
 
-            try {
-                const res = await fetch(PAYMENTS_URL);
-                const data = await res.json();
+            let allPayments = [];
+            let selectedId = null;
+            let isRefreshing = false;
 
-                loading.style.display = 'none';
+            // ===== CHARGER LES PAIEMENTS =====
+            async function loadPayments() {
+                if (isRefreshing) return;
+                isRefreshing = true;
+                refreshBtn.disabled = true;
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>...</span>';
 
-                if (data.success && data.payments && data.payments.length > 0) {
-                    table.style.display = 'block';
-                    badge.textContent = data.payments.length + ' paiements';
-                    renderPayments(data.payments);
-                } else {
-                    empty.style.display = 'block';
-                    badge.textContent = '0 paiements';
+                try {
+                    const res = await fetch('/api/payments');
+                    const data = await res.json();
+
+                    if (data.success && data.payments && data.payments.length > 0) {
+                        allPayments = data.payments;
+                        renderDonors();
+                        updateSolde();
+                        // Sélectionner le premier si aucun n'est sélectionné
+                        if (!selectedId && allPayments.length > 0) {
+                            selectedId = allPayments[0].id;
+                            renderDetail(selectedId);
+                        } else if (selectedId) {
+                            // Vérifier si le donateur existe encore
+                            const exists = allPayments.some(p => p.id === selectedId);
+                            if (!exists && allPayments.length > 0) {
+                                selectedId = allPayments[0].id;
+                                renderDetail(selectedId);
+                            } else if (exists) {
+                                renderDetail(selectedId);
+                            }
+                        }
+                    } else {
+                        allPayments = [];
+                        donorsList.innerHTML = `
+                            <div class="empty-donors">
+                                <i class="fas fa-inbox"></i>
+                                <p>Aucun donateur</p>
+                            </div>
+                        `;
+                        donorCount.textContent = '0';
+                        emptyDetail.style.display = 'block';
+                        detailContainer.style.display = 'none';
+                        soldeAmount.textContent = '0';
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    donorsList.innerHTML = `
+                        <div class="empty-donors">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>Erreur de chargement</p>
+                        </div>
+                    `;
+                } finally {
+                    isRefreshing = false;
+                    refreshBtn.disabled = false;
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Rafraîchir</span>';
                 }
-            } catch (error) {
-                loading.style.display = 'none';
-                empty.style.display = 'block';
-                empty.innerHTML = `
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p>Erreur de chargement : ${error.message}</p>
-                `;
-                badge.textContent = '0 paiements';
             }
-        }
 
-        function renderPayments(payments) {
-            const body = document.getElementById('paymentsBody');
+            // ===== AFFICHER LES DONATEURS =====
+            function renderDonors() {
+                if (allPayments.length === 0) {
+                    donorsList.innerHTML = `
+                        <div class="empty-donors">
+                            <i class="fas fa-inbox"></i>
+                            <p>Aucun donateur</p>
+                        </div>
+                    `;
+                    donorCount.textContent = '0';
+                    return;
+                }
 
-            const statusMap = {
-                'success': { label: '✅ Succès', class: 'status-success' },
-                'pending': { label: '⏳ En attente', class: 'status-pending' },
-                'error': { label: '❌ Erreur', class: 'status-error' }
-            };
+                donorCount.textContent = allPayments.length;
 
-            body.innerHTML = payments.map(p => {
-                const status = statusMap[p.status] || statusMap.pending;
-                const amount = (p.amount || 0) + ' FCFA';
-                const date = p.executed_at ? new Date(p.executed_at).toLocaleString('fr-FR') : new Date(p.created_at).toLocaleString('fr-FR');
-                const phone = p.counterpart_phone || '-';
-                const method = p.payment_method || p.gateway || 'N/A';
-                const txId = p.transaction_id || p.id || '-';
+                // Trier par date (plus récent en premier)
+                const sorted = [...allPayments].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-                return `
-                    <tr>
-                        <td>#${p.id}</td>
-                        <td style="font-size:12px;color:#6b7280;font-family:monospace;">${txId}</td>
-                        <td style="font-weight:600;color:#0e7a49;">${amount}</td>
-                        <td>${method}</td>
-                        <td><span class="status-badge ${status.class}">${status.label}</span></td>
-                        <td>${phone}</td>
-                        <td style="font-size:12px;color:#6b7280;">${date}</td>
-                        <td>
-                            <button class="copy-btn" data-copy="${txId}" title="Copier l'ID">📋</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+                donorsList.innerHTML = sorted.map(p => {
+                    const name = p.flex1 || p.counterpart_phone || 'Anonyme';
+                    const amount = (p.amount / 100).toLocaleString();
+                    const status = p.status || 'pending';
+                    const initial = name.charAt(0).toUpperCase();
+                    const isActive = p.id === selectedId;
 
-            // Événements de copie
-            document.querySelectorAll('.copy-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const text = this.dataset.copy;
-                    navigator.clipboard.writeText(text).then(() => {
-                        this.classList.add('copied');
-                        this.textContent = '✅';
-                        setTimeout(() => {
-                            this.classList.remove('copied');
-                            this.textContent = '📋';
-                        }, 2000);
-                    }).catch(() => {
-                        const input = document.createElement('input');
-                        input.value = text;
-                        document.body.appendChild(input);
-                        input.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(input);
-                        this.classList.add('copied');
-                        this.textContent = '✅';
-                        setTimeout(() => {
-                            this.classList.remove('copied');
-                            this.textContent = '📋';
-                        }, 2000);
+                    const statusDot = status === 'success' ? 'success' :
+                                     status === 'pending' ? 'pending' : 'error';
+
+                    return `
+                        <div class="donor-item ${isActive ? 'active' : ''}" data-id="${p.id}">
+                            <div class="donor-name">
+                                <span class="avatar">${initial}</span>
+                                ${name}
+                            </div>
+                            <div class="donor-amount">
+                                <span class="status-dot ${statusDot}"></span>
+                                ${amount} FCFA
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Événements de clic
+                document.querySelectorAll('.donor-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const id = parseInt(this.dataset.id);
+                        selectedId = id;
+                        renderDonors();
+                        renderDetail(id);
                     });
                 });
+            }
+
+            // ===== AFFICHER LE DÉTAIL =====
+            function renderDetail(id) {
+                const payment = allPayments.find(p => p.id === id);
+                if (!payment) {
+                    emptyDetail.style.display = 'block';
+                    detailContainer.style.display = 'none';
+                    return;
+                }
+
+                emptyDetail.style.display = 'none';
+                detailContainer.style.display = 'block';
+
+                const name = payment.flex1 || payment.counterpart_phone || 'Anonyme';
+                const amount = (payment.amount / 100).toLocaleString();
+                const status = payment.status || 'pending';
+                const statusMap = {
+                    'success': { label: '✅ Succès', class: 'success' },
+                    'pending': { label: '⏳ En attente', class: 'pending' },
+                    'error': { label: '❌ Échec', class: 'error' }
+                };
+                const statusInfo = statusMap[status] || statusMap.pending;
+                const date = payment.executed_at ? new Date(payment.executed_at).toLocaleString('fr-FR') : new Date(payment
+                    .created_at).toLocaleString('fr-FR');
+                const method = payment.payment_method || payment.gateway || 'Wave';
+                const txId = payment.transaction_id || payment.id || '-';
+                const phone = payment.counterpart_phone || '-';
+                const store = payment.store_name || 'Virtual Market';
+
+                detailContainer.innerHTML = `
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <span class="detail-title"><i class="fas fa-receipt"></i> Détail du paiement</span>
+                            <span class="detail-id">#${payment.id}</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="label"><i class="fas fa-user" style="color:#0F8B5D;width:20px;"></i> Donateur</span>
+                            <span class="value">${name}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label"><i class="fas fa-heart" style="color:#0F8B5D;width:20px;"></i> Montant</span>
+                            <span class="value amount">${amount} FCFA</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label"><i class="fas fa-check-circle" style="color:#0F8B5D;width:20px;"></i> Statut</span>
+                            <span class="value"><span class="status-badge ${statusInfo.class}">${statusInfo.label}</span></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label"><i class="fas fa-hashtag" style="color:#0F8B5D;width:20px;"></i> Transaction</span>
+                            <span class="value tx-id">${txId}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label"><i class="fas fa-phone" style="color:#0F8B5D;width:20px;"></i> Téléphone</span>
+                            <span class="value">${phone}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label"><i class="fas fa-credit-card" style="color:#0F8B5D;width:20px;"></i> Moyen</span>
+                            <span class="value">${method}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label"><i class="fas fa-store" style="color:#0F8B5D;width:20px;"></i> Boutique</span>
+                            <span class="value">${store}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label"><i class="fas fa-calendar" style="color:#0F8B5D;width:20px;"></i> Date</span>
+                            <span class="value">${date}</span>
+                        </div>
+
+                        <div style="margin-top:16px;padding-top:12px;border-top:2px solid #f0f2f5;display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="copy-btn" data-copy="${txId}" style="background:#f8f9fc;border:1px solid #e6e8ef;border-radius:30px;padding:6px 16px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;">
+                                <i class="fas fa-copy"></i> Copier l'ID
+                            </button>
+                            <button class="copy-btn" data-copy="${name}" style="background:#f8f9fc;border:1px solid #e6e8ef;border-radius:30px;padding:6px 16px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;">
+                                <i class="fas fa-copy"></i> Copier le nom
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Événements copie
+                document.querySelectorAll('.detail-card .copy-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const text = this.dataset.copy;
+                        navigator.clipboard.writeText(text).then(() => {
+                            this.style.background = '#e6f7ee';
+                            this.style.color = '#0F8B5D';
+                            this.innerHTML = '<i class="fas fa-check"></i> Copié !';
+                            setTimeout(() => {
+                                this.style.background = '#f8f9fc';
+                                this.style.color = '#6b7280';
+                                this.innerHTML = '<i class="fas fa-copy"></i> ' + (this
+                                    .textContent.includes('ID') ? "Copier l'ID" :
+                                    'Copier le nom');
+                            }, 2000);
+                        }).catch(() => {
+                            const input = document.createElement('input');
+                            input.value = text;
+                            document.body.appendChild(input);
+                            input.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(input);
+                            this.style.background = '#e6f7ee';
+                            this.style.color = '#0F8B5D';
+                            this.innerHTML = '<i class="fas fa-check"></i> Copié !';
+                            setTimeout(() => {
+                                this.style.background = '#f8f9fc';
+                                this.style.color = '#6b7280';
+                                this.innerHTML = '<i class="fas fa-copy"></i> ' + (this
+                                    .textContent.includes('ID') ? "Copier l'ID" :
+                                    'Copier le nom');
+                            }, 2000);
+                        });
+                    });
+                });
+            }
+
+            // ===== METTRE À JOUR LE SOLDE =====
+            function updateSolde() {
+                const total = allPayments
+                    .filter(p => p.status === 'success')
+                    .reduce((sum, p) => sum + p.amount, 0);
+                soldeAmount.textContent = (total / 100).toLocaleString();
+            }
+
+            // ===== RAFRAÎCHIR =====
+            refreshBtn.addEventListener('click', function() {
+                loadPayments();
             });
-        }
 
-        document.getElementById('refreshBtn').addEventListener('click', loadPayments);
+            // ===== AUTO-REFRESH =====
+            setInterval(loadPayments, 30000);
 
-        // Chargement initial
-        loadPayments();
+            // ===== INIT =====
+            loadPayments();
 
-        // Auto-refresh toutes les 30 secondes
-        setInterval(loadPayments, 30000);
+            console.log('✅ admin.html initialisé');
 
-        console.log('✅ Admin page loaded');
+        });
     </script>
+
 </body>
 </html>
