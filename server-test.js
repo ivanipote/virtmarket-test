@@ -26,6 +26,28 @@ app.use(express.static('.'));
 })();
 
 // ============================================================
+// NETTOYAGE AUTO DES PAIEMENTS PENDING ORPHELINS
+// ============================================================
+async function cleanPendingPayments() {
+    try {
+        const result = await db.query(`
+            DELETE FROM payments_jeko
+            WHERE status = 'pending'
+            AND created_at < NOW() - INTERVAL '15 minutes'
+        `);
+        if (result.rowCount > 0) {
+            console.log(`🧹 ${result.rowCount} paiement(s) pending supprimés`);
+        }
+    } catch (error) {
+        console.error('❌ Erreur nettoyage:', error);
+    }
+}
+
+// Lancer le nettoyage toutes les 5 minutes
+setInterval(cleanPendingPayments, 5 * 60 * 1000);
+cleanPendingPayments();
+
+// ============================================================
 // ROUTES PAGES
 // ============================================================
 app.get('/', (req, res) => {
@@ -49,7 +71,7 @@ app.get('/admin', (req, res) => {
 });
 
 // ============================================================
-// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO
+// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (version API)
 // ============================================================
 app.post('/create-payment-link', async (req, res) => {
     const { name, amount } = req.body;
@@ -156,11 +178,12 @@ app.post('/webhook', async (req, res) => {
         const body = req.body;
         const donorName = body.counterpartLabel || null;
 
-        if (donorName && donorName !== '') {
-            body.flex1 = donorName;
-            console.log(`👤 Donateur : ${donorName}`);
+        if (donorName && donorName.trim() !== '') {
+            body.flex1 = donorName.trim();
+            console.log(`👤 Donateur : ${body.flex1}`);
         } else {
             body.flex1 = null;
+            console.log('⚠️ Aucun nom trouvé dans le webhook');
         }
 
         // 3️⃣ Sauvegarder en base
@@ -178,19 +201,6 @@ app.post('/webhook', async (req, res) => {
         console.error('❌ Erreur webhook:', error);
         res.sendStatus(500);
     }
-});
-// ============================================================
-// ROUTE : PAGE ADMIN (HTML) 
-// ============================================================
-app.get('/admin', (req, res) => {
-    res.sendFile(__dirname + '/admin.html');
-});
-
-// ============================================================
-// ROUTE : PAGE D'ACCUEIL (par défaut)
-// ============================================================
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/virtmak.html');
 });
 
 // ============================================================
