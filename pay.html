@@ -48,15 +48,13 @@
         .btn-pay:hover {
             background: #1a5a33;
         }
-        .btn-pay:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
         #status {
             margin-top: 16px;
             padding: 12px;
             border-radius: 8px;
             display: none;
+            background: #d4edda;
+            color: #155724;
         }
         .loading {
             display: inline-block;
@@ -79,48 +77,27 @@
     <div class="product-card">
         <div class="product-image">👟</div>
         <div class="product-name">Chaussure Nike</div>
-        <div class="product-price">2 FCFA</div>
+        <div class="product-price">1 FCFA</div>
         <button class="btn-pay" id="payBtn">Acheter maintenant</button>
-        <div id="status"></div>
+        <div id="status">✅ Redirection vers Jèko...</div>
     </div>
 
     <script>
-        document.getElementById('payBtn').addEventListener('click', async function() {
+        document.getElementById('payBtn').addEventListener('click', function() {
             const btn = this;
             const status = document.getElementById('status');
             
             btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> Préparation...';
-            status.style.display = 'none';
-
-            try {
-                const response = await fetch('/create-payment', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const data = await response.json();
-
-                if (data.checkout_url) {
-                    status.style.display = 'block';
-                    status.style.background = '#d4edda';
-                    status.style.color = '#155724';
-                    status.innerHTML = '✅ Redirection vers Jèko...';
-                    
-                    setTimeout(() => {
-                        window.location.href = data.checkout_url;
-                    }, 1000);
-                } else {
-                    throw new Error('URL de paiement non reçue');
-                }
-            } catch (error) {
-                status.style.display = 'block';
-                status.style.background = '#f8d7da';
-                status.style.color = '#721c24';
-                status.innerHTML = '❌ Erreur : ' + error.message;
-                btn.disabled = false;
-                btn.innerHTML = 'Acheter maintenant';
-            }
+            btn.innerHTML = '<span class="loading"></span> Redirection...';
+            status.style.display = 'block';
+            status.textContent = '✅ Redirection vers Jèko...';
+            
+            // ✅ Lien Jèko réutilisable avec montant fixe 1 FCFA
+            const paymentLink = 'https://pay.jeko.africa/pl/1892f9ee-ab1f-4859-929b-dd9985e94b9e?amount=1';
+            
+            setTimeout(() => {
+                window.location.href = paymentLink;
+            }, 1000);
         });
     </script>
 </body>
