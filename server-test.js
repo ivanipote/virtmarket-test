@@ -6,10 +6,12 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('.'));
 
+// Route principale → pay.html
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/pay.html');
 });
 
+// Route pour créer un paiement Jèko
 app.post('/create-payment', async (req, res) => {
     try {
         console.log('📝 Création d\'un paiement Jèko...');
@@ -17,7 +19,8 @@ app.post('/create-payment', async (req, res) => {
         const response = await fetch('https://api.jeko.africa/partner_api/payment_links', {
             method: 'POST',
             headers: {
-                'X-API-KEY-ID': process.env.JEKO_API_KEY,
+                'X-API-KEY': process.env.JEKO_API_KEY,
+                'X-API-KEY-ID': process.env.JEKO_API_KEY_ID,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -49,6 +52,7 @@ app.post('/create-payment', async (req, res) => {
     }
 });
 
+// Webhook Jèko
 app.post('/webhook', (req, res) => {
     console.log('🔔 Webhook reçu :', req.body);
     res.sendStatus(200);
