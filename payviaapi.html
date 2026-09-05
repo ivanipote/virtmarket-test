@@ -1,3 +1,479 @@
-git add payviaapi.html server-test.js
-git commit -m "feat: page de test API Jeko avec montant 1 FCFA"
-git push
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test API Jèko - Virtual Market</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 76px;
+            padding-bottom: 30px;
+        }
+
+        /* ===== HEADER ===== */
+        .test-header {
+            background: #0F8B5D;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(15, 139, 93, 0.2);
+        }
+
+        .test-header .back-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .test-header .back-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .test-header .test-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .test-header .test-title i {
+            margin-right: 8px;
+        }
+
+        .test-header .badge-api {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* ===== MAIN ===== */
+        .test-main {
+            flex: 1;
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 32px 32px 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(15, 139, 93, 0.06);
+            width: 100%;
+            text-align: center;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .test-card .test-icon {
+            font-size: 56px;
+            margin-bottom: 8px;
+        }
+
+        .test-card .test-icon i {
+            background: linear-gradient(135deg, #0F8B5D, #0A6B47);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .test-card h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0F8B5D;
+            margin-bottom: 4px;
+        }
+
+        .test-card .subtitle {
+            color: #6b7280;
+            font-size: 15px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .test-card .subtitle strong {
+            color: #0F8B5D;
+        }
+
+        .test-divider {
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #0F8B5D, #4ade80);
+            border-radius: 10px;
+            margin: 4px auto 16px auto;
+        }
+
+        /* ===== INFOS TEST ===== */
+        .test-info {
+            background: #f8f9fc;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border: 1px solid #f0f2f5;
+            text-align: left;
+        }
+
+        .test-info .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 14px;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .test-info .row:last-child {
+            border-bottom: none;
+        }
+
+        .test-info .row .label {
+            color: #6b7280;
+        }
+
+        .test-info .row .value {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .test-info .row .value.amount {
+            color: #0F8B5D;
+            font-weight: 800;
+        }
+
+        .test-info .row .value .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #e6f7ee;
+            color: #0e7a49;
+        }
+
+        /* ===== BOUTON ===== */
+        .btn-pay {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0F8B5D, #0A6B47);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .btn-pay:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(15, 139, 93, 0.25);
+        }
+
+        .btn-pay:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-pay .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== STATUS ===== */
+        .status-message {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status-message.success {
+            display: block;
+            background: #e6f7ee;
+            color: #0e7a49;
+            border: 1px solid #bfebd3;
+        }
+
+        .status-message.error {
+            display: block;
+            background: #fcebea;
+            color: #c0342a;
+            border: 1px solid #f3c6c2;
+        }
+
+        .status-message.info {
+            display: block;
+            background: #eaf1ff;
+            color: #2563eb;
+            border: 1px solid #c7d9fb;
+        }
+
+        /* ===== LOADING OVERLAY ===== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 26, 0.7);
+            backdrop-filter: blur(12px);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-overlay .loader-spinner {
+            width: 56px;
+            height: 56px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #4ade80;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .loading-overlay p {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            body { padding-top: 68px; }
+            .test-header { padding: 10px 14px; }
+            .test-header .test-title { font-size: 16px; }
+            .test-header .back-btn { width: 36px; height: 36px; font-size: 16px; }
+            .test-header .badge-api { font-size: 10px; padding: 3px 10px; }
+            .test-main { padding: 12px 14px; }
+            .test-card { padding: 28px 20px 24px 20px; border-radius: 20px; }
+            .test-card h2 { font-size: 20px; }
+            .test-card .test-icon { font-size: 44px; }
+            .test-info .row { font-size: 13px; }
+            .btn-pay { font-size: 16px; padding: 14px; }
+        }
+
+        @media (max-width: 400px) {
+            .test-header { padding: 8px 10px; }
+            .test-header .test-title { font-size: 14px; }
+            .test-header .back-btn { width: 32px; height: 32px; font-size: 14px; }
+            .test-card { padding: 20px 14px 18px 14px; border-radius: 16px; }
+            .test-card h2 { font-size: 17px; }
+            .test-card .test-icon { font-size: 36px; }
+            .test-info .row { font-size: 12px; }
+            .btn-pay { font-size: 14px; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header class="test-header">
+        <button class="back-btn" onclick="window.location.href='/virtmak.html'">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <span class="test-title"><i class="fas fa-code"></i> Test API Jèko</span>
+        <span class="badge-api"><i class="fas fa-circle" style="color:#4ade80;font-size:8px;"></i> BETA</span>
+    </header>
+
+    <!-- ===== CONTENU ===== -->
+    <main class="test-main">
+        <div class="test-card">
+            <div class="test-icon">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <h2>🧪 Test API</h2>
+            <p class="subtitle">
+                Bienvenue sur votre page de test API.<br>
+                <strong>1 FCFA</strong> pour valider l'intégration.
+            </p>
+
+            <div class="test-divider"></div>
+
+            <div class="test-info">
+                <div class="row">
+                    <span class="label"><i class="fas fa-user" style="color:#0F8B5D;width:18px;"></i> Testeur</span>
+                    <span class="value">API Test</span>
+                </div>
+                <div class="row">
+                    <span class="label"><i class="fas fa-heart" style="color:#0F8B5D;width:18px;"></i> Montant</span>
+                    <span class="value amount">1 FCFA</span>
+                </div>
+                <div class="row">
+                    <span class="label"><i class="fas fa-credit-card" style="color:#0F8B5D;width:18px;"></i> Méthode</span>
+                    <span class="value"><span class="status-badge">API Jèko</span></span>
+                </div>
+                <div class="row" style="border-bottom: none;">
+                    <span class="label"><i class="fas fa-shield-alt" style="color:#0F8B5D;width:18px;"></i> Statut</span>
+                    <span class="value" id="apiStatus" style="font-size:13px;color:#6b7280;">⏳ En attente</span>
+                </div>
+            </div>
+
+            <button class="btn-pay" id="payBtn">
+                <i class="fas fa-hand-holding-heart"></i> Payer 1 FCFA (API)
+            </button>
+
+            <div id="statusMessage" class="status-message"></div>
+
+            <p style="text-align:center;font-size:12px;color:#9ca3af;margin-top:16px;">
+                <i class="fas fa-lock" style="color:#0F8B5D;"></i> Paiement sécurisé via l'API Jèko
+            </p>
+        </div>
+    </main>
+
+    <!-- ===== LOADING OVERLAY ===== -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader-spinner"></div>
+        <p>🔄 Création du lien de paiement...</p>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- SCRIPTS                                                        -->
+    <!-- ============================================================= -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            console.log('✅ payviaapi.html chargé');
+
+            // ===== RÉFÉRENCES =====
+            const payBtn = document.getElementById('payBtn');
+            const statusMessage = document.getElementById('statusMessage');
+            const apiStatus = document.getElementById('apiStatus');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            // ===== AFFICHER UN MESSAGE =====
+            function showStatus(message, type = 'info') {
+                statusMessage.className = 'status-message ' + type;
+                statusMessage.textContent = message;
+            }
+
+            function hideStatus() {
+                statusMessage.className = 'status-message';
+            }
+
+            // ===== PAYER =====
+            payBtn.addEventListener('click', async function() {
+                hideStatus();
+                apiStatus.textContent = '⏳ Création du lien...';
+                apiStatus.style.color = '#f59e0b';
+
+                payBtn.disabled = true;
+                payBtn.innerHTML = '<span class="spinner"></span> Création...';
+                loadingOverlay.classList.add('active');
+
+                try {
+                    // ✅ Appel à l'API Jèko via notre serveur
+                    const response = await fetch('/create-payment-link', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: 'API_Test',
+                            amount: 1
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Erreur API');
+                    }
+
+                    if (!data.checkout_url) {
+                        throw new Error('Aucune URL de paiement reçue');
+                    }
+
+                    console.log('✅ Lien généré :', data.checkout_url);
+
+                    apiStatus.textContent = '✅ Lien créé ! Redirection...';
+                    apiStatus.style.color = '#22c55e';
+
+                    showStatus('✅ Lien de paiement créé avec succès ! Redirection en cours...', 'success');
+
+                    // Redirection après un court délai
+                    setTimeout(() => {
+                        window.location.href = data.checkout_url;
+                    }, 1500);
+
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+
+                    apiStatus.textContent = '❌ Échec';
+                    apiStatus.style.color = '#dc3545';
+
+                    showStatus('❌ ' + error.message, 'error');
+
+                    payBtn.disabled = false;
+                    payBtn.innerHTML = '<i class="fas fa-hand-holding-heart"></i> Réessayer';
+                    loadingOverlay.classList.remove('active');
+                }
+            });
+
+            console.log('✅ payviaapi.html initialisé');
+
+        });
+    </script>
+
+</body>
+</html>
