@@ -508,14 +508,16 @@ async function initializeDatabase() {
 // ========================================================
 
 // Sauvegarder un paiement Jèko
+// Sauvegarder un paiement Jèko
 async function saveJekoPayment(data) {
     const query = `
         INSERT INTO payments_jeko (
             transaction_id, amount, currency, status,
             counterpart_phone, payment_method, store_id,
-            store_name, payment_link_id, executed_at
+            store_name, payment_link_id, executed_at,
+            flex1
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         ON CONFLICT (transaction_id) DO NOTHING
         RETURNING id
     `;
@@ -530,7 +532,8 @@ async function saveJekoPayment(data) {
         data.storeId || null,
         data.storeName || null,
         data.transactionDetails?.paymentLinkId || null,
-        data.executedAt ? new Date(data.executedAt) : null
+        data.executedAt ? new Date(data.executedAt) : null,
+        data.flex1 || null  // ✅ AJOUTÉ
     ];
 
     try {
@@ -546,7 +549,6 @@ async function saveJekoPayment(data) {
         return null;
     }
 }
-
 // Récupérer tous les paiements Jèko
 async function getJekoPayments() {
     try {
