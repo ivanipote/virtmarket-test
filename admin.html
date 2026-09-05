@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Paiements Jèko</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6f9;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #10141f;
+        }
+        .header .badge {
+            background: #17a464;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .table-wrapper {
+            background: white;
+            border-radius: 16px;
+            overflow: auto;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid #e6e8ef;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+            font-size: 14px;
+        }
+        th {
+            background: #fafbfc;
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 1px solid #e6e8ef;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f5;
+            color: #3a4152;
+        }
+        tr:hover td {
+            background: #fafbfc;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .status-success {
+            background: #e6f7ee;
+            color: #0e7a49;
+        }
+        .status-pending {
+            background: #fff3df;
+            color: #b45309;
+        }
+        .status-error {
+            background: #fcebea;
+            color: #c0342a;
+        }
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+        .empty-state i {
+            font-size: 48px;
+            color: #d8dbe4;
+            display: block;
+            margin-bottom: 12px;
+        }
+        .btn-refresh {
+            background: #17a464;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-refresh:hover {
+            background: #0e7a49;
+        }
+        .btn-home {
+            background: #e6e8ef;
+            color: #3a4152;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        .btn-home:hover {
+            background: #d8dbe4;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .copy-btn {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: #f0f2f5;
+            color: #17a464;
+        }
+        .copy-btn.copied {
+            color: #17a464;
+        }
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .header { flex-direction: column; align-items: stretch; }
+            .header h1 { font-size: 20px; text-align: center; }
+            .actions { justify-content: center; }
+            table { font-size: 12px; min-width: 500px; }
+            th, td { padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Paiements Jèko</h1>
+            <div class="actions">
+                <span class="badge" id="countBadge">0 paiements</span>
+                <button class="btn-refresh" id="refreshBtn">🔄 Rafraîchir</button>
+                <a href="/" class="btn-home">🏠 Accueil</a>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <div id="loadingState" class="loading-state">⏳ Chargement...</div>
+            <div id="emptyState" class="empty-state" style="display:none;">
+                <i class="fas fa-inbox"></i>
+                <p>Aucun paiement enregistré</p>
+            </div>
+            <div id="tableContainer" style="display:none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Transaction</th>
+                            <th>Montant</th>
+                            <th>Moyen</th>
+                            <th>Statut</th>
+                            <th>Téléphone</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PAYMENTS_URL = '/admin/payments';
+
+        async function loadPayments() {
+            const loading = document.getElementById('loadingState');
+            const empty = document.getElementById('emptyState');
+            const table = document.getElementById('tableContainer');
+            const body = document.getElementById('paymentsBody');
+            const badge = document.getElementById('countBadge');
+
+            loading.style.display = 'block';
+            empty.style.display = 'none';
+            table.style.display = 'none';
+
+            try {
+                const res = await fetch(PAYMENTS_URL);
+                const data = await res.json();
+
+                loading.style.display = 'none';
+
+                if (data.success && data.payments && data.payments.length > 0) {
+                    table.style.display = 'block';
+                    badge.textContent = data.payments.length + ' paiements';
+                    renderPayments(data.payments);
+                } else {
+                    empty.style.display = 'block';
+                    badge.textContent = '0 paiements';
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                empty.style.display = 'block';
+                empty.innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Erreur de chargement : ${error.message}</p>
+                `;
+                badge.textContent = '0 paiements';
+            }
+        }
+
+        function renderPayments(payments) {
+            const body = document.getElementById('paymentsBody');
+
+            const statusMap = {
+                'success': { label: '✅ Succès', class: 'status-success' },
+                'pending': { label: '⏳ En attente', class: 'status-pending' },
+                'error': { label: '❌ Erreur', class: 'status-error' }
+            };
+
+            body.innerHTML = payments.map(p => {
+                const status = statusMap[p.status] || statusMap.pending;
+                const amount = (p.amount || 0) + ' FCFA';
+                const date = p.executed_at ? new Date(p.executed_at).toLocaleString('fr-FR') : new Date(p.created_at).toLocaleString('fr-FR');
+                const phone = p.counterpart_phone || '-';
+                const method = p.payment_method || p.gateway || 'N/A';
+                const txId = p.transaction_id || p.id || '-';
+
+                return `
+                    <tr>
+                        <td>#${p.id}</td>
+                        <td style="font-size:12px;color:#6b7280;font-family:monospace;">${txId}</td>
+                        <td style="font-weight:600;color:#0e7a49;">${amount}</td>
+                        <td>${method}</td>
+                        <td><span class="status-badge ${status.class}">${status.label}</span></td>
+                        <td>${phone}</td>
+                        <td style="font-size:12px;color:#6b7280;">${date}</td>
+                        <td>
+                            <button class="copy-btn" data-copy="${txId}" title="Copier l'ID">📋</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Événements de copie
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const text = this.dataset.copy;
+                    navigator.clipboard.writeText(text).then(() => {
+                        this.classList.add('copied');
+                        this.textContent = '✅';
+                        setTimeout(() => {
+                            this.classList.remove('copied');
+                            this.textContent = '📋';
+                        }, 2000);
+                    }).catch(() => {
+                        const input = document.createElement('input');
+                        input.value = text;
+                        document.body.appendChild(input);
+                        input.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(input);
+                        this.classList.add('copied');
+                        this.textContent = '✅';
+                        setTimeout(() => {
+                            this.classList.remove('copied');
+                            this.textContent = '📋';
+                        }, 2000);
+                    });
+                });
+            });
+        }
+
+        document.getElementById('refreshBtn').addEventListener('click', loadPayments);
+
+        // Chargement initial
+        loadPayments();
+
+        // Auto-refresh toutes les 30 secondes
+        setInterval(loadPayments, 30000);
+
+        console.log('✅ Admin page loaded');
+    </script>
+</body>
+</html>
