@@ -6,31 +6,27 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('.'));
 
-// Route principale → pay.html
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/pay.html');
 });
 
-// Route pour créer un paiement Jèko
 app.post('/create-payment', async (req, res) => {
     try {
         console.log('📝 Création d\'un paiement Jèko...');
 
-        const response = await fetch('https://api.jeko.africa/v1/checkout/sessions', {
+        const response = await fetch('https://api.jeko.africa/partner_api/payment_links', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${process.env.JEKO_API_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                amount: 200, // 200 centimes = 2 FCFA
+                storeId: process.env.JEKO_BUSINESS_ID,
+                amount: 2,
                 currency: 'XOF',
-                success_url: 'https://virtmarket-test.onrender.com/verify',
-                cancel_url: 'https://virtmarket-test.onrender.com/',
-                metadata: {
-                    product: 'Chaussure Nike',
-                    price: 2
-                }
+                description: 'Chaussure Nike',
+                successUrl: 'https://virtmarket-test.onrender.com/verify',
+                cancelUrl: 'https://virtmarket-test.onrender.com/'
             })
         });
 
@@ -41,11 +37,11 @@ app.post('/create-payment', async (req, res) => {
             throw new Error(data.message || 'Erreur API Jèko');
         }
 
-        if (!data.checkout_url) {
-            throw new Error('Aucune URL de paiement reçue');
+        if (!data.paymentLink) {
+            throw new Error('Aucun lien de paiement reçu');
         }
 
-        res.json({ checkout_url: data.checkout_url });
+        res.json({ checkout_url: data.paymentLink });
 
     } catch (error) {
         console.error('❌ Erreur :', error.message);
@@ -53,7 +49,6 @@ app.post('/create-payment', async (req, res) => {
     }
 });
 
-// Webhook Jèko
 app.post('/webhook', (req, res) => {
     console.log('🔔 Webhook reçu :', req.body);
     res.sendStatus(200);
