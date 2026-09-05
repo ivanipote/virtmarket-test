@@ -22,6 +22,7 @@
             flex-direction: column;
             padding-top: 76px;
             padding-bottom: 90px;
+            overflow: hidden;
         }
 
         /* ===== HEADER ===== */
@@ -79,6 +80,8 @@
             max-width: 500px;
             width: 100%;
             margin: 0 auto;
+            display: flex;
+            align-items: center;
         }
 
         /* ===== CARD PRODUIT ===== */
@@ -88,12 +91,8 @@
             padding: 32px 28px 28px 28px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(15, 139, 93, 0.06);
-            animation: fadeInUp 0.5s ease;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            width: 100%;
+            transition: all 0.4s ease;
         }
 
         .product-card .product-icon {
@@ -124,7 +123,6 @@
             margin-bottom: 16px;
         }
 
-        /* ===== DIVIDER ===== */
         .pay-divider {
             width: 50px;
             height: 3px;
@@ -133,7 +131,6 @@
             margin: 4px auto 16px auto;
         }
 
-        /* ===== RÉCAPITULATIF ===== */
         .recap-item {
             display: flex;
             justify-content: space-between;
@@ -161,7 +158,6 @@
             font-weight: 800;
         }
 
-        /* ===== BOUTON PAYER ===== */
         .btn-pay {
             width: 100%;
             padding: 16px;
@@ -190,52 +186,6 @@
             cursor: not-allowed;
         }
 
-        .btn-pay i {
-            font-size: 18px;
-        }
-
-        /* ===== LOADING OVERLAY ===== */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(8px);
-            z-index: 200;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .loading-overlay.active {
-            display: flex;
-        }
-
-        .loading-overlay .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            border-top-color: #4ade80;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        .loading-overlay p {
-            color: white;
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 16px;
-            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ===== TOAST ===== */
         .toast-container {
             position: fixed;
             bottom: 30px;
@@ -264,35 +214,273 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
+        /* ============================================================ */
+        /* SNIP OVERLAY - Style Tech Neon (intégré dans la page)        */
+        /* ============================================================ */
+
+        .snip-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 26, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeOverlay 0.5s ease;
+        }
+
+        .snip-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ===== FOND ANIMÉ ===== */
+        .snip-overlay .bg-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .snip-overlay .bg-animation .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .snip-overlay .bg-animation .orb:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            background: #4ade80;
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .snip-overlay .bg-animation .orb:nth-child(2) {
+            width: 250px;
+            height: 250px;
+            background: #0F8B5D;
+            bottom: -80px;
+            right: -80px;
+            animation-delay: -3s;
+        }
+
+        .snip-overlay .bg-animation .orb:nth-child(3) {
+            width: 200px;
+            height: 200px;
+            background: #1a2a6c;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.1); }
+            50% { transform: translate(-20px, 40px) scale(0.9); }
+            75% { transform: translate(40px, 20px) scale(1.05); }
+        }
+
+        /* ===== CARTE SNIP ===== */
+        .snip-card {
+            position: relative;
+            z-index: 1;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 40px 32px 36px 32px;
+            text-align: center;
+            max-width: 460px;
+            width: 100%;
+            border: 1px solid rgba(74, 222, 128, 0.12);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: scaleIn 0.4s ease;
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .snip-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 30px;
+            background: linear-gradient(45deg, transparent, #4ade80, transparent, #0F8B5D, transparent);
+            background-size: 400% 400%;
+            animation: borderGlow 4s ease-in-out infinite;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .snip-icon {
+            font-size: 52px;
+            color: #4ade80;
+            margin-bottom: 10px;
+            display: inline-block;
+            animation: pulse-icon 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); text-shadow: 0 0 40px rgba(74, 222, 128, 0.3); }
+        }
+
+        .snip-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 2px;
+        }
+
+        .snip-title span {
+            color: #4ade80;
+        }
+
+        .snip-sub {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .glow-line-wrapper {
+            width: 100%;
+            height: 3px;
+            background: rgba(74, 222, 128, 0.1);
+            border-radius: 10px;
+            margin: 12px auto 18px auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .glow-line-wrapper .glow-line {
+            height: 100%;
+            width: 40%;
+            background: linear-gradient(90deg, transparent, #4ade80, transparent);
+            border-radius: 10px;
+            animation: slideLine 1.8s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+        }
+
+        @keyframes slideLine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(350%); }
+        }
+
+        .snip-donor-details {
+            background: rgba(74, 222, 128, 0.05);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin: 12px 0 14px 0;
+            border: 1px solid rgba(74, 222, 128, 0.06);
+        }
+
+        .snip-donor-details .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .snip-donor-details .row .label {
+            color: #6b7280;
+        }
+
+        .snip-donor-details .row .value {
+            color: white;
+            font-weight: 600;
+        }
+
+        .snip-donor-details .row .value.amount {
+            color: #4ade80;
+            font-weight: 800;
+        }
+
+        .spinner-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 12px 0 6px 0;
+        }
+
+        .spinner-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: dotPulse 1.4s ease-in-out infinite;
+        }
+
+        .spinner-dot:nth-child(2) { animation-delay: 0.2s; }
+        .spinner-dot:nth-child(3) { animation-delay: 0.4s; }
+        .spinner-dot:nth-child(4) { animation-delay: 0.6s; }
+
+        @keyframes dotPulse {
+            0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .snip-info {
+            font-size: 13px;
+            color: #4ade80;
+            margin-top: 10px;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .snip-info i {
+            font-size: 14px;
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
-            body { padding-top: 68px; padding-bottom: 80px; }
-            .pay-header { padding: 10px 14px; }
-            .pay-header .pay-title { font-size: 16px; }
-            .pay-header .back-btn { width: 36px; height: 36px; font-size: 16px; }
-            .pay-main { padding: 12px 14px; }
-            .product-card { padding: 24px 18px 20px 18px; border-radius: 20px; }
-            .product-card h2 { font-size: 20px; }
-            .product-card .product-icon { font-size: 44px; }
-            .recap-item { font-size: 14px; padding: 8px 0; }
-            .recap-item .value.amount { font-size: 18px; }
-            .btn-pay { font-size: 16px; padding: 14px; }
-            .toast-container { font-size: 14px; padding: 12px 20px; }
+            .snip-card { padding: 28px 20px 24px 20px; }
+            .snip-title { font-size: 20px; }
+            .snip-icon { font-size: 40px; }
+            .snip-donor-details .row { font-size: 13px; }
+            .product-card { padding: 24px 18px 20px 18px; }
         }
 
         @media (max-width: 400px) {
-            body { padding-top: 60px; }
-            .pay-header { padding: 8px 10px; }
-            .pay-header .pay-title { font-size: 14px; }
-            .pay-header .back-btn { width: 32px; height: 32px; font-size: 14px; }
-            .product-card { padding: 18px 14px 16px 14px; border-radius: 16px; }
+            .snip-card { padding: 20px 14px 18px 14px; }
+            .snip-title { font-size: 17px; }
+            .snip-icon { font-size: 32px; }
+            .snip-donor-details .row { font-size: 12px; flex-direction: column; align-items: center; gap: 2px; }
+            .product-card { padding: 18px 14px 16px 14px; }
             .product-card h2 { font-size: 17px; }
-            .product-card .product-icon { font-size: 36px; }
-            .recap-item { font-size: 13px; padding: 6px 0; }
-            .recap-item .value.amount { font-size: 16px; }
-            .btn-pay { font-size: 14px; padding: 12px; border-radius: 14px; }
-            .loading-overlay p { font-size: 15px; }
-            .loading-overlay .spinner { width: 40px; height: 40px; }
+            .btn-pay { font-size: 14px; padding: 12px; }
         }
     </style>
 </head>
@@ -307,9 +495,9 @@
         <span class="empty-space"></span>
     </header>
 
-    <!-- ===== CONTENU ===== -->
+    <!-- ===== CONTENU PRINCIPAL ===== -->
     <main class="pay-main">
-        <div class="product-card">
+        <div class="product-card" id="productCard">
             <div class="product-icon">
                 <i class="fas fa-rocket"></i>
             </div>
@@ -318,7 +506,6 @@
 
             <div class="pay-divider"></div>
 
-            <!-- Récapitulatif -->
             <div class="recap-item">
                 <span class="label"><i class="fas fa-user" style="color:#0F8B5D;width:20px;"></i> Donateur</span>
                 <span class="value" id="displayName">-</span>
@@ -332,7 +519,6 @@
                 <span class="value">Jèko <i class="fas fa-shield-alt" style="color:#0F8B5D;"></i></span>
             </div>
 
-            <!-- Bouton -->
             <button class="btn-pay" id="payBtn">
                 <i class="fas fa-hand-holding-heart"></i> Payer maintenant
             </button>
@@ -343,10 +529,51 @@
         </div>
     </main>
 
-    <!-- ===== LOADING OVERLAY ===== -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-        <p>🔄 Redirection vers la plateforme de paiement...</p>
+    <!-- ===== SNIP OVERLAY (intégré) ===== -->
+    <div class="snip-overlay" id="snipOverlay">
+        <div class="bg-animation">
+            <div class="orb"></div>
+            <div class="orb"></div>
+            <div class="orb"></div>
+        </div>
+        <div class="snip-card">
+            <div class="snip-icon">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <div class="snip-title">
+                Redirection vers <span>Jèko</span>
+            </div>
+            <div class="snip-sub">
+                Votre paiement est sécurisé
+            </div>
+
+            <div class="glow-line-wrapper">
+                <div class="glow-line"></div>
+            </div>
+
+            <div class="snip-donor-details">
+                <div class="row">
+                    <span class="label"><i class="fas fa-user" style="color:#4ade80;width:18px;"></i> Donateur</span>
+                    <span class="value" id="snipName">-</span>
+                </div>
+                <div class="row">
+                    <span class="label"><i class="fas fa-heart" style="color:#4ade80;width:18px;"></i> Montant</span>
+                    <span class="value amount" id="snipAmount">-</span>
+                </div>
+            </div>
+
+            <div class="spinner-wrapper">
+                <div class="spinner-dot"></div>
+                <div class="spinner-dot"></div>
+                <div class="spinner-dot"></div>
+                <div class="spinner-dot"></div>
+            </div>
+
+            <div class="snip-info">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span id="snipStatus">Préparation du paiement...</span>
+            </div>
+        </div>
     </div>
 
     <!-- ===== TOAST ===== -->
@@ -358,14 +585,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ pay.html chargé');
+            console.log('✅ pay.html avec snip overlay chargé');
 
             // ===== RÉFÉRENCES =====
             const displayName = document.getElementById('displayName');
             const displayAmount = document.getElementById('displayAmount');
             const payBtn = document.getElementById('payBtn');
             const toast = document.getElementById('toast');
-            const loadingOverlay = document.getElementById('loadingOverlay');
+            const snipOverlay = document.getElementById('snipOverlay');
+            const snipName = document.getElementById('snipName');
+            const snipAmount = document.getElementById('snipAmount');
+            const snipStatus = document.getElementById('snipStatus');
 
             // ===== RÉCUPÉRER LES PARAMÈTRES URL =====
             const urlParams = new URLSearchParams(window.location.search);
@@ -386,30 +616,45 @@
                 }, 4000);
             }
 
-            // ===== PAYER (version avec lien statique) =====
+            // ===== PAYER =====
             payBtn.addEventListener('click', function() {
                 if (!amount || amount < 1) {
                     showToast('⚠️ Montant invalide.', 'error');
                     return;
                 }
 
-                // ✅ Lien statique Jèko réutilisable avec montant dynamique
+                // ✅ Remplir les infos du snip
+                snipName.textContent = name;
+                snipAmount.textContent = amount.toLocaleString() + ' FCFA';
+
+                // ✅ Afficher l'overlay (la page reste en arrière-plan)
+                snipOverlay.classList.add('active');
+
+                // ✅ Messages dynamiques
+                const messages = [
+                    'Préparation du paiement...',
+                    'Connexion à Jèko...',
+                    'Sécurisation de la transaction...',
+                    'Redirection en cours...'
+                ];
+                let index = 0;
+                const statusInterval = setInterval(() => {
+                    index = (index + 1) % messages.length;
+                    snipStatus.textContent = messages[index];
+                }, 1800);
+
+                // ✅ Redirection après 5 secondes
                 const paymentLink = `https://pay.jeko.africa/pl/1892f9ee-ab1f-4859-929b-dd9985e94b9e?amount=${amount}`;
 
-                console.log('🔗 Redirection vers:', paymentLink);
-                console.log('👤 Donateur:', name);
-                console.log('💰 Montant:', amount);
-
-                // Afficher le loader
-                loadingOverlay.classList.add('active');
-
-                // Redirection vers Jèko
                 setTimeout(() => {
+                    snipStatus.textContent = '🔄 Redirection...';
+                    clearInterval(statusInterval);
                     window.location.href = paymentLink;
-                }, 600);
+                }, 5000);
+
+                console.log('🔗 Redirection vers:', paymentLink);
             });
 
-            console.log('✅ pay.html initialisé');
             console.log('👤 Nom:', name);
             console.log('💰 Montant:', amount);
 
