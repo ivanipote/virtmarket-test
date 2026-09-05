@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Virtual Market - Soutien</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 80px;
+            overflow-x: hidden;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .animate {
+            animation: fadeInUp 0.7s ease forwards;
+        }
+        .animate-delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .animate-delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .animate-delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .animate-delay-4 { animation-delay: 0.4s; opacity: 0; }
+        .animate-delay-5 { animation-delay: 0.5s; opacity: 0; }
+
+        /* ===== HEADER FIXE ===== */
+        .vm-header {
+            background: #0F8B5D;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(15, 139, 93, 0.25);
+        }
+
+        .vm-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .vm-header .logo i {
+            font-size: 28px;
+        }
+
+        .vm-header .logo span {
+            font-weight: 300;
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        .vm-header .header-badge {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(4px);
+        }
+
+        .vm-header .header-badge i {
+            font-size: 14px;
+            color: #4ade80;
+        }
+
+        /* ===== MAIN ===== */
+        .vm-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .vm-card {
+            background: white;
+            border-radius: 28px;
+            padding: 48px 40px 40px 40px;
+            max-width: 580px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(15, 139, 93, 0.06);
+        }
+
+        /* ===== ICÔNE & TITRE ===== */
+        .vm-card .card-icon {
+            text-align: center;
+            font-size: 56px;
+            margin-bottom: 4px;
+        }
+
+        .vm-card .card-icon i {
+            background: linear-gradient(135deg, #0F8B5D, #0A6B47);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .vm-card h1 {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            color: #0F8B5D;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .vm-card .subtitle {
+            text-align: center;
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        .vm-card .subtitle strong {
+            color: #0F8B5D;
+        }
+
+        /* ===== DIVIDER ===== */
+        .vm-divider {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #0F8B5D, #4ade80);
+            border-radius: 10px;
+            margin: 12px auto 20px auto;
+        }
+
+        /* ===== DESCRIPTION ===== */
+        .vm-description {
+            background: #f0faf5;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            border-left: 4px solid #0F8B5D;
+        }
+
+        .vm-description p {
+            font-size: 14px;
+            color: #1a1a2e;
+            line-height: 1.6;
+        }
+
+        .vm-description .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .vm-description .tech-tags span {
+            background: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #0F8B5D;
+            border: 1px solid rgba(15, 139, 93, 0.12);
+        }
+
+        /* ===== FORMULAIRE ===== */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+        }
+
+        .form-group label i {
+            color: #0F8B5D;
+            margin-right: 6px;
+            width: 18px;
+        }
+
+        .form-group .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #f8f9fc;
+            border: 2px solid #e6e8ef;
+            border-radius: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group .input-wrapper:focus-within {
+            border-color: #0F8B5D;
+            box-shadow: 0 0 0 4px rgba(15, 139, 93, 0.08);
+            background: white;
+        }
+
+        .form-group .input-wrapper .prefix {
+            padding: 0 0 0 16px;
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .form-group .input-wrapper input {
+            flex: 1;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            background: transparent;
+            outline: none;
+            color: #1a1a2e;
+            font-weight: 500;
+        }
+
+        .form-group .input-wrapper input::placeholder {
+            color: #b0b5c4;
+            font-weight: 400;
+        }
+
+        .form-group .input-wrapper .input-icon {
+            padding: 0 16px 0 4px;
+            color: #b0b5c4;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .form-group .input-wrapper:focus-within .input-icon {
+            color: #0F8B5D;
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 4px;
+            padding-left: 4px;
+        }
+
+        /* ===== MONTANTS SUGGÉRÉS ===== */
+        .suggested-amounts {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 4px 0 2px 0;
+        }
+
+        .suggested-amounts .suggest-btn {
+            flex: 1;
+            min-width: 55px;
+            padding: 8px 4px;
+            border: 2px solid #e6e8ef;
+            border-radius: 12px;
+            background: #f8f9fc;
+            font-size: 13px;
+            font-weight: 600;
+            color: #3a4152;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .suggested-amounts .suggest-btn:hover {
+            border-color: #0F8B5D;
+            background: #e8f5ec;
+            color: #0F8B5D;
+            transform: translateY(-2px);
+        }
+
+        .suggested-amounts .suggest-btn.active {
+            border-color: #0F8B5D;
+            background: #0F8B5D;
+            color: white;
+        }
+
+        /* ===== BOUTON ===== */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0F8B5D, #0A6B47);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        .btn-submit:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 35px rgba(15, 139, 93, 0.3);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-submit i {
+            font-size: 18px;
+        }
+
+        /* ===== FOOTER ===== */
+        .vm-footer {
+            text-align: center;
+            padding: 20px 20px 28px 20px;
+            font-size: 13px;
+            color: #9ca3af;
+            flex-shrink: 0;
+            border-top: 1px solid #f0f0f5;
+            background: white;
+        }
+
+        .vm-footer i {
+            color: #0F8B5D;
+        }
+
+        .vm-footer .footer-heart {
+            color: #e74c3c;
+            animation: pulse 1.5s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            background: #0F8B5D;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            display: none;
+            animation: slideUp 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast-container.error {
+            background: #dc3545;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            body { padding-top: 72px; }
+            .vm-header { padding: 10px 16px; }
+            .vm-header .logo { font-size: 18px; }
+            .vm-header .logo i { font-size: 22px; }
+            .vm-header .header-badge { font-size: 10px; padding: 4px 12px; }
+            .vm-card { padding: 32px 22px 28px 22px; border-radius: 22px; }
+            .vm-card h1 { font-size: 26px; }
+            .vm-card .card-icon { font-size: 44px; }
+            .form-group .input-wrapper input { font-size: 15px; padding: 12px 14px; }
+            .btn-submit { font-size: 16px; padding: 14px; }
+            .suggested-amounts .suggest-btn { font-size: 12px; padding: 6px 4px; }
+            .vm-description { padding: 14px 16px; }
+            .vm-description p { font-size: 13px; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding-top: 64px; }
+            .vm-header { padding: 8px 12px; }
+            .vm-header .logo { font-size: 15px; gap: 8px; }
+            .vm-header .logo i { font-size: 18px; }
+            .vm-header .header-badge { font-size: 9px; padding: 3px 10px; }
+            .vm-card { padding: 24px 16px 20px 16px; border-radius: 18px; }
+            .vm-card h1 { font-size: 21px; }
+            .vm-card .subtitle { font-size: 14px; }
+            .vm-card .card-icon { font-size: 36px; }
+            .form-group .input-wrapper input { font-size: 14px; padding: 10px 12px; }
+            .btn-submit { font-size: 14px; padding: 12px; border-radius: 14px; }
+            .suggested-amounts { gap: 6px; }
+            .suggested-amounts .suggest-btn { font-size: 11px; padding: 5px 4px; min-width: 45px; }
+            .vm-description { padding: 12px 14px; }
+            .vm-description p { font-size: 12px; }
+            .vm-description .tech-tags span { font-size: 10px; padding: 3px 10px; }
+            .vm-footer { font-size: 11px; padding: 14px 16px 20px 16px; }
+            .toast-container { font-size: 13px; padding: 10px 16px; bottom: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER FIXE ===== -->
+    <header class="vm-header">
+        <div class="logo">
+            <i class="fas fa-code"></i>
+            Virtual <span>Market</span>
+        </div>
+        <span class="header-badge">
+            <i class="fas fa-circle" style="font-size:8px;"></i> Beta
+        </span>
+    </header>
+
+    <!-- ===== CONTENU ===== -->
+    <main class="vm-main">
+        <div class="vm-card">
+
+            <!-- Icone -->
+            <div class="card-icon animate animate-delay-1">
+                <i class="fas fa-rocket"></i>
+            </div>
+
+            <!-- Titre -->
+            <h1 class="animate animate-delay-1">Virtual Market</h1>
+            <p class="subtitle animate animate-delay-2">
+                Votre <strong>prochain marché virtuel</strong> en ligne
+            </p>
+
+            <div class="vm-divider animate animate-delay-2"></div>
+
+            <!-- Description -->
+            <div class="vm-description animate animate-delay-3">
+                <p>
+                    <i class="fas fa-bolt" style="color:#0F8B5D;"></i>
+                    Une plateforme 100% ivoirienne, sécurisée et innovante.
+                    Soutenez le développement du système avec le montant de votre choix.
+                </p>
+                <div class="tech-tags">
+                    <span><i class="fas fa-code"></i> Node.js</span>
+                    <span><i class="fas fa-database"></i> PostgreSQL</span>
+                    <span><i class="fas fa-cloud"></i> API Jèko</span>
+                    <span><i class="fas fa-lock"></i> Sécurisé</span>
+                </div>
+            </div>
+
+            <!-- Formulaire -->
+            <form id="virtmakForm" class="animate animate-delay-4">
+
+                <!-- Nom -->
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Votre nom</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fas fa-user"></i></span>
+                        <input type="text" id="nameInput" placeholder="Entrez votre nom" required autocomplete="name" />
+                    </div>
+                    <div class="form-hint">Nous vous remercierons personnellement</div>
+                </div>
+
+                <!-- Montant -->
+                <div class="form-group">
+                    <label><i class="fas fa-heart"></i> Montant de votre soutien (FCFA)</label>
+                    <div class="input-wrapper">
+                        <span class="prefix">FCFA</span>
+                        <input type="number" id="amountInput" placeholder="Montant libre" min="1" required />
+                        <span class="input-icon"><i class="fas fa-arrow-right"></i></span>
+                    </div>
+                    <div class="form-hint">Choisissez le montant qui vous convient</div>
+
+                    <!-- Montants suggérés -->
+                    <div class="suggested-amounts">
+                        <button type="button" class="suggest-btn" data-amount="500">500</button>
+                        <button type="button" class="suggest-btn" data-amount="1000">1 000</button>
+                        <button type="button" class="suggest-btn" data-amount="2500">2 500</button>
+                        <button type="button" class="suggest-btn" data-amount="5000">5 000</button>
+                    </div>
+                </div>
+
+                <!-- Bouton -->
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <i class="fas fa-hand-holding-heart"></i> Soutenir le projet
+                </button>
+
+            </form>
+
+            <!-- Petit message -->
+            <p style="text-align:center;font-size:13px;color:#9ca3af;margin-top:16px;opacity:0.7;">
+                <i class="fas fa-lock" style="color:#0F8B5D;margin-right:4px;"></i>
+                Paiement sécurisé via Wave
+            </p>
+
+        </div>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="vm-footer">
+        <i class="fas fa-code"></i> Virtual Market — Construisons ensemble le commerce en ligne ivoirien
+        <span class="footer-heart"> ❤️</span>
+    </footer>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast-container" id="toast"></div>
+
+    <!-- ============================================================= -->
+    <!-- SCRIPTS                                                        -->
+    <!-- ============================================================= -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            console.log('✅ virtmak.html chargé');
+
+            // ===== RÉFÉRENCES =====
+            const form = document.getElementById('virtmakForm');
+            const nameInput = document.getElementById('nameInput');
+            const amountInput = document.getElementById('amountInput');
+            const submitBtn = document.getElementById('submitBtn');
+            const toast = document.getElementById('toast');
+            const suggestBtns = document.querySelectorAll('.suggest-btn');
+
+            // ===== TOAST =====
+            function showToast(message, type = 'success') {
+                toast.textContent = message;
+                toast.className = 'toast-container' + (type === 'error' ? ' error' : '');
+                toast.style.display = 'block';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 4000);
+            }
+
+            // ===== BOUTONS SUGGÉRÉS =====
+            suggestBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    suggestBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    amountInput.value = this.dataset.amount;
+                    amountInput.focus();
+                });
+            });
+
+            // ===== VALIDATION EN TEMPS RÉEL =====
+            function validateForm() {
+                const name = nameInput.value.trim();
+                const amount = parseInt(amountInput.value);
+
+                if (name.length < 2) {
+                    submitBtn.disabled = true;
+                    return false;
+                }
+
+                if (isNaN(amount) || amount < 1) {
+                    submitBtn.disabled = true;
+                    return false;
+                }
+
+                submitBtn.disabled = false;
+                return true;
+            }
+
+            nameInput.addEventListener('input', validateForm);
+            amountInput.addEventListener('input', validateForm);
+
+            // ===== SOUMISSION =====
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const name = nameInput.value.trim();
+                const amount = parseInt(amountInput.value);
+
+                if (name.length < 2) {
+                    showToast('⚠️ Veuillez entrer votre nom.', 'error');
+                    nameInput.focus();
+                    return;
+                }
+
+                if (isNaN(amount) || amount < 1) {
+                    showToast('⚠️ Veuillez entrer un montant valide.', 'error');
+                    amountInput.focus();
+                    return;
+                }
+
+                // ✅ Redirection vers pay.html avec les paramètres
+                const url = `/pay.html?name=${encodeURIComponent(name)}&amount=${amount}`;
+                console.log('🔗 Redirection vers:', url);
+
+                // Effet de chargement
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirection...';
+
+                setTimeout(() => {
+                    window.location.href = url;
+                }, 600);
+            });
+
+            // ===== INIT =====
+            validateForm();
+            console.log('✅ virtmak.html initialisé');
+
+        });
+    </script>
+
+</body>
+</html>
