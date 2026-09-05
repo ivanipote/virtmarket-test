@@ -658,62 +658,62 @@
             let isRefreshing = false;
 
             // ===== CHARGER LES PAIEMENTS =====
-            async function loadPayments() {
-                if (isRefreshing) return;
-                isRefreshing = true;
-                refreshBtn.disabled = true;
-                refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>...</span>';
+          // ===== CHARGER LES PAIEMENTS =====
+async function loadPayments() {
+    if (isRefreshing) return;
+    isRefreshing = true;
+    refreshBtn.disabled = true;
+    refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>...</span>';
 
-                try {
-                    const res = await fetch('/api/payments');
-                    const data = await res.json();
+    try {
+        // ✅ Utiliser l'URL absolue
+        const API_BASE = window.location.origin;
+        const res = await fetch(`${API_BASE}/api/payments`);
+        const data = await res.json();
 
-                    if (data.success && data.payments && data.payments.length > 0) {
-                        allPayments = data.payments;
-                        renderDonors();
-                        updateSolde();
-                        // Sélectionner le premier si aucun n'est sélectionné
-                        if (!selectedId && allPayments.length > 0) {
-                            selectedId = allPayments[0].id;
-                            renderDetail(selectedId);
-                        } else if (selectedId) {
-                            // Vérifier si le donateur existe encore
-                            const exists = allPayments.some(p => p.id === selectedId);
-                            if (!exists && allPayments.length > 0) {
-                                selectedId = allPayments[0].id;
-                                renderDetail(selectedId);
-                            } else if (exists) {
-                                renderDetail(selectedId);
-                            }
-                        }
-                    } else {
-                        allPayments = [];
-                        donorsList.innerHTML = `
-                            <div class="empty-donors">
-                                <i class="fas fa-inbox"></i>
-                                <p>Aucun donateur</p>
-                            </div>
-                        `;
-                        donorCount.textContent = '0';
-                        emptyDetail.style.display = 'block';
-                        detailContainer.style.display = 'none';
-                        soldeAmount.textContent = '0';
-                    }
-                } catch (error) {
-                    console.error('❌ Erreur:', error);
-                    donorsList.innerHTML = `
-                        <div class="empty-donors">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <p>Erreur de chargement</p>
-                        </div>
-                    `;
-                } finally {
-                    isRefreshing = false;
-                    refreshBtn.disabled = false;
-                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Rafraîchir</span>';
+        if (data.success && data.payments && data.payments.length > 0) {
+            allPayments = data.payments;
+            renderDonors();
+            updateSolde();
+            if (!selectedId && allPayments.length > 0) {
+                selectedId = allPayments[0].id;
+                renderDetail(selectedId);
+            } else if (selectedId) {
+                const exists = allPayments.some(p => p.id === selectedId);
+                if (!exists && allPayments.length > 0) {
+                    selectedId = allPayments[0].id;
+                    renderDetail(selectedId);
+                } else if (exists) {
+                    renderDetail(selectedId);
                 }
             }
-
+        } else {
+            allPayments = [];
+            donorsList.innerHTML = `
+                <div class="empty-donors">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucun donateur</p>
+                </div>
+            `;
+            donorCount.textContent = '0';
+            emptyDetail.style.display = 'block';
+            detailContainer.style.display = 'none';
+            soldeAmount.textContent = '0';
+        }
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        donorsList.innerHTML = `
+            <div class="empty-donors">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Erreur de chargement : ${error.message}</p>
+            </div>
+        `;
+    } finally {
+        isRefreshing = false;
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Rafraîchir</span>';
+    }
+}
             // ===== AFFICHER LES DONATEURS =====
             function renderDonors() {
                 if (allPayments.length === 0) {
