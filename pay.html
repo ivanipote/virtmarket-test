@@ -20,117 +20,121 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-top: 76px;
-            padding-bottom: 90px;
-            overflow: hidden;
+            padding: 0;
+            margin: 0;
         }
 
-        /* ===== HEADER ===== */
+        /* ============================================================ */
+        /* HEADER - 60px, arrondi 50px                                  */
+        /* ============================================================ */
         .pay-header {
             background: #0F8B5D;
-            padding: 14px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            box-shadow: 0 2px 12px rgba(15, 139, 93, 0.2);
-        }
-
-        .pay-header .back-btn {
-            background: rgba(255, 255, 255, 0.15);
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-            transition: background 0.2s;
+            height: 60px;
+            border-radius: 50px;
+            margin: 12px 16px 0 16px;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 0 20px;
+            box-shadow: 0 4px 20px rgba(15, 139, 93, 0.15);
+            flex-shrink: 0;
+            position: relative;
         }
 
-        .pay-header .back-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .pay-header .pay-title {
+        .pay-header .header-text {
             color: white;
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            opacity: 0.8;
         }
 
-        .pay-header .pay-title i {
-            margin-right: 8px;
+        .pay-header .header-text span {
+            font-weight: 300;
+            opacity: 0.5;
         }
 
-        .pay-header .empty-space {
-            width: 40px;
-        }
-
-        /* ===== MAIN ===== */
+        /* ============================================================ */
+        /* MAIN                                                         */
+        /* ============================================================ */
         .pay-main {
             flex: 1;
-            padding: 16px 20px 20px 20px;
-            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 16px 30px 16px;
+            max-width: 520px;
             width: 100%;
             margin: 0 auto;
-            display: flex;
-            align-items: center;
         }
 
-        /* ===== CARD PRODUIT ===== */
-        .product-card {
+        /* ============================================================ */
+        /* CARTE BLANCHE                                                */
+        /* ============================================================ */
+        .pay-card {
             background: white;
             border-radius: 24px;
-            padding: 32px 28px 28px 28px;
+            padding: 32px 24px 28px 24px;
+            width: 100%;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(15, 139, 93, 0.06);
-            width: 100%;
-            transition: all 0.4s ease;
-        }
-
-        .product-card .product-icon {
+            animation: fadeInUp 0.5s ease;
             text-align: center;
-            font-size: 56px;
-            margin-bottom: 4px;
         }
 
-        .product-card .product-icon i {
-            background: linear-gradient(135deg, #0F8B5D, #0A6B47);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .product-card h2 {
-            text-align: center;
-            font-size: 24px;
-            font-weight: 800;
-            color: #0F8B5D;
-            margin-bottom: 2px;
-        }
-
-        .product-card .product-sub {
-            text-align: center;
-            color: #6b7280;
-            font-size: 14px;
+        /* ============================================================ */
+        /* LOGO WAVE (arrondi)                                          */
+        /* ============================================================ */
+        .wave-logo-wrapper {
+            display: flex;
+            justify-content: center;
             margin-bottom: 16px;
         }
 
-        .pay-divider {
-            width: 50px;
-            height: 3px;
-            background: linear-gradient(90deg, #0F8B5D, #4ade80);
-            border-radius: 10px;
-            margin: 4px auto 16px auto;
+        .wave-logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 30px;
+            background: #1a2a6c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(26, 42, 108, 0.15);
         }
 
+        .wave-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        /* ============================================================ */
+        /* TITRE                                                         */
+        /* ============================================================ */
+        .pay-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0F8B5D;
+            margin-bottom: 4px;
+        }
+
+        .pay-subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        /* ============================================================ */
+        /* RÉCAPITULATIF                                                */
+        /* ============================================================ */
         .recap-item {
             display: flex;
             justify-content: space-between;
@@ -158,13 +162,21 @@
             font-weight: 800;
         }
 
+        /* ============================================================ */
+        /* BOUTON PAYER AVEC WAVE (centré, grand)                       */
+        /* ============================================================ */
+        .btn-pay-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 24px;
+        }
+
         .btn-pay {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #0F8B5D, #0A6B47);
+            background: #1a2a6c;
             color: white;
             border: none;
-            border-radius: 16px;
+            padding: 18px 48px;
+            border-radius: 50px;
             font-size: 18px;
             font-weight: 700;
             cursor: pointer;
@@ -172,20 +184,95 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            margin-top: 20px;
+            gap: 14px;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 4px 20px rgba(26, 42, 108, 0.2);
         }
 
         .btn-pay:hover:not(:disabled) {
             transform: scale(1.02);
-            box-shadow: 0 8px 30px rgba(15, 139, 93, 0.25);
+            box-shadow: 0 8px 30px rgba(26, 42, 108, 0.3);
         }
 
         .btn-pay:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
         }
 
+        .btn-pay .btn-wave-icon {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+            flex-shrink: 0;
+        }
+
+        .btn-pay .btn-text {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-pay .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ============================================================ */
+        /* MESSAGE INFO                                                 */
+        /* ============================================================ */
+        .info-message {
+            margin-top: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            background: #eaf1ff;
+            color: #2563eb;
+            border: 1px solid #c7d9fb;
+            display: none;
+        }
+
+        .info-message.show {
+            display: block;
+        }
+
+        .info-message.warning {
+            background: #fff3df;
+            color: #b45309;
+            border-color: #f5dbaa;
+        }
+
+        /* ============================================================ */
+        /* FOOTER SECURITE                                              */
+        /* ============================================================ */
+        .pay-footer-security {
+            text-align: center;
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 16px;
+            opacity: 0.7;
+        }
+
+        .pay-footer-security i {
+            color: #0F8B5D;
+            margin-right: 4px;
+        }
+
+        /* ============================================================ */
+        /* TOAST                                                         */
+        /* ============================================================ */
         .toast-container {
             position: fixed;
             bottom: 30px;
@@ -215,413 +302,226 @@
         }
 
         /* ============================================================ */
-        /* SNIP OVERLAY - Style Tech Neon                               */
+        /* RESPONSIVE                                                    */
         /* ============================================================ */
-
-        .snip-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 14, 26, 0.92);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            z-index: 200;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            animation: fadeOverlay 0.5s ease;
-        }
-
-        .snip-overlay.active {
-            display: flex;
-        }
-
-        @keyframes fadeOverlay {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .snip-overlay .bg-animation {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 0;
-        }
-
-        .snip-overlay .bg-animation .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.3;
-            animation: float 8s ease-in-out infinite;
-        }
-
-        .snip-overlay .bg-animation .orb:nth-child(1) {
-            width: 300px;
-            height: 300px;
-            background: #4ade80;
-            top: -100px;
-            left: -100px;
-            animation-delay: 0s;
-        }
-
-        .snip-overlay .bg-animation .orb:nth-child(2) {
-            width: 250px;
-            height: 250px;
-            background: #0F8B5D;
-            bottom: -80px;
-            right: -80px;
-            animation-delay: -3s;
-        }
-
-        .snip-overlay .bg-animation .orb:nth-child(3) {
-            width: 200px;
-            height: 200px;
-            background: #1a2a6c;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -5s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            25% { transform: translate(30px, -30px) scale(1.1); }
-            50% { transform: translate(-20px, 40px) scale(0.9); }
-            75% { transform: translate(40px, 20px) scale(1.05); }
-        }
-
-        .snip-card {
-            position: relative;
-            z-index: 1;
-            background: rgba(10, 14, 26, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 28px;
-            padding: 40px 32px 36px 32px;
-            text-align: center;
-            max-width: 460px;
-            width: 100%;
-            border: 1px solid rgba(74, 222, 128, 0.12);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            animation: scaleIn 0.4s ease;
-        }
-
-        @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.92); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .snip-card::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            border-radius: 30px;
-            background: linear-gradient(45deg, transparent, #4ade80, transparent, #0F8B5D, transparent);
-            background-size: 400% 400%;
-            animation: borderGlow 4s ease-in-out infinite;
-            z-index: -1;
-            opacity: 0.6;
-        }
-
-        @keyframes borderGlow {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .snip-icon {
-            font-size: 52px;
-            color: #4ade80;
-            margin-bottom: 10px;
-            display: inline-block;
-            animation: pulse-icon 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse-icon {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); text-shadow: 0 0 40px rgba(74, 222, 128, 0.3); }
-        }
-
-        .snip-title {
-            font-size: 26px;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 2px;
-        }
-
-        .snip-title span {
-            color: #4ade80;
-        }
-
-        .snip-sub {
-            font-size: 14px;
-            color: #6b7280;
-            margin-bottom: 16px;
-        }
-
-        .glow-line-wrapper {
-            width: 100%;
-            height: 3px;
-            background: rgba(74, 222, 128, 0.1);
-            border-radius: 10px;
-            margin: 12px auto 18px auto;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .glow-line-wrapper .glow-line {
-            height: 100%;
-            width: 40%;
-            background: linear-gradient(90deg, transparent, #4ade80, transparent);
-            border-radius: 10px;
-            animation: slideLine 1.8s ease-in-out infinite;
-            box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
-        }
-
-        @keyframes slideLine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(350%); }
-        }
-
-        .snip-donor-details {
-            background: rgba(74, 222, 128, 0.05);
-            border-radius: 12px;
-            padding: 10px 14px;
-            margin: 12px 0 14px 0;
-            border: 1px solid rgba(74, 222, 128, 0.06);
-        }
-
-        .snip-donor-details .row {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            font-size: 14px;
-            color: #94a3b8;
-        }
-
-        .snip-donor-details .row .label {
-            color: #6b7280;
-        }
-
-        .snip-donor-details .row .value {
-            color: white;
-            font-weight: 600;
-        }
-
-        .snip-donor-details .row .value.amount {
-            color: #4ade80;
-            font-weight: 800;
-        }
-
-        .spinner-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin: 12px 0 6px 0;
-        }
-
-        .spinner-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #4ade80;
-            animation: dotPulse 1.4s ease-in-out infinite;
-        }
-
-        .spinner-dot:nth-child(2) { animation-delay: 0.2s; }
-        .spinner-dot:nth-child(3) { animation-delay: 0.4s; }
-        .spinner-dot:nth-child(4) { animation-delay: 0.6s; }
-
-        @keyframes dotPulse {
-            0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; }
-            40% { transform: scale(1); opacity: 1; }
-        }
-
-        .snip-info {
-            font-size: 13px;
-            color: #4ade80;
-            margin-top: 10px;
-            opacity: 0.7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .snip-info i {
-            font-size: 14px;
-        }
-
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
-            body { padding-top: 68px; padding-bottom: 80px; }
-            .pay-header { padding: 10px 14px; }
-            .pay-header .pay-title { font-size: 16px; }
-            .pay-header .back-btn { width: 36px; height: 36px; font-size: 16px; }
-            .pay-main { padding: 12px 14px; }
-            .product-card { padding: 24px 18px 20px 18px; border-radius: 20px; }
-            .product-card h2 { font-size: 20px; }
-            .product-card .product-icon { font-size: 44px; }
-            .recap-item { font-size: 14px; padding: 8px 0; }
-            .recap-item .value.amount { font-size: 18px; }
-            .btn-pay { font-size: 16px; padding: 14px; }
-            .snip-card { padding: 28px 20px 24px 20px; }
-            .snip-title { font-size: 20px; }
-            .snip-icon { font-size: 40px; }
-            .snip-donor-details .row { font-size: 13px; }
-            .toast-container { font-size: 14px; padding: 12px 20px; }
+            .pay-header {
+                height: 54px;
+                border-radius: 40px;
+                margin: 10px 12px 0 12px;
+            }
+            .pay-header .header-text {
+                font-size: 12px;
+            }
+            .pay-main {
+                padding: 16px 12px 20px 12px;
+            }
+            .pay-card {
+                padding: 24px 18px 20px 18px;
+                border-radius: 20px;
+            }
+            .pay-title {
+                font-size: 19px;
+            }
+            .wave-logo {
+                width: 80px;
+                height: 80px;
+                border-radius: 24px;
+                padding: 16px;
+            }
+            .recap-item {
+                font-size: 14px;
+                padding: 8px 0;
+            }
+            .recap-item .value.amount {
+                font-size: 18px;
+            }
+            .btn-pay {
+                padding: 16px 32px;
+                font-size: 16px;
+                max-width: 300px;
+            }
+            .btn-pay .btn-wave-icon {
+                width: 24px;
+                height: 24px;
+            }
+            .btn-pay .btn-text {
+                font-size: 16px;
+            }
         }
 
-        @media (max-width: 400px) {
-            body { padding-top: 60px; }
-            .pay-header { padding: 8px 10px; }
-            .pay-header .pay-title { font-size: 14px; }
-            .pay-header .back-btn { width: 32px; height: 32px; font-size: 14px; }
-            .product-card { padding: 18px 14px 16px 14px; border-radius: 16px; }
-            .product-card h2 { font-size: 17px; }
-            .product-card .product-icon { font-size: 36px; }
-            .recap-item { font-size: 13px; padding: 6px 0; }
-            .recap-item .value.amount { font-size: 16px; }
-            .btn-pay { font-size: 14px; padding: 12px; border-radius: 14px; }
-            .snip-card { padding: 20px 14px 18px 14px; }
-            .snip-title { font-size: 17px; }
-            .snip-icon { font-size: 32px; }
-            .snip-donor-details .row { font-size: 12px; flex-direction: column; align-items: center; gap: 2px; }
-            .toast-container { font-size: 13px; padding: 10px 16px; bottom: 16px; }
-            .spinner-dot { width: 8px; height: 8px; }
+        @media (max-width: 420px) {
+            .pay-header {
+                height: 48px;
+                border-radius: 32px;
+                margin: 8px 8px 0 8px;
+            }
+            .pay-header .header-text {
+                font-size: 10px;
+            }
+            .pay-main {
+                padding: 12px 8px 16px 8px;
+            }
+            .pay-card {
+                padding: 18px 14px 14px 14px;
+                border-radius: 18px;
+            }
+            .pay-title {
+                font-size: 17px;
+            }
+            .pay-subtitle {
+                font-size: 13px;
+            }
+            .wave-logo {
+                width: 70px;
+                height: 70px;
+                border-radius: 20px;
+                padding: 14px;
+            }
+            .recap-item {
+                font-size: 13px;
+                padding: 6px 0;
+            }
+            .recap-item .value.amount {
+                font-size: 16px;
+            }
+            .btn-pay {
+                padding: 14px 24px;
+                font-size: 14px;
+                max-width: 260px;
+                border-radius: 40px;
+                gap: 10px;
+            }
+            .btn-pay .btn-wave-icon {
+                width: 20px;
+                height: 20px;
+            }
+            .btn-pay .btn-text {
+                font-size: 14px;
+            }
+            .toast-container {
+                font-size: 13px;
+                padding: 10px 16px;
+                bottom: 16px;
+            }
+        }
+
+        @media (max-width: 350px) {
+            .pay-card {
+                padding: 14px 10px 12px 10px;
+                border-radius: 16px;
+            }
+            .wave-logo {
+                width: 60px;
+                height: 60px;
+                border-radius: 16px;
+                padding: 12px;
+            }
+            .btn-pay {
+                padding: 12px 20px;
+                font-size: 13px;
+                max-width: 220px;
+            }
+            .btn-pay .btn-wave-icon {
+                width: 18px;
+                height: 18px;
+            }
+            .btn-pay .btn-text {
+                font-size: 13px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== HEADER ===== -->
+    <!-- ============================================================ -->
+    <!-- HEADER - 60px, arrondi 50px                                   -->
+    <!-- ============================================================ -->
     <header class="pay-header">
-        <button class="back-btn" onclick="window.location.href='/virtmak.html'">
-            <i class="fas fa-arrow-left"></i>
-        </button>
-        <span class="pay-title"><i class="fas fa-hand-holding-heart"></i> Confirmation</span>
-        <span class="empty-space"></span>
+        <span class="header-text">⚡ powered by <span>megane</span></span>
     </header>
 
-    <!-- ===== CONTENU PRINCIPAL ===== -->
+    <!-- ============================================================ -->
+    <!-- CONTENU PRINCIPAL                                             -->
+    <!-- ============================================================ -->
     <main class="pay-main">
-        <div class="product-card" id="productCard">
-            <div class="product-icon">
-                <i class="fas fa-rocket"></i>
+
+        <div class="pay-card">
+
+            <!-- Logo Wave arrondi -->
+            <div class="wave-logo-wrapper">
+                <div class="wave-logo">
+                    <img src="/wave.png" alt="Wave" />
+                </div>
             </div>
-            <h2>Virtual Market</h2>
-            <p class="product-sub">Soutien au développement</p>
 
-            <div class="pay-divider"></div>
+            <!-- Titre -->
+            <div class="pay-title">Paiement sécurisé</div>
+            <div class="pay-subtitle">Confirmez votre paiement via Wave</div>
 
+            <!-- Récapitulatif -->
             <div class="recap-item">
-                <span class="label"><i class="fas fa-user" style="color:#0F8B5D;width:20px;"></i> Donateur</span>
+                <span class="label">👤 Donateur</span>
                 <span class="value" id="displayName">-</span>
             </div>
             <div class="recap-item">
-                <span class="label"><i class="fas fa-heart" style="color:#0F8B5D;width:20px;"></i> Montant</span>
+                <span class="label">📧 Email</span>
+                <span class="value" id="displayEmail">-</span>
+            </div>
+            <div class="recap-item" style="border-bottom: none;">
+                <span class="label">💰 Montant</span>
                 <span class="value amount" id="displayAmount">-</span>
             </div>
-            <div class="recap-item" style="border-bottom: none; padding-bottom: 4px;">
-                <span class="label"><i class="fas fa-credit-card" style="color:#0F8B5D;width:20px;"></i> Paiement sécurisé</span>
-                <span class="value">Jèko <i class="fas fa-shield-alt" style="color:#0F8B5D;"></i></span>
+
+            <!-- Bouton Payer avec Wave (centré, grand) -->
+            <div class="btn-pay-wrapper">
+                <button class="btn-pay" id="payBtn">
+                    <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
+                    <span class="btn-text">Payer avec Wave</span>
+                </button>
             </div>
 
-            <button class="btn-pay" id="payBtn">
-                <i class="fas fa-hand-holding-heart"></i> Payer maintenant
-            </button>
+            <div id="infoMessage" class="info-message"></div>
 
-            <p style="text-align:center;font-size:12px;color:#9ca3af;margin-top:12px;">
-                <i class="fas fa-lock" style="color:#0F8B5D;"></i> Paiement sécurisé
-            </p>
+            <!-- Sécurité -->
+            <div class="pay-footer-security">
+                <i class="fas fa-lock"></i> Paiement sécurisé via Jèko
+            </div>
+
         </div>
+
     </main>
 
-    <!-- ===== SNIP OVERLAY ===== -->
-    <div class="snip-overlay" id="snipOverlay">
-        <div class="bg-animation">
-            <div class="orb"></div>
-            <div class="orb"></div>
-            <div class="orb"></div>
-        </div>
-        <div class="snip-card">
-            <div class="snip-icon">
-                <i class="fas fa-rocket"></i>
-            </div>
-            <div class="snip-title">
-                Redirection vers <span>Jèko</span>
-            </div>
-            <div class="snip-sub">
-                Votre paiement est sécurisé
-            </div>
-
-            <div class="glow-line-wrapper">
-                <div class="glow-line"></div>
-            </div>
-
-            <div class="snip-donor-details">
-                <div class="row">
-                    <span class="label"><i class="fas fa-user" style="color:#4ade80;width:18px;"></i> Donateur</span>
-                    <span class="value" id="snipName">-</span>
-                </div>
-                <div class="row">
-                    <span class="label"><i class="fas fa-heart" style="color:#4ade80;width:18px;"></i> Montant</span>
-                    <span class="value amount" id="snipAmount">-</span>
-                </div>
-            </div>
-
-            <div class="spinner-wrapper">
-                <div class="spinner-dot"></div>
-                <div class="spinner-dot"></div>
-                <div class="spinner-dot"></div>
-                <div class="spinner-dot"></div>
-            </div>
-
-            <div class="snip-info">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span id="snipStatus">Préparation du paiement...</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== TOAST ===== -->
+    <!-- ============================================================ -->
+    <!-- TOAST                                                         -->
+    <!-- ============================================================ -->
     <div class="toast-container" id="toast"></div>
 
-    <!-- ============================================================= -->
+    <!-- ============================================================ -->
     <!-- SCRIPTS                                                        -->
-    <!-- ============================================================= -->
+    <!-- ============================================================ -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ pay.html chargé (nouveau lien Jèko)');
+            console.log('✅ pay.html (Wave uniquement) chargé');
 
             // ===== RÉFÉRENCES =====
             const displayName = document.getElementById('displayName');
+            const displayEmail = document.getElementById('displayEmail');
             const displayAmount = document.getElementById('displayAmount');
             const payBtn = document.getElementById('payBtn');
             const toast = document.getElementById('toast');
-            const snipOverlay = document.getElementById('snipOverlay');
-            const snipName = document.getElementById('snipName');
-            const snipAmount = document.getElementById('snipAmount');
-            const snipStatus = document.getElementById('snipStatus');
+            const infoMessage = document.getElementById('infoMessage');
 
             // ===== RÉCUPÉRER LES PARAMÈTRES URL =====
             const urlParams = new URLSearchParams(window.location.search);
             const name = urlParams.get('name') || 'Donateur anonyme';
-            const amount = parseInt(urlParams.get('amount')) || 100;
+            const email = urlParams.get('email') || 'email@non-renseigne.com';
+            const amount = parseInt(urlParams.get('amount')) || 150;
 
             // ===== AFFICHER LES INFOS =====
             displayName.textContent = name;
+            displayEmail.textContent = email;
             displayAmount.textContent = amount.toLocaleString() + ' FCFA';
 
             // ===== TOAST =====
@@ -634,51 +534,88 @@
                 }, 4000);
             }
 
-            // ===== PAYER (avec nouveau lien Jèko) =====
-            payBtn.addEventListener('click', function() {
-                if (!amount || amount < 1) {
-                    showToast('⚠️ Montant invalide.', 'error');
+            // ===== MESSAGE INFO =====
+            function showInfo(message, type = 'info') {
+                infoMessage.textContent = message;
+                infoMessage.className = 'info-message show' + (type === 'warning' ? ' warning' : '');
+                setTimeout(() => {
+                    infoMessage.className = 'info-message';
+                }, 4000);
+            }
+
+            // ===== METTRE À JOUR LE STATUT VERS PARTICIPANT =====
+            async function updateUserStatus(status) {
+                try {
+                    const res = await fetch('/api/user/update-status', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, status })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        console.log(`✅ Statut mis à jour : ${status}`);
+                    } else {
+                        console.warn('⚠️ Erreur mise à jour statut:', data);
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Erreur mise à jour statut:', error);
+                }
+            }
+
+            // ===== PAYER =====
+            payBtn.addEventListener('click', async function() {
+                if (!amount || amount < 150) {
+                    showInfo('⚠️ Le montant minimum est de 150 FCFA.', 'warning');
                     return;
                 }
 
-                // ✅ NOUVEAU LIEN JEKO AVEC CHAMP PERSONNALISÉ
-                // Le nom sera saisi sur la page Jèko et renvoyé via webhook
-                const paymentLink = `https://pay.jeko.africa/pl/700549f1-c3bb-4191-8cbe-6f1ff2438ad9?amount=${amount}`;
+                // ✅ Désactiver le bouton
+                payBtn.disabled = true;
+                payBtn.innerHTML = '<span class="spinner"></span>';
 
-                console.log('🔗 Lien Jèko :', paymentLink);
-                console.log('👤 Donateur :', name);
-                console.log('💰 Montant :', amount);
+                try {
+                    // ✅ Mettre à jour le statut vers "participant"
+                    await updateUserStatus('participant');
 
-                // Remplir le snip
-                snipName.textContent = name;
-                snipAmount.textContent = amount.toLocaleString() + ' FCFA';
+                    // ✅ Créer le lien de paiement Jèko
+                    const response = await fetch('/create-payment-link', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, amount })
+                    });
 
-                // Afficher l'overlay
-                snipOverlay.classList.add('active');
+                    const data = await response.json();
 
-                // Messages dynamiques
-                const messages = [
-                    'Préparation du paiement...',
-                    'Connexion à Jèko...',
-                    'Sécurisation de la transaction...',
-                    'Redirection en cours...'
-                ];
-                let index = 0;
-                const statusInterval = setInterval(() => {
-                    index = (index + 1) % messages.length;
-                    snipStatus.textContent = messages[index];
-                }, 1800);
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Erreur création paiement');
+                    }
 
-                // Redirection après 5 secondes
-                setTimeout(() => {
-                    snipStatus.textContent = '🔄 Redirection...';
-                    clearInterval(statusInterval);
-                    window.location.href = paymentLink;
-                }, 5000);
+                    if (!data.checkout_url) {
+                        throw new Error('Aucune URL de paiement reçue');
+                    }
+
+                    console.log('🔗 Lien généré :', data.checkout_url);
+
+                    // ✅ Redirection vers Jèko
+                    showInfo('🔄 Redirection vers Jèko...', 'info');
+                    setTimeout(() => {
+                        window.location.href = data.checkout_url;
+                    }, 800);
+
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    showInfo('❌ ' + error.message, 'warning');
+                    payBtn.disabled = false;
+                    payBtn.innerHTML = `
+                        <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
+                        <span class="btn-text">Payer avec Wave</span>
+                    `;
+                }
             });
 
             console.log('✅ pay.html initialisé');
             console.log('👤 Nom:', name);
+            console.log('📧 Email:', email);
             console.log('💰 Montant:', amount);
 
         });
