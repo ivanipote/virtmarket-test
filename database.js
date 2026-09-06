@@ -20,7 +20,7 @@ async function initializeDatabase() {
         await client.query('BEGIN');
 
         // ============================================================
-        // TABLE PAYMENTS_JEKO (sans user_status)
+        // TABLE PAYMENTS_JEKO
         // ============================================================
         await client.query(`
             CREATE TABLE IF NOT EXISTS payments_jeko (
@@ -50,7 +50,7 @@ async function initializeDatabase() {
         console.log('✅ Table payments_jeko créée');
 
         // ============================================================
-        // TABLE USERS (avec user_status)
+        // TABLE USERS
         // ============================================================
         await client.query(`
             CREATE TABLE IF NOT EXISTS users (
@@ -72,6 +72,24 @@ async function initializeDatabase() {
             )
         `);
         console.log('✅ Table users créée (avec user_status)');
+
+        // ============================================================
+        // MIGRATION : garantir que user_status existe réellement
+        // ------------------------------------------------------------
+        // CREATE TABLE IF NOT EXISTS n'exécute RIEN si la table
+        // "users" existait déjà avant l'ajout de user_status dans ce
+        // fichier. Résultat : la colonne n'est jamais créée sur les
+        // bases existantes. On force donc l'ajout ici, comme pour les
+        // colonnes flex / fcm_token dans server-test.js.
+        // ============================================================
+        await client.query(`
+            ALTER TABLE users
+            ADD COLUMN IF NOT EXISTS user_status TEXT DEFAULT 'visiteur'
+        `);
+        await client.query(`
+            UPDATE users SET user_status = 'visiteur' WHERE user_status IS NULL
+        `);
+        console.log('✅ Colonne user_status vérifiée sur la table users');
 
         // ============================================================
         // TABLE SOUTIENS
