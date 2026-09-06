@@ -156,6 +156,9 @@ app.post('/api/user/update-status', async (req, res) => {
 // ============================================================
 // ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (API)
 // ============================================================
+// ============================================================
+// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (API)
+// ============================================================
 app.post('/create-payment-link', async (req, res) => {
     const { name, email, amount } = req.body;
 
@@ -172,15 +175,16 @@ app.post('/create-payment-link', async (req, res) => {
                 'X-API-KEY-ID': process.env.JEKO_API_KEY_ID,
                 'Content-Type': 'application/json'
             },
-           body: JSON.stringify({
-    storeId: process.env.JEKO_BUSINESS_ID,
-    title: `Soutien Virtual Market - ${name || 'Anonyme'}`,
-    amountCents: amountInCentimes,
-    currency: 'XOF',
-    paymentMethod: 'wave',  // ✅ FORCER WAVE
-    successUrl: 'https://virtmarket-test.onrender.com/verify',
-    cancelUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
-})
+            body: JSON.stringify({
+                storeId: process.env.JEKO_BUSINESS_ID,
+                title: `Soutien Virtual Market - ${name || 'Anonyme'}`,
+                amountCents: amountInCentimes,
+                currency: 'XOF',
+                paymentMethod: 'wave',  // ✅ FORCER WAVE
+                description: `Soutien Virtual Market - ${name || 'Anonyme'}`,
+                successUrl: 'https://virtmarket-test.onrender.com/verify',
+                cancelUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
+            })
         });
 
         const data = await response.json();
