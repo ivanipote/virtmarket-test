@@ -255,7 +255,7 @@
         }
 
         /* ============================================================ */
-        /* MONTANT AVEC BOUTON MODIFIER                                 */
+        /* MONTANT - CHAMP TOUJOURS ACTIF                               */
         /* ============================================================ */
         .amount-wrapper {
             display: flex;
@@ -266,37 +266,6 @@
         .amount-wrapper .input-wrapper {
             flex: 1;
             min-width: 0;
-        }
-
-        .amount-wrapper .btn-edit {
-            background: #f8f9fc;
-            border: 2px solid #e6e8ef;
-            border-radius: 14px;
-            padding: 0 14px;
-            height: 54px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6b7280;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            white-space: nowrap;
-            flex-shrink: 0;
-            min-width: 44px;
-        }
-
-        .amount-wrapper .btn-edit:hover {
-            border-color: #0F8B5D;
-            color: #0F8B5D;
-            background: #f0faf5;
-        }
-
-        .amount-wrapper .btn-edit.active {
-            border-color: #0F8B5D;
-            background: #e6f7ee;
-            color: #0F8B5D;
         }
 
         /* ============================================================ */
@@ -496,12 +465,6 @@
                 font-size: 16px;
                 padding: 14px;
             }
-            .amount-wrapper .btn-edit {
-                height: 48px;
-                font-size: 12px;
-                padding: 0 12px;
-                min-width: 38px;
-            }
             .suggested-amounts .suggest-btn {
                 font-size: 12px;
                 padding: 6px 4px;
@@ -561,13 +524,6 @@
                 padding: 12px;
                 border-radius: 14px;
             }
-            .amount-wrapper .btn-edit {
-                height: 42px;
-                font-size: 11px;
-                padding: 0 10px;
-                min-width: 34px;
-                border-radius: 12px;
-            }
             .suggested-amounts .suggest-btn {
                 font-size: 11px;
                 padding: 5px 4px;
@@ -611,9 +567,6 @@
             .vm-card {
                 padding: 14px 10px 12px 10px;
                 border-radius: 16px;
-            }
-            .amount-wrapper {
-                gap: 6px;
             }
             .suggested-amounts .suggest-btn {
                 font-size: 10px;
@@ -693,18 +646,16 @@
                     <div class="form-hint">Nous vous enverrons un remerciement</div>
                 </div>
 
-                <!-- Montant -->
+                <!-- Montant - CHAMP TOUJOURS ACTIF -->
                 <div class="form-group">
                     <label><i class="fas fa-heart"></i> Montant (FCFA)</label>
                     <div class="amount-wrapper">
                         <div class="input-wrapper">
                             <span class="input-icon"><i class="fas fa-money-bill-wave"></i></span>
-                            <input type="number" id="amountInput" placeholder="150 minimum" min="150" value="150" required />
+                            <input type="number" id="amountInput" placeholder="Montant de votre choix (min. 1 FCFA)" min="1" value="150" required />
                         </div>
-                        <button type="button" class="btn-edit" id="editBtn">
-                            <i class="fas fa-pen"></i>
-                        </button>
                     </div>
+                    <div class="form-hint">💡 Entrez le montant de votre choix (1 FCFA minimum)</div>
 
                     <!-- Montants suggérés -->
                     <div class="suggested-amounts">
@@ -712,6 +663,7 @@
                         <button type="button" class="suggest-btn" data-amount="500">500</button>
                         <button type="button" class="suggest-btn" data-amount="1000">1K</button>
                         <button type="button" class="suggest-btn" data-amount="2500">2.5K</button>
+                        <button type="button" class="suggest-btn" data-amount="5000">5K</button>
                     </div>
                 </div>
 
@@ -743,20 +695,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ virtmak.html (redesign) chargé');
+            console.log('✅ virtmak.html (montant libre) chargé');
 
             // ===== RÉFÉRENCES =====
             const form = document.getElementById('virtmakForm');
             const nameInput = document.getElementById('nameInput');
             const emailInput = document.getElementById('emailInput');
             const amountInput = document.getElementById('amountInput');
-            const editBtn = document.getElementById('editBtn');
             const submitBtn = document.getElementById('submitBtn');
             const infoMessage = document.getElementById('infoMessage');
             const toast = document.getElementById('toast');
             const suggestBtns = document.querySelectorAll('.suggest-btn');
-
-            let isAmountEditable = false;
 
             // ===== TOAST =====
             function showToast(message, type = 'success') {
@@ -777,41 +726,34 @@
                 }, 4000);
             }
 
-            // ===== MONTANTS PRÉ-REMPLIS =====
+            // ===== MONTANTS SUGGÉRÉS =====
             suggestBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     const amount = parseInt(this.dataset.amount);
                     amountInput.value = amount;
+                    // Mettre à jour l'état actif
                     suggestBtns.forEach(b => b.classList.remove('active', 'default'));
                     this.classList.add('active');
-                    isAmountEditable = false;
-                    editBtn.classList.remove('active');
-                    editBtn.innerHTML = '<i class="fas fa-pen"></i>';
-                    amountInput.disabled = true;
+                    // Déclencher la validation
                     validateForm();
+                    // Focus sur le champ pour confirmer
+                    amountInput.focus();
                 });
             });
 
-            // ===== BOUTON MODIFIER =====
-            editBtn.addEventListener('click', function() {
-                isAmountEditable = !isAmountEditable;
-                this.classList.toggle('active');
-                amountInput.disabled = !isAmountEditable;
-                this.innerHTML = isAmountEditable ?
-                    '<i class="fas fa-check"></i>' :
-                    '<i class="fas fa-pen"></i>';
-
-                if (isAmountEditable) {
-                    amountInput.focus();
-                    amountInput.select();
-                    suggestBtns.forEach(b => b.classList.remove('active', 'default'));
-                } else {
-                    const val = parseInt(amountInput.value);
-                    if (val < 150) {
-                        amountInput.value = 150;
-                        showInfo('⚠️ Le montant minimum est de 150 FCFA.', 'warning');
+            // ===== MISE À JOUR VISUELLE DES SUGGESTIONS =====
+            amountInput.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                suggestBtns.forEach(btn => {
+                    const amount = parseInt(btn.dataset.amount);
+                    if (value === amount) {
+                        btn.classList.add('active');
+                        btn.classList.remove('default');
+                    } else {
+                        btn.classList.remove('active');
+                        btn.classList.remove('default');
                     }
-                }
+                });
                 validateForm();
             });
 
@@ -824,7 +766,7 @@
                 let isValid = true;
                 if (name.length < 2) isValid = false;
                 if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) isValid = false;
-                if (isNaN(amount) || amount < 150) isValid = false;
+                if (isNaN(amount) || amount < 1) isValid = false;
 
                 submitBtn.disabled = !isValid;
                 return isValid;
@@ -847,8 +789,8 @@
                     return;
                 }
 
-                if (amount < 150) {
-                    showInfo('⚠️ Le montant minimum est de 150 FCFA.', 'warning');
+                if (isNaN(amount) || amount < 1) {
+                    showInfo('⚠️ Le montant minimum est de 1 FCFA.', 'warning');
                     return;
                 }
 
@@ -892,9 +834,8 @@
             });
 
             // ===== INIT =====
-            amountInput.disabled = true;
             validateForm();
-            console.log('✅ virtmak.html (redesign) initialisé');
+            console.log('✅ virtmak.html (montant libre) initialisé');
 
         });
     </script>

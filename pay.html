@@ -160,7 +160,7 @@
         }
 
         /* ============================================================ */
-        /* CHAMP MONTANT LIBRE                                           */
+        /* CHAMP MONTANT LIBRE - TOUJOURS ACTIF                         */
         /* ============================================================ */
         .amount-input-wrapper {
             display: flex;
@@ -449,11 +449,11 @@
                 <span class="value" id="displayEmail">-</span>
             </div>
 
-            <!-- Montant libre -->
+            <!-- Montant libre - CHAMP TOUJOURS ACTIF -->
             <div class="amount-input-wrapper">
                 <div class="input-wrapper">
                     <span class="prefix">FCFA</span>
-                    <input type="number" id="amountInput" placeholder="Montant libre (min. 1 FCFA)" min="1" value="1" required />
+                    <input type="number" id="amountInput" placeholder="Montant de votre choix (min. 1 FCFA)" min="1" required />
                     <span class="input-icon"><i class="fas fa-arrow-right"></i></span>
                 </div>
             </div>
@@ -527,6 +527,12 @@
                 setTimeout(() => {
                     infoMessage.className = 'info-message';
                 }, 4000);
+            }
+
+            // ===== VALIDATION DU MONTANT =====
+            function validateAmount() {
+                const amount = parseInt(amountInput.value);
+                return !isNaN(amount) && amount >= 1;
             }
 
             // ===== METTRE À JOUR LE STATUT VERS PARTICIPANT =====
@@ -605,7 +611,7 @@
             console.log('✅ pay.html initialisé');
             console.log('👤 Nom:', name);
             console.log('📧 Email:', email);
-            console.log('💰 Montant libre');
+            console.log('💰 Montant initial:', initialAmount);
 
         });
     </script>
