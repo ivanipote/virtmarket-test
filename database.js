@@ -20,53 +20,37 @@ async function initializeDatabase() {
         await client.query('BEGIN');
 
         // ============================================================
-        // TABLE PAYMENTS_JEKO
+        // TABLE PAYMENTS_JEKO (sans user_status)
         // ============================================================
-        // ============================================================
-// TABLE PAYMENTS_JEKO
-// ============================================================
-await client.query(`
-    CREATE TABLE IF NOT EXISTS payments_jeko (
-        id SERIAL PRIMARY KEY,
-        transaction_id TEXT UNIQUE NOT NULL,
-        amount INTEGER NOT NULL,
-        currency TEXT DEFAULT 'XOF',
-        status TEXT DEFAULT 'pending',
-        counterpart_phone TEXT,
-        payment_method TEXT,
-        store_id TEXT,
-        store_name TEXT,
-        payment_link_id TEXT,
-        executed_at TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        flex1 TEXT DEFAULT NULL,
-        flex2 TEXT DEFAULT NULL,
-        flex3 TEXT DEFAULT NULL,
-        flex4 TEXT DEFAULT NULL,
-        flex5 TEXT DEFAULT NULL,
-        flex6 TEXT DEFAULT NULL,
-        flex7 TEXT DEFAULT NULL,
-        flex8 TEXT DEFAULT NULL
-    )
-`);
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS payments_jeko (
+                id SERIAL PRIMARY KEY,
+                transaction_id TEXT UNIQUE NOT NULL,
+                amount INTEGER NOT NULL,
+                currency TEXT DEFAULT 'XOF',
+                status TEXT DEFAULT 'pending',
+                counterpart_phone TEXT,
+                payment_method TEXT,
+                store_id TEXT,
+                store_name TEXT,
+                payment_link_id TEXT,
+                executed_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                flex1 TEXT DEFAULT NULL,
+                flex2 TEXT DEFAULT NULL,
+                flex3 TEXT DEFAULT NULL,
+                flex4 TEXT DEFAULT NULL,
+                flex5 TEXT DEFAULT NULL,
+                flex6 TEXT DEFAULT NULL,
+                flex7 TEXT DEFAULT NULL,
+                flex8 TEXT DEFAULT NULL
+            )
+        `);
+        console.log('✅ Table payments_jeko créée');
 
-// ✅ AJOUTER user_status SI ELLE N'EXISTE PAS
-await client.query(`
-    DO $$
-    BEGIN
-        IF NOT EXISTS (
-            SELECT 1 FROM information_schema.columns 
-            WHERE table_name = 'payments_jeko' AND column_name = 'user_status'
-        ) THEN
-            ALTER TABLE payments_jeko ADD COLUMN user_status TEXT DEFAULT 'visiteur';
-        END IF;
-    END $$;
-`);
-
-console.log('✅ Table payments_jeko créée/vérifiée (user_status ajouté si manquant)');
         // ============================================================
-        // TABLE USERS
+        // TABLE USERS (avec user_status)
         // ============================================================
         await client.query(`
             CREATE TABLE IF NOT EXISTS users (
@@ -87,7 +71,7 @@ console.log('✅ Table payments_jeko créée/vérifiée (user_status ajouté si 
                 flex8 TEXT DEFAULT NULL
             )
         `);
-        console.log('✅ Table users créée');
+        console.log('✅ Table users créée (avec user_status)');
 
         // ============================================================
         // TABLE SOUTIENS
@@ -119,7 +103,6 @@ console.log('✅ Table payments_jeko créée/vérifiée (user_status ajouté si 
         // ============================================================
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_transaction_id ON payments_jeko(transaction_id)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_status ON payments_jeko(status)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_user_status ON payments_jeko(user_status)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_created_at ON payments_jeko(created_at)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_flex1 ON payments_jeko(flex1)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_flex2 ON payments_jeko(flex2)`);
@@ -141,17 +124,78 @@ console.log('✅ Table payments_jeko créée/vérifiée (user_status ajouté si 
 }
 
 // ============================================================
+// CRÉER OU RÉCUPÉRER UN UTILISATEUR
+// ============================================================
+async function getOrCreateUser(name, email) {
+    try {
+        // Vérifier si l'utilisateur existe
+        let user = await pool.query(
+            'SELECT * FROM users WHERE email = $1',
+            [email]
+        );
+
+        if (user.rows.length > 0) {
+            // Mettre à jour le nom si différent
+            if (user.rows[0].name !== name) {
+                await pool.query(
+                    'UPDATE users SET name = $1, updated_at = NOW() WHERE email = $2',
+                    [name, email]
+                );
+                user.rows[0].name = name;
+            }
+            console.log(`👤 Utilisateur existant : ${name} (${email})`);
+            return user.rows[0];
+        }
+
+        // Créer un nouvel utilisateur
+        const result = await pool.query(
+            `INSERT INTO users (name, email, user_status) 
+             VALUES ($1, $2, 'visiteur') 
+             RETURNING *`,
+            [name, email]
+        );
+        console.log(`✅ Nouvel utilisateur créé : ${name} (${email})`);
+        return result.rows[0];
+    } catch (error) {
+        console.error('❌ Erreur getOrCreateUser:', error);
+        return null;
+    }
+}
+
+// ============================================================
+// METTRE À JOUR LE STATUT UTILISATEUR
+// ============================================================
+async function updateUserStatus(email, userStatus) {
+    try {
+        const result = await pool.query(
+            `UPDATE users 
+             SET user_status = $1, updated_at = NOW() 
+             WHERE email = $2 
+             RETURNING id, name, email, user_status`,
+            [userStatus, email]
+        );
+        if (result.rowCount > 0) {
+            console.log(`✅ Statut utilisateur mis à jour : ${userStatus} (${email})`);
+        }
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('❌ Erreur updateUserStatus:', error);
+        return null;
+    }
+}
+
+// ============================================================
 // SAUVEGARDER UN PAIEMENT JEKO
 // ============================================================
 async function saveJekoPayment(data) {
     const query = `
         INSERT INTO payments_jeko (
-            transaction_id, amount, currency, status, user_status,
+            transaction_id, amount, currency, status,
             counterpart_phone, payment_method, store_id,
             store_name, payment_link_id, executed_at,
             flex1, flex2
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         ON CONFLICT (transaction_id) DO NOTHING
         RETURNING id
     `;
@@ -161,7 +205,6 @@ async function saveJekoPayment(data) {
         data.amount?.amount || 0,
         data.amount?.currency || 'XOF',
         data.status || 'pending',
-        data.user_status || 'visiteur',
         data.counterpartIdentifier || null,
         data.paymentMethod || null,
         data.storeId || null,
@@ -187,28 +230,6 @@ async function saveJekoPayment(data) {
 }
 
 // ============================================================
-// METTRE À JOUR LE STATUT UTILISATEUR
-// ============================================================
-async function updateUserStatus(transactionId, userStatus) {
-    try {
-        const result = await pool.query(
-            `UPDATE payments_jeko 
-             SET user_status = $1, updated_at = NOW() 
-             WHERE transaction_id = $2 
-             RETURNING id`,
-            [userStatus, transactionId]
-        );
-        if (result.rowCount > 0) {
-            console.log(`✅ Statut utilisateur mis à jour : ${userStatus} (ID: ${result.rows[0].id})`);
-        }
-        return result.rows[0]?.id || null;
-    } catch (error) {
-        console.error('❌ Erreur mise à jour statut:', error);
-        return null;
-    }
-}
-
-// ============================================================
 // METTRE À JOUR LE STATUT D'UN PAIEMENT
 // ============================================================
 async function updatePaymentStatus(transactionId, status) {
@@ -225,13 +246,16 @@ async function updatePaymentStatus(transactionId, status) {
 }
 
 // ============================================================
-// RÉCUPÉRER TOUS LES PAIEMENTS
+// RÉCUPÉRER TOUS LES PAIEMENTS AVEC INFOS UTILISATEUR
 // ============================================================
 async function getJekoPayments() {
     try {
-        const result = await pool.query(
-            'SELECT * FROM payments_jeko ORDER BY created_at DESC'
-        );
+        const result = await pool.query(`
+            SELECT p.*, u.name as user_name, u.email as user_email, u.user_status
+            FROM payments_jeko p
+            LEFT JOIN users u ON u.email = p.flex2
+            ORDER BY p.created_at DESC
+        `);
         return result.rows;
     } catch (error) {
         console.error('❌ Erreur récupération paiements Jèko:', error);
@@ -285,8 +309,9 @@ module.exports = {
     all: (text, params) => pool.query(text, params).then(res => res.rows),
     run: (text, params) => pool.query(text, params),
     initialize: initializeDatabase,
-    saveJekoPayment,
+    getOrCreateUser,
     updateUserStatus,
+    saveJekoPayment,
     updatePaymentStatus,
     getJekoPayments,
     getPaymentById,
