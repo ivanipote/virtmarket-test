@@ -79,7 +79,7 @@ app.get('/admin', (req, res) => {
 app.post('/create-payment-link', async (req, res) => {
     const { name, amount } = req.body;
 
-    // ✅ Convertir le montant en centimes
+    // ✅ Montant en centimes
     const amountInCentimes = Math.round(amount * 100);
 
     console.log(`📝 Création d'un lien de paiement pour ${name} (${amount} FCFA → ${amountInCentimes} centimes)`);
@@ -94,7 +94,8 @@ app.post('/create-payment-link', async (req, res) => {
             },
             body: JSON.stringify({
                 storeId: process.env.JEKO_BUSINESS_ID,
-                amount: amountInCentimes,
+                title: `Soutien Virtual Market - ${name || 'Anonyme'}`,  // ✅ AJOUTÉ
+                amountCents: amountInCentimes,                          // ✅ AJOUTÉ
                 currency: 'XOF',
                 description: `Soutien Virtual Market - ${name || 'Anonyme'}`,
                 successUrl: 'https://virtmarket-test.onrender.com/verify',
@@ -125,7 +126,6 @@ app.post('/create-payment-link', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
 // ============================================================
 // ROUTE : RÉCUPÉRER LES PAIEMENTS (API)
 // ============================================================
