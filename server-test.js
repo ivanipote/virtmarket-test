@@ -26,17 +26,13 @@ app.use(express.static('.'));
 })();
 
 // ============================================================
-// NETTOYAGE AUTO DES PAIEMENTS PENDING ORPHELINS
+// NETTOYAGE AUTO DES PAIEMENTS PENDING ORPHELINS (15min)
 // ============================================================
 async function cleanPendingPayments() {
     try {
-        const result = await db.query(`
-            DELETE FROM payments_jeko
-            WHERE status = 'pending'
-            AND created_at < NOW() - INTERVAL '15 minutes'
-        `);
-        if (result.rowCount > 0) {
-            console.log(`🧹 ${result.rowCount} paiement(s) pending supprimés`);
+        const count = await db.cleanPendingPayments();
+        if (count > 0) {
+            console.log(`🧹 ${count} paiement(s) pending supprimés`);
         }
     } catch (error) {
         console.error('❌ Erreur nettoyage:', error);
@@ -73,13 +69,97 @@ app.get('/admin', (req, res) => {
     res.sendFile(__dirname + '/admin.html');
 });
 
+app.get('/testmail.html', (req, res) => {
+    res.sendFile(__dirname + '/testmail.html');
+});
+
+// ============================================================
+// ROUTE : ENREGISTRER UN UTILISATEUR (visiteur)
+// ============================================================
+app.post('/api/user/register', async (req, res) => {
+    const { name, email } = req.body;
+
+    console.log(`📝 Enregistrement utilisateur : ${name} (${email})`);
+
+    if (!name || !email) {
+        return res.status(400).json({ error: 'Nom et email requis' });
+    }
+
+    try {
+        const user = await db.getOrCreateUser(name, email);
+        
+        // Mettre à jour le statut vers 'visiteur' si différent
+        if (user.user_status !== 'visiteur') {
+            await db.updateUserStatus(email, 'visiteur');
+        }
+
+        console.log(`✅ Utilisateur enregistré : ${name} (${email}) - statut: visiteur`);
+
+        res.json({ 
+            success: true, 
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                user_status: 'visiteur'
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Erreur enregistrement utilisateur:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============================================================
+// ROUTE : METTRE À JOUR LE STATUT UTILISATEUR (participant / donateur)
+// ============================================================
+app.post('/api/user/update-status', async (req, res) => {
+    const { email, status } = req.body;
+
+    console.log(`📝 Mise à jour statut : ${email} → ${status}`);
+
+    if (!email || !status) {
+        return res.status(400).json({ error: 'Email et status requis' });
+    }
+
+    const validStatuses = ['visiteur', 'participant', 'donateur'];
+    if (!validStatuses.includes(status)) {
+        return res.status(400).json({ error: 'Statut invalide' });
+    }
+
+    try {
+        const user = await db.updateUserStatus(email, status);
+        
+        if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+        }
+
+        console.log(`✅ Statut mis à jour : ${email} → ${status}`);
+
+        res.json({ 
+            success: true, 
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                user_status: status
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Erreur mise à jour statut:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ============================================================
 // ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (API)
 // ============================================================
 app.post('/create-payment-link', async (req, res) => {
-    const { name, amount } = req.body;
+    const { name, email, amount } = req.body;
 
-    // ✅ Montant en centimes
+    // ✅ Convertir le montant en centimes
     const amountInCentimes = Math.round(amount * 100);
 
     console.log(`📝 Création d'un lien de paiement pour ${name} (${amount} FCFA → ${amountInCentimes} centimes)`);
@@ -94,8 +174,8 @@ app.post('/create-payment-link', async (req, res) => {
             },
             body: JSON.stringify({
                 storeId: process.env.JEKO_BUSINESS_ID,
-                title: `Soutien Virtual Market - ${name || 'Anonyme'}`,  // ✅ AJOUTÉ
-                amountCents: amountInCentimes,                          // ✅ AJOUTÉ
+                title: `Soutien Virtual Market - ${name || 'Anonyme'}`,
+                amountCents: amountInCentimes,
                 currency: 'XOF',
                 description: `Soutien Virtual Market - ${name || 'Anonyme'}`,
                 successUrl: 'https://virtmarket-test.onrender.com/verify',
@@ -114,20 +194,19 @@ app.post('/create-payment-link', async (req, res) => {
         }
 
         if (!data.link) {
-    console.error('❌ Aucun lien reçu:', data);
-    return res.status(500).json({ error: 'Aucun lien de paiement reçu' });
-}
-console.log(`✅ Lien généré : ${data.link}`);
-res.json({ checkout_url: data.link });
+            console.error('❌ Aucun lien reçu:', data);
+            return res.status(500).json({ error: 'Aucun lien de paiement reçu' });
+        }
 
-        console.log(`✅ Lien généré : ${data.paymentLink}`);
-        res.json({ checkout_url: data.paymentLink });
+        console.log(`✅ Lien généré : ${data.link}`);
+        res.json({ checkout_url: data.link });
 
     } catch (error) {
         console.error('❌ Erreur:', error.message);
         res.status(500).json({ error: error.message });
     }
 });
+
 // ============================================================
 // ROUTE : RÉCUPÉRER LES PAIEMENTS (API)
 // ============================================================
@@ -148,16 +227,11 @@ app.get('/api/payment/status/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
-        const result = await db.query(
-            'SELECT * FROM payments_jeko WHERE transaction_id = $1 OR id = $1',
-            [id]
-        );
-
-        if (result.rows.length === 0) {
+        const payment = await db.getPaymentById(id);
+        if (!payment) {
             return res.json({ success: true, found: false });
         }
-
-        res.json({ success: true, found: true, payment: result.rows[0] });
+        res.json({ success: true, found: true, payment });
     } catch (error) {
         console.error('❌ Erreur:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -171,6 +245,7 @@ app.post('/webhook', async (req, res) => {
     console.log('🔔 Webhook reçu');
 
     try {
+        // 1️⃣ Vérifier la signature
         const signature = req.headers['jeko-signature'];
         const payload = JSON.stringify(req.body);
         const expectedSignature = crypto
@@ -186,23 +261,35 @@ app.post('/webhook', async (req, res) => {
         console.log('✅ Signature valide');
 
         const body = req.body;
-        const donorName = body.counterpartLabel || null;
 
-        if (donorName && donorName.trim() !== '') {
-            body.flex1 = donorName.trim();
-            console.log(`👤 Donateur : ${body.flex1}`);
-        } else {
-            body.flex1 = null;
-            console.log('⚠️ Aucun nom trouvé dans le webhook');
-        }
+        // 2️⃣ Extraire les données
+        const donorName = body.counterpartLabel || null;
+        const donorEmail = body.flex2 || null; // Sera envoyé depuis pay.html
+        const transactionId = body.id;
+
+        // 3️⃣ Mettre à jour le paiement en base
+        body.flex1 = donorName;
+        body.flex2 = donorEmail;
+        body.flex5 = 'donateur';
 
         const savedId = await db.saveJekoPayment(body);
 
         if (savedId) {
             console.log(`✅ Paiement enregistré en base (ID: ${savedId})`);
+            
+            // 4️⃣ Mettre à jour le statut utilisateur vers 'donateur'
+            if (donorEmail) {
+                const updated = await db.updateUserStatus(donorEmail, 'donateur');
+                if (updated) {
+                    console.log(`✅ Utilisateur ${donorEmail} → donateur`);
+                }
+            }
         } else {
             console.log('ℹ️ Paiement déjà existant');
         }
+
+        // 5️⃣ Envoyer l'email de remerciement (à implémenter)
+        // await sendConfirmationEmail(donorName, donorEmail, amount, transactionId);
 
         res.sendStatus(200);
 
