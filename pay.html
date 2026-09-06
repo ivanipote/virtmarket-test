@@ -558,7 +558,7 @@
 
             // ===== PAYER =====
             payBtn.addEventListener('click', async function() {
-                if (!amount || amount < 150) {
+                if (!amount || amount < 1) {
                     showInfo('⚠️ Le montant minimum est de 150 FCFA.', 'warning');
                     return;
                 }
