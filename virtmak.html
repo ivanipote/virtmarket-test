@@ -94,17 +94,33 @@
             margin: 4px 0 20px 0;
         }
 
+        .vm-title .powered {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #1a2a6c;
+            background: linear-gradient(135deg, #1a2a6c, #2563eb, #1a2a6c);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer-blue 3s ease-in-out infinite;
+            margin-bottom: 2px;
+        }
+
+        @keyframes shimmer-blue {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         .vm-title h2 {
             font-size: 22px;
             font-weight: 700;
             color: #0F8B5D;
             letter-spacing: -0.3px;
-        }
-
-        .vm-title .sub-icon {
-            font-size: 28px;
-            display: block;
-            margin-bottom: 2px;
         }
 
         /* ============================================================ */
@@ -421,9 +437,6 @@
             .vm-title h2 {
                 font-size: 19px;
             }
-            .vm-title .sub-icon {
-                font-size: 24px;
-            }
             .vm-card {
                 padding: 22px 18px 18px 18px;
                 border-radius: 20px;
@@ -474,9 +487,6 @@
             }
             .vm-title h2 {
                 font-size: 17px;
-            }
-            .vm-title .sub-icon {
-                font-size: 20px;
             }
             .vm-card {
                 padding: 18px 14px 14px 14px;
@@ -551,28 +561,6 @@
                 padding: 10px;
             }
         }
-        /* ===== POWERED BY MEGANE - BLEU BRILLANT ===== */
-.vm-title .powered {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #1a2a6c;
-    background: linear-gradient(135deg, #1a2a6c, #2563eb, #1a2a6c);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: shimmer-blue 3s ease-in-out infinite;
-    margin-bottom: 2px;
-}
-
-@keyframes shimmer-blue {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
     </style>
 </head>
 <body>
@@ -596,7 +584,7 @@
 
         <!-- Titre -->
         <div class="vm-title">
-            <span class="sub-icon">powered by megane</span>
+            <span class="powered">⚡ powered by megane</span>
             <h2>Votre prochaine place e-commerce</h2>
         </div>
 
@@ -766,8 +754,8 @@
             emailInput.addEventListener('input', validateForm);
             amountInput.addEventListener('input', validateForm);
 
-            // ===== SOUMISSION =====
-            form.addEventListener('submit', function(e) {
+            // ===== SOUMISSION AVEC ENREGISTREMENT VISITEUR =====
+            form.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
                 const name = nameInput.value.trim();
@@ -784,21 +772,43 @@
                     return;
                 }
 
-                console.log('📝 Formulaire soumis');
-                console.log('👤 Nom:', name);
-                console.log('📧 Email:', email);
-                console.log('💰 Montant:', amount);
-
-                // ✅ Redirection vers pay.html
-                const url = `/pay.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&amount=${amount}`;
-                console.log('🔗 Redirection vers:', url);
-
+                // ✅ Désactiver le bouton
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirection...';
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
 
-                setTimeout(() => {
-                    window.location.href = url;
-                }, 600);
+                try {
+                    // ✅ 1. Enregistrer l'utilisateur (statut: visiteur)
+                    const registerRes = await fetch('/api/user/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email })
+                    });
+
+                    const registerData = await registerRes.json();
+
+                    if (!registerRes.ok) {
+                        throw new Error(registerData.error || 'Erreur enregistrement');
+                    }
+
+                    console.log('✅ Utilisateur enregistré (visiteur):', registerData.user);
+
+                    // ✅ 2. Redirection vers pay.html
+                    const url =
+                    `/pay.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&amount=${amount}`;
+                    console.log('🔗 Redirection vers:', url);
+
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirection...';
+
+                    setTimeout(() => {
+                        window.location.href = url;
+                    }, 600);
+
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    showInfo('❌ ' + error.message, 'warning');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-rocket"></i> Soutenir le projet';
+                }
             });
 
             // ===== INIT =====
