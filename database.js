@@ -22,46 +22,49 @@ async function initializeDatabase() {
         // ============================================================
         // TABLE PAYMENTS_JEKO
         // ============================================================
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS payments_jeko (
-                id SERIAL PRIMARY KEY,
-                transaction_id TEXT UNIQUE NOT NULL,
-                amount INTEGER NOT NULL,
-                currency TEXT DEFAULT 'XOF',
-                status TEXT DEFAULT 'pending',
-                counterpart_phone TEXT,
-                payment_method TEXT,
-                store_id TEXT,
-                store_name TEXT,
-                payment_link_id TEXT,
-                executed_at TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                flex1 TEXT DEFAULT NULL,
-                flex2 TEXT DEFAULT NULL,
-                flex3 TEXT DEFAULT NULL,
-                flex4 TEXT DEFAULT NULL,
-                flex5 TEXT DEFAULT NULL,
-                flex6 TEXT DEFAULT NULL,
-                flex7 TEXT DEFAULT NULL,
-                flex8 TEXT DEFAULT NULL
-            )
-        `);
+        // ============================================================
+// TABLE PAYMENTS_JEKO
+// ============================================================
+await client.query(`
+    CREATE TABLE IF NOT EXISTS payments_jeko (
+        id SERIAL PRIMARY KEY,
+        transaction_id TEXT UNIQUE NOT NULL,
+        amount INTEGER NOT NULL,
+        currency TEXT DEFAULT 'XOF',
+        status TEXT DEFAULT 'pending',
+        counterpart_phone TEXT,
+        payment_method TEXT,
+        store_id TEXT,
+        store_name TEXT,
+        payment_link_id TEXT,
+        executed_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        flex1 TEXT DEFAULT NULL,
+        flex2 TEXT DEFAULT NULL,
+        flex3 TEXT DEFAULT NULL,
+        flex4 TEXT DEFAULT NULL,
+        flex5 TEXT DEFAULT NULL,
+        flex6 TEXT DEFAULT NULL,
+        flex7 TEXT DEFAULT NULL,
+        flex8 TEXT DEFAULT NULL
+    )
+`);
 
-        // ✅ AJOUTER user_status SI ELLE N'EXISTE PAS
-        await client.query(`
-            DO $$
-            BEGIN
-                IF NOT EXISTS (
-                    SELECT 1 FROM information_schema.columns 
-                    WHERE table_name = 'payments_jeko' AND column_name = 'user_status'
-                ) THEN
-                    ALTER TABLE payments_jeko ADD COLUMN user_status TEXT DEFAULT 'visiteur';
-                END IF;
-            END $$;
-        `);
-        console.log('✅ Table payments_jeko créée/vérifiée (user_status ajouté si manquant)');
+// ✅ AJOUTER user_status SI ELLE N'EXISTE PAS
+await client.query(`
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'payments_jeko' AND column_name = 'user_status'
+        ) THEN
+            ALTER TABLE payments_jeko ADD COLUMN user_status TEXT DEFAULT 'visiteur';
+        END IF;
+    END $$;
+`);
 
+console.log('✅ Table payments_jeko créée/vérifiée (user_status ajouté si manquant)');
         // ============================================================
         // TABLE USERS
         // ============================================================
