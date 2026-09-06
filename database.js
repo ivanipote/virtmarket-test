@@ -1,9 +1,6 @@
-)uconst { Pool } = require('pg');
+const { Pool } = require('pg');
 require('dotenv').config();
 
-// ============================================================
-// CONNEXION À POSTGRESQL
-// ============================================================
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
@@ -11,29 +8,13 @@ const pool = new Pool({
     idleTimeoutMillis: 30000
 });
 
-// ============================================================
-// INITIALISATION DES TABLES (SANS PASSWORD)
-// ============================================================
 async function initializeDatabase() {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        // ============================================================
-        // 1. DROPPER LES TABLES SI ELLES EXISTENT
-        // ============================================================
         await client.query(`
-            DROP TABLE IF EXISTS soutiens CASCADE;
-            DROP TABLE IF EXISTS users CASCADE;
-            DROP TABLE IF EXISTS payments_jeko CASCADE;
-        `);
-        console.log('🧹 Tables existantes supprimées');
-
-        // ============================================================
-        // 2. TABLE PAYMENTS_JEKO
-        // ============================================================
-        await client.query(`
-            CREATE TABLE payments_jeko (
+            CREATE TABLE IF NOT EXISTS payments_jeko (
                 id SERIAL PRIMARY KEY,
                 transaction_id TEXT UNIQUE NOT NULL,
                 amount INTEGER NOT NULL,
@@ -59,11 +40,8 @@ async function initializeDatabase() {
         `);
         console.log('✅ Table payments_jeko créée');
 
-        // ============================================================
-        // 3. TABLE USERS (SANS PASSWORD)
-        // ============================================================
         await client.query(`
-            CREATE TABLE users (
+            CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL,
                 email TEXT UNIQUE NOT NULL,
@@ -80,13 +58,10 @@ async function initializeDatabase() {
                 flex8 TEXT DEFAULT NULL
             )
         `);
-        console.log('✅ Table users créée (sans password)');
+        console.log('✅ Table users créée');
 
-        // ============================================================
-        // 4. TABLE SOUTIENS
-        // ============================================================
         await client.query(`
-            CREATE TABLE soutiens (
+            CREATE TABLE IF NOT EXISTS soutiens (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
                 payment_id INTEGER REFERENCES payments_jeko(id) ON DELETE SET NULL,
@@ -107,18 +82,15 @@ async function initializeDatabase() {
         `);
         console.log('✅ Table soutiens créée');
 
-        // ============================================================
-        // 5. INDEX
-        // ============================================================
-        await client.query(`CREATE INDEX idx_payments_jeko_transaction_id ON payments_jeko(transaction_id)`);
-        await client.query(`CREATE INDEX idx_payments_jeko_status ON payments_jeko(status)`);
-        await client.query(`CREATE INDEX idx_payments_jeko_created_at ON payments_jeko(created_at)`);
-        await client.query(`CREATE INDEX idx_payments_jeko_flex1 ON payments_jeko(flex1)`);
-        await client.query(`CREATE INDEX idx_payments_jeko_flex2 ON payments_jeko(flex2)`);
-        await client.query(`CREATE INDEX idx_soutiens_user_id ON soutiens(user_id)`);
-        await client.query(`CREATE INDEX idx_soutiens_status ON soutiens(status)`);
-        await client.query(`CREATE INDEX idx_users_email ON users(email)`);
-        await client.query(`CREATE INDEX idx_users_flex5 ON users(flex5)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_transaction_id ON payments_jeko(transaction_id)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_status ON payments_jeko(status)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_created_at ON payments_jeko(created_at)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_flex1 ON payments_jeko(flex1)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_flex2 ON payments_jeko(flex2)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_soutiens_user_id ON soutiens(user_id)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_soutiens_status ON soutiens(status)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_users_flex5 ON users(flex5)`);
 
         await client.query('COMMIT');
         console.log('✅ Toutes les tables créées avec succès');
@@ -132,62 +104,33 @@ async function initializeDatabase() {
     }
 }
 
-// ============================================================
-// CRÉER OU RÉCUPÉRER UN UTILISATEUR
-// ============================================================
 async function getOrCreateUser(name, email) {
     try {
-        console.log(`🔍 Recherche utilisateur : ${email}`);
-        
-        let user = await pool.query(
-            'SELECT * FROM users WHERE email = $1',
-            [email]
-        );
-
+        let user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (user.rows.length > 0) {
             if (user.rows[0].name !== name) {
-                await pool.query(
-                    'UPDATE users SET name = $1, updated_at = NOW() WHERE email = $2',
-                    [name, email]
-                );
+                await pool.query('UPDATE users SET name = $1, updated_at = NOW() WHERE email = $2', [name, email]);
                 user.rows[0].name = name;
-                console.log(`📝 Nom mis à jour : ${name}`);
             }
-            console.log(`👤 Utilisateur existant : ${name} (${email})`);
             return user.rows[0];
         }
-
         const result = await pool.query(
-            `INSERT INTO users (name, email) 
-             VALUES ($1, $2) 
-             RETURNING *`,
+            `INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *`,
             [name, email]
         );
-        
-        console.log(`✅ Nouvel utilisateur créé : ${name} (${email}) (ID: ${result.rows[0].id})`);
         return result.rows[0];
-        
     } catch (error) {
         console.error('❌ Erreur getOrCreateUser:', error);
         return null;
     }
 }
 
-// ============================================================
-// METTRE À JOUR LE STATUT UTILISATEUR (flex5)
-// ============================================================
 async function updateUserStatus(email, userStatus) {
     try {
         const result = await pool.query(
-            `UPDATE users 
-             SET flex5 = $1, updated_at = NOW() 
-             WHERE email = $2 
-             RETURNING id, name, email, flex5 as user_status`,
+            `UPDATE users SET flex5 = $1, updated_at = NOW() WHERE email = $2 RETURNING id, name, email, flex5 as user_status`,
             [userStatus, email]
         );
-        if (result.rowCount > 0) {
-            console.log(`✅ Statut utilisateur mis à jour : ${userStatus} (${email})`);
-        }
         return result.rows[0] || null;
     } catch (error) {
         console.error('❌ Erreur updateUserStatus:', error);
@@ -195,9 +138,6 @@ async function updateUserStatus(email, userStatus) {
     }
 }
 
-// ============================================================
-// SAUVEGARDER UN PAIEMENT JEKO
-// ============================================================
 async function saveJekoPayment(data) {
     const query = `
         INSERT INTO payments_jeko (
@@ -231,11 +171,6 @@ async function saveJekoPayment(data) {
 
     try {
         const result = await pool.query(query, values);
-        if (result.rowCount > 0) {
-            console.log(`✅ Paiement Jèko ${data.id} enregistré (ID: ${result.rows[0].id})`);
-        } else {
-            console.log(`ℹ️ Paiement Jèko ${data.id} déjà existant`);
-        }
         return result.rows[0]?.id || null;
     } catch (error) {
         console.error('❌ Erreur sauvegarde paiement Jèko:', error);
@@ -243,9 +178,6 @@ async function saveJekoPayment(data) {
     }
 }
 
-// ============================================================
-// METTRE À JOUR LE STATUT D'UN PAIEMENT
-// ============================================================
 async function updatePaymentStatus(transactionId, status) {
     try {
         const result = await pool.query(
@@ -259,17 +191,10 @@ async function updatePaymentStatus(transactionId, status) {
     }
 }
 
-// ============================================================
-// RÉCUPÉRER TOUS LES PAIEMENTS
-// ============================================================
 async function getJekoPayments() {
     try {
         const result = await pool.query(`
-            SELECT 
-                p.*,
-                u.name as user_name,
-                u.email as user_email,
-                u.flex5 as user_status
+            SELECT p.*, u.name as user_name, u.email as user_email, u.flex5 as user_status
             FROM payments_jeko p
             LEFT JOIN users u ON u.email = p.flex2
             ORDER BY p.created_at DESC
@@ -281,15 +206,9 @@ async function getJekoPayments() {
     }
 }
 
-// ============================================================
-// RÉCUPÉRER UN PAIEMENT PAR ID
-// ============================================================
 async function getPaymentById(id) {
     try {
-        const result = await pool.query(
-            'SELECT * FROM payments_jeko WHERE id = $1 OR transaction_id = $1',
-            [id]
-        );
+        const result = await pool.query('SELECT * FROM payments_jeko WHERE id = $1 OR transaction_id = $1', [id]);
         return result.rows[0] || null;
     } catch (error) {
         console.error('❌ Erreur récupération paiement:', error);
@@ -297,9 +216,6 @@ async function getPaymentById(id) {
     }
 }
 
-// ============================================================
-// NETTOYER LES PAIEMENTS PENDING ORPHELINS (15min)
-// ============================================================
 async function cleanPendingPayments() {
     try {
         const result = await pool.query(`
@@ -307,9 +223,6 @@ async function cleanPendingPayments() {
             WHERE status = 'pending'
             AND created_at < NOW() - INTERVAL '15 minutes'
         `);
-        if (result.rowCount > 0) {
-            console.log(`🧹 ${result.rowCount} paiement(s) pending supprimés`);
-        }
         return result.rowCount;
     } catch (error) {
         console.error('❌ Erreur nettoyage:', error);
@@ -317,9 +230,6 @@ async function cleanPendingPayments() {
     }
 }
 
-// ============================================================
-// EXPORT
-// ============================================================
 module.exports = {
     pool,
     query: (text, params) => pool.query(text, params),
