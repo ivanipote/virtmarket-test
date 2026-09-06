@@ -160,12 +160,82 @@
         }
 
         /* ============================================================ */
-        /* BOUTON PAYER AVEC WAVE (centré, grand) - WAVE NAVY           */
+        /* CHAMP MONTANT LIBRE                                           */
+        /* ============================================================ */
+        .amount-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 16px 0 8px 0;
+        }
+
+        .amount-input-wrapper .input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #f8f9fc;
+            border: 2px solid #e6e8ef;
+            border-radius: 14px;
+            transition: all 0.3s;
+        }
+
+        .amount-input-wrapper .input-wrapper:focus-within {
+            border-color: #0F1B4D;
+            box-shadow: 0 0 0 4px rgba(15, 27, 77, 0.08);
+            background: white;
+        }
+
+        .amount-input-wrapper .input-wrapper .prefix {
+            padding: 0 0 0 16px;
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .amount-input-wrapper .input-wrapper input {
+            flex: 1;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            background: transparent;
+            outline: none;
+            color: #1a1a2e;
+            font-weight: 500;
+            min-width: 0;
+        }
+
+        .amount-input-wrapper .input-wrapper input::placeholder {
+            color: #b0b5c4;
+            font-weight: 400;
+        }
+
+        .amount-input-wrapper .input-wrapper .input-icon {
+            padding: 0 16px 0 4px;
+            color: #b0b5c4;
+            font-size: 18px;
+            transition: color 0.3s;
+            flex-shrink: 0;
+        }
+
+        .amount-input-wrapper .input-wrapper:focus-within .input-icon {
+            color: #0F1B4D;
+        }
+
+        .amount-hint {
+            font-size: 12px;
+            color: #9ca3af;
+            text-align: left;
+            padding-left: 4px;
+        }
+
+        /* ============================================================ */
+        /* BOUTON PAYER AVEC WAVE - WAVE NAVY                           */
         /* ============================================================ */
         .btn-pay-wrapper {
             display: flex;
             justify-content: center;
-            margin-top: 24px;
+            margin-top: 20px;
         }
 
         .btn-pay {
@@ -302,134 +372,50 @@
         /* RESPONSIVE                                                    */
         /* ============================================================ */
         @media (max-width: 600px) {
-            .pay-header {
-                height: 54px;
-                border-radius: 40px;
-                margin: 10px 12px 0 12px;
-            }
-            .pay-header .header-text {
-                font-size: 12px;
-            }
-            .pay-main {
-                padding: 16px 12px 20px 12px;
-            }
-            .pay-card {
-                padding: 24px 18px 20px 18px;
-                border-radius: 20px;
-            }
-            .pay-title {
-                font-size: 19px;
-            }
-            .wave-logo {
-                width: 80px;
-                height: 80px;
-                border-radius: 24px;
-            }
-            .recap-item {
-                font-size: 14px;
-                padding: 8px 0;
-            }
-            .recap-item .value.amount {
-                font-size: 18px;
-            }
-            .btn-pay {
-                padding: 16px 32px;
-                font-size: 16px;
-                max-width: 300px;
-            }
-            .btn-pay .btn-wave-icon {
-                width: 24px;
-                height: 24px;
-            }
-            .btn-pay .btn-text {
-                font-size: 16px;
-            }
+            .pay-header { height: 54px; border-radius: 40px; margin: 10px 12px 0 12px; }
+            .pay-header .header-text { font-size: 12px; }
+            .pay-main { padding: 16px 12px 20px 12px; }
+            .pay-card { padding: 24px 18px 20px 18px; border-radius: 20px; }
+            .pay-title { font-size: 19px; }
+            .wave-logo { width: 80px; height: 80px; border-radius: 24px; }
+            .recap-item { font-size: 14px; padding: 8px 0; }
+            .recap-item .value.amount { font-size: 18px; }
+            .btn-pay { padding: 16px 32px; font-size: 16px; max-width: 300px; }
+            .btn-pay .btn-wave-icon { width: 24px; height: 24px; }
+            .btn-pay .btn-text { font-size: 16px; }
+            .amount-input-wrapper .input-wrapper input { font-size: 15px; padding: 12px 14px; }
         }
 
         @media (max-width: 420px) {
-            .pay-header {
-                height: 48px;
-                border-radius: 32px;
-                margin: 8px 8px 0 8px;
-            }
-            .pay-header .header-text {
-                font-size: 10px;
-            }
-            .pay-main {
-                padding: 12px 8px 16px 8px;
-            }
-            .pay-card {
-                padding: 18px 14px 14px 14px;
-                border-radius: 18px;
-            }
-            .pay-title {
-                font-size: 17px;
-            }
-            .pay-subtitle {
-                font-size: 13px;
-            }
-            .wave-logo {
-                width: 70px;
-                height: 70px;
-                border-radius: 20px;
-            }
-            .recap-item {
-                font-size: 13px;
-                padding: 6px 0;
-            }
-            .recap-item .value.amount {
-                font-size: 16px;
-            }
-            .btn-pay {
-                padding: 14px 24px;
-                font-size: 14px;
-                max-width: 260px;
-                border-radius: 40px;
-                gap: 10px;
-            }
-            .btn-pay .btn-wave-icon {
-                width: 20px;
-                height: 20px;
-            }
-            .btn-pay .btn-text {
-                font-size: 14px;
-            }
-            .toast-container {
-                font-size: 13px;
-                padding: 10px 16px;
-                bottom: 16px;
-            }
+            .pay-header { height: 48px; border-radius: 32px; margin: 8px 8px 0 8px; }
+            .pay-header .header-text { font-size: 10px; }
+            .pay-main { padding: 12px 8px 16px 8px; }
+            .pay-card { padding: 18px 14px 14px 14px; border-radius: 18px; }
+            .pay-title { font-size: 17px; }
+            .pay-subtitle { font-size: 13px; }
+            .wave-logo { width: 70px; height: 70px; border-radius: 20px; }
+            .recap-item { font-size: 13px; padding: 6px 0; }
+            .recap-item .value.amount { font-size: 16px; }
+            .btn-pay { padding: 14px 24px; font-size: 14px; max-width: 260px; border-radius: 40px; gap: 10px; }
+            .btn-pay .btn-wave-icon { width: 20px; height: 20px; }
+            .btn-pay .btn-text { font-size: 14px; }
+            .amount-input-wrapper .input-wrapper input { font-size: 14px; padding: 10px 12px; }
+            .toast-container { font-size: 13px; padding: 10px 16px; bottom: 16px; }
         }
 
         @media (max-width: 350px) {
-            .pay-card {
-                padding: 14px 10px 12px 10px;
-                border-radius: 16px;
-            }
-            .wave-logo {
-                width: 60px;
-                height: 60px;
-                border-radius: 16px;
-            }
-            .btn-pay {
-                padding: 12px 20px;
-                font-size: 13px;
-                max-width: 220px;
-            }
-            .btn-pay .btn-wave-icon {
-                width: 18px;
-                height: 18px;
-            }
-            .btn-pay .btn-text {
-                font-size: 13px;
-            }
+            .pay-card { padding: 14px 10px 12px 10px; border-radius: 16px; }
+            .wave-logo { width: 60px; height: 60px; border-radius: 16px; }
+            .btn-pay { padding: 12px 20px; font-size: 13px; max-width: 220px; }
+            .btn-pay .btn-wave-icon { width: 18px; height: 18px; }
+            .btn-pay .btn-text { font-size: 13px; }
         }
     </style>
 </head>
 <body>
 
     <!-- ============================================================ -->
-    <!-- HEADER - 60px, arrondi 50px - WAVE NAVY                      -->
+    <!-- HEADER - WAVE NAVY                                            -->
     <!-- ============================================================ -->
     <header class="pay-header">
         <span class="header-text">⚡ powered by <span>megane</span></span>
@@ -462,15 +448,21 @@
                 <span class="label">📧 Email</span>
                 <span class="value" id="displayEmail">-</span>
             </div>
-            <div class="recap-item" style="border-bottom: none;">
-                <span class="label">💰 Montant</span>
-                <span class="value amount" id="displayAmount">-</span>
-            </div>
 
-            <!-- Bouton Payer avec Wave (centré, grand) - WAVE NAVY -->
+            <!-- Montant libre -->
+            <div class="amount-input-wrapper">
+                <div class="input-wrapper">
+                    <span class="prefix">FCFA</span>
+                    <input type="number" id="amountInput" placeholder="Montant libre (min. 1 FCFA)" min="1" value="1" required />
+                    <span class="input-icon"><i class="fas fa-arrow-right"></i></span>
+                </div>
+            </div>
+            <div class="amount-hint">💡 Entrez le montant de votre choix (1 FCFA minimum)</div>
+
+            <!-- Bouton Payer avec Wave -->
             <div class="btn-pay-wrapper">
                 <button class="btn-pay" id="payBtn">
-                    
+                    <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
                     <span class="btn-text">Payer avec Wave</span>
                 </button>
             </div>
@@ -497,12 +489,12 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ pay.html (Wave Navy) chargé');
+            console.log('✅ pay.html (montant libre) chargé');
 
             // ===== RÉFÉRENCES =====
             const displayName = document.getElementById('displayName');
             const displayEmail = document.getElementById('displayEmail');
-            const displayAmount = document.getElementById('displayAmount');
+            const amountInput = document.getElementById('amountInput');
             const payBtn = document.getElementById('payBtn');
             const toast = document.getElementById('toast');
             const infoMessage = document.getElementById('infoMessage');
@@ -511,12 +503,12 @@
             const urlParams = new URLSearchParams(window.location.search);
             const name = urlParams.get('name') || 'Donateur anonyme';
             const email = urlParams.get('email') || 'email@non-renseigne.com';
-            const amount = parseInt(urlParams.get('amount')) || 150;
+            const initialAmount = parseInt(urlParams.get('amount')) || 1;
 
             // ===== AFFICHER LES INFOS =====
             displayName.textContent = name;
             displayEmail.textContent = email;
-            displayAmount.textContent = amount.toLocaleString() + ' FCFA';
+            amountInput.value = initialAmount;
 
             // ===== TOAST =====
             function showToast(message, type = 'success') {
@@ -558,8 +550,11 @@
 
             // ===== PAYER =====
             payBtn.addEventListener('click', async function() {
-                if (!amount || amount < 1) {
-                    showInfo('⚠️ Le montant minimum est de 150 FCFA.', 'warning');
+                const amount = parseInt(amountInput.value);
+
+                if (isNaN(amount) || amount < 1) {
+                    showInfo('⚠️ Veuillez entrer un montant valide (minimum 1 FCFA).', 'warning');
+                    amountInput.focus();
                     return;
                 }
 
@@ -610,7 +605,7 @@
             console.log('✅ pay.html initialisé');
             console.log('👤 Nom:', name);
             console.log('📧 Email:', email);
-            console.log('💰 Montant:', amount);
+            console.log('💰 Montant libre');
 
         });
     </script>
