@@ -20,7 +20,7 @@ async function initializeDatabase() {
         await client.query('BEGIN');
 
         // ============================================================
-        // TABLE PAYMENTS_JEKO
+        // TABLE PAYMENTS_JEKO (avec user_status et 8 flex)
         // ============================================================
         await client.query(`
             CREATE TABLE IF NOT EXISTS payments_jeko (
@@ -29,6 +29,7 @@ async function initializeDatabase() {
                 amount INTEGER NOT NULL,
                 currency TEXT DEFAULT 'XOF',
                 status TEXT DEFAULT 'pending',
+                user_status TEXT DEFAULT 'visiteur',
                 counterpart_phone TEXT,
                 payment_method TEXT,
                 store_id TEXT,
@@ -36,17 +37,19 @@ async function initializeDatabase() {
                 payment_link_id TEXT,
                 executed_at TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 -- ✅ 8 CHAMPS FLEX
                 flex1 TEXT DEFAULT NULL,  -- Nom du donateur
                 flex2 TEXT DEFAULT NULL,  -- Email du donateur
-                flex3 TEXT DEFAULT NULL,
-                flex4 TEXT DEFAULT NULL,
-                flex5 TEXT DEFAULT NULL,
-                flex6 TEXT DEFAULT NULL,
-                flex7 TEXT DEFAULT NULL,
-                flex8 TEXT DEFAULT NULL
+                flex3 TEXT DEFAULT NULL,  -- Email envoyé (true/false)
+                flex4 TEXT DEFAULT NULL,  -- Date envoi email
+                flex5 TEXT DEFAULT NULL,  -- Réservé
+                flex6 TEXT DEFAULT NULL,  -- Réservé
+                flex7 TEXT DEFAULT NULL,  -- Réservé
+                flex8 TEXT DEFAULT NULL   -- Réservé
             )
         `);
+        console.log('✅ Table payments_jeko créée (avec user_status et 8 flex)');
 
         // ============================================================
         // TABLE USERS (pour les donateurs)
@@ -57,7 +60,9 @@ async function initializeDatabase() {
                 name TEXT NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 phone TEXT,
+                user_status TEXT DEFAULT 'visiteur',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 -- ✅ 8 CHAMPS FLEX
                 flex1 TEXT DEFAULT NULL,
                 flex2 TEXT DEFAULT NULL,
@@ -69,6 +74,7 @@ async function initializeDatabase() {
                 flex8 TEXT DEFAULT NULL
             )
         `);
+        console.log('✅ Table users créée');
 
         // ============================================================
         // TABLE SOUTIENS (historique des dons)
@@ -82,6 +88,7 @@ async function initializeDatabase() {
                 message TEXT,
                 status TEXT DEFAULT 'pending',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 -- ✅ 8 CHAMPS FLEX
                 flex1 TEXT DEFAULT NULL,
                 flex2 TEXT DEFAULT NULL,
@@ -93,17 +100,21 @@ async function initializeDatabase() {
                 flex8 TEXT DEFAULT NULL
             )
         `);
+        console.log('✅ Table soutiens créée');
 
         // ============================================================
         // INDEX POUR LES PERFORMANCES
         // ============================================================
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_transaction_id ON payments_jeko(transaction_id)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_status ON payments_jeko(status)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_user_status ON payments_jeko(user_status)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_created_at ON payments_jeko(created_at)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_flex1 ON payments_jeko(flex1)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_flex2 ON payments_jeko(flex2)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_soutiens_user_id ON soutiens(user_id)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_soutiens_status ON soutiens(status)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_users_user_status ON users(user_status)`);
 
         await client.query('COMMIT');
         console.log('✅ Toutes les tables créées avec succès');
@@ -123,12 +134,12 @@ async function initializeDatabase() {
 async function saveJekoPayment(data) {
     const query = `
         INSERT INTO payments_jeko (
-            transaction_id, amount, currency, status,
+            transaction_id, amount, currency, status, user_status,
             counterpart_phone, payment_method, store_id,
             store_name, payment_link_id, executed_at,
             flex1, flex2
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         ON CONFLICT (transaction_id) DO NOTHING
         RETURNING id
     `;
@@ -138,6 +149,7 @@ async function saveJekoPayment(data) {
         data.amount?.amount || 0,
         data.amount?.currency || 'XOF',
         data.status || 'pending',
+        data.user_status || 'visiteur',
         data.counterpartIdentifier || null,
         data.paymentMethod || null,
         data.storeId || null,
@@ -158,6 +170,28 @@ async function saveJekoPayment(data) {
         return result.rows[0]?.id || null;
     } catch (error) {
         console.error('❌ Erreur sauvegarde paiement Jèko:', error);
+        return null;
+    }
+}
+
+// ============================================================
+// METTRE À JOUR LE STATUT UTILISATEUR
+// ============================================================
+async function updateUserStatus(transactionId, userStatus) {
+    try {
+        const result = await pool.query(
+            `UPDATE payments_jeko 
+             SET user_status = $1, updated_at = NOW() 
+             WHERE transaction_id = $2 
+             RETURNING id`,
+            [userStatus, transactionId]
+        );
+        if (result.rowCount > 0) {
+            console.log(`✅ Statut utilisateur mis à jour : ${userStatus} (ID: ${result.rows[0].id})`);
+        }
+        return result.rows[0]?.id || null;
+    } catch (error) {
+        console.error('❌ Erreur mise à jour statut:', error);
         return null;
     }
 }
@@ -199,7 +233,7 @@ async function getPaymentById(id) {
 async function updatePaymentStatus(transactionId, status) {
     try {
         const result = await pool.query(
-            'UPDATE payments_jeko SET status = $1 WHERE transaction_id = $2 RETURNING id',
+            'UPDATE payments_jeko SET status = $1, updated_at = NOW() WHERE transaction_id = $2 RETURNING id',
             [status, transactionId]
         );
         return result.rows[0]?.id || null;
@@ -240,8 +274,9 @@ module.exports = {
     run: (text, params) => pool.query(text, params),
     initialize: initializeDatabase,
     saveJekoPayment,
+    updateUserStatus,
+    updatePaymentStatus,
     getJekoPayments,
     getPaymentById,
-    updatePaymentStatus,
     cleanPendingPayments
 };
