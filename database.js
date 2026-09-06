@@ -20,7 +20,7 @@ async function initializeDatabase() {
         await client.query('BEGIN');
 
         // ============================================================
-        // TABLE PAYMENTS_JEKO (avec user_status et 8 flex)
+        // TABLE PAYMENTS_JEKO
         // ============================================================
         await client.query(`
             CREATE TABLE IF NOT EXISTS payments_jeko (
@@ -29,7 +29,6 @@ async function initializeDatabase() {
                 amount INTEGER NOT NULL,
                 currency TEXT DEFAULT 'XOF',
                 status TEXT DEFAULT 'pending',
-                user_status TEXT DEFAULT 'visiteur',
                 counterpart_phone TEXT,
                 payment_method TEXT,
                 store_id TEXT,
@@ -48,7 +47,20 @@ async function initializeDatabase() {
                 flex8 TEXT DEFAULT NULL
             )
         `);
-        console.log('✅ Table payments_jeko créée (avec user_status et 8 flex)');
+
+        // ✅ AJOUTER user_status SI ELLE N'EXISTE PAS
+        await client.query(`
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name = 'payments_jeko' AND column_name = 'user_status'
+                ) THEN
+                    ALTER TABLE payments_jeko ADD COLUMN user_status TEXT DEFAULT 'visiteur';
+                END IF;
+            END $$;
+        `);
+        console.log('✅ Table payments_jeko créée/vérifiée (user_status ajouté si manquant)');
 
         // ============================================================
         // TABLE USERS
