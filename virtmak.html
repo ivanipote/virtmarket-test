@@ -21,19 +21,16 @@
             display: flex;
             flex-direction: column;
             padding-top: 80px;
+            padding-bottom: 30px;
             overflow-x: hidden;
         }
 
-        /* ===== ANIMATIONS ===== */
+        /* ============================================================ */
+        /* ANIMATIONS                                                    */
+        /* ============================================================ */
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeIn {
@@ -46,16 +43,16 @@
             50% { transform: scale(1.05); }
         }
 
-        .animate {
-            animation: fadeInUp 0.7s ease forwards;
-        }
+        .animate { animation: fadeInUp 0.7s ease forwards; }
         .animate-delay-1 { animation-delay: 0.1s; opacity: 0; }
         .animate-delay-2 { animation-delay: 0.2s; opacity: 0; }
         .animate-delay-3 { animation-delay: 0.3s; opacity: 0; }
         .animate-delay-4 { animation-delay: 0.4s; opacity: 0; }
         .animate-delay-5 { animation-delay: 0.5s; opacity: 0; }
 
-        /* ===== HEADER FIXE ===== */
+        /* ============================================================ */
+        /* HEADER (BORDURES ARRONDIES)                                   */
+        /* ============================================================ */
         .vm-header {
             background: #0F8B5D;
             padding: 14px 24px;
@@ -67,7 +64,8 @@
             left: 0;
             right: 0;
             z-index: 100;
-            box-shadow: 0 2px 20px rgba(15, 139, 93, 0.25);
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 24px rgba(15, 139, 93, 0.25);
         }
 
         .vm-header .logo {
@@ -109,7 +107,36 @@
             color: #4ade80;
         }
 
-        /* ===== MAIN ===== */
+        .vm-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .vm-header .header-actions .btn-admin {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .vm-header .header-actions .btn-admin:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        /* ============================================================ */
+        /* MAIN                                                          */
+        /* ============================================================ */
         .vm-main {
             flex: 1;
             display: flex;
@@ -128,7 +155,7 @@
             border: 1px solid rgba(15, 139, 93, 0.06);
         }
 
-        /* ===== ICÔNE & TITRE ===== */
+        /* ===== ICÔNE ===== */
         .vm-card .card-icon {
             text-align: center;
             font-size: 56px;
@@ -142,6 +169,7 @@
             background-clip: text;
         }
 
+        /* ===== TITRE ===== */
         .vm-card h1 {
             text-align: center;
             font-size: 32px;
@@ -204,7 +232,9 @@
             border: 1px solid rgba(15, 139, 93, 0.12);
         }
 
-        /* ===== FORMULAIRE ===== */
+        /* ============================================================ */
+        /* FORMULAIRE                                                    */
+        /* ============================================================ */
         .form-group {
             margin-bottom: 16px;
         }
@@ -281,17 +311,58 @@
             padding-left: 4px;
         }
 
+        /* ===== MONTANT AVEC BOUTON MODIFIER ===== */
+        .amount-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .amount-wrapper .input-wrapper {
+            flex: 1;
+        }
+
+        .amount-wrapper .btn-edit {
+            background: #f8f9fc;
+            border: 2px solid #e6e8ef;
+            border-radius: 14px;
+            padding: 0 16px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .amount-wrapper .btn-edit:hover {
+            border-color: #0F8B5D;
+            color: #0F8B5D;
+            background: #f0faf5;
+        }
+
+        .amount-wrapper .btn-edit.active {
+            border-color: #0F8B5D;
+            background: #e6f7ee;
+            color: #0F8B5D;
+        }
+
         /* ===== MONTANTS SUGGÉRÉS ===== */
         .suggested-amounts {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
-            margin: 4px 0 2px 0;
+            margin-top: 8px;
         }
 
         .suggested-amounts .suggest-btn {
             flex: 1;
-            min-width: 55px;
+            min-width: 50px;
             padding: 8px 4px;
             border: 2px solid #e6e8ef;
             border-radius: 12px;
@@ -317,7 +388,15 @@
             color: white;
         }
 
-        /* ===== BOUTON ===== */
+        .suggested-amounts .suggest-btn.default {
+            border-color: #0F8B5D;
+            background: #e6f7ee;
+            color: #0F8B5D;
+        }
+
+        /* ============================================================ */
+        /* BOUTON                                                        */
+        /* ============================================================ */
         .btn-submit {
             width: 100%;
             padding: 16px;
@@ -333,10 +412,10 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            margin-top: 6px;
+            margin-top: 20px;
         }
 
-        .btn-submit:hover {
+        .btn-submit:hover:not(:disabled) {
             transform: scale(1.02);
             box-shadow: 0 8px 35px rgba(15, 139, 93, 0.3);
         }
@@ -351,28 +430,34 @@
             font-size: 18px;
         }
 
-        /* ===== FOOTER ===== */
-        .vm-footer {
-            text-align: center;
-            padding: 20px 20px 28px 20px;
+        /* ============================================================ */
+        /* MESSAGE INFO                                                  */
+        /* ============================================================ */
+        .info-message {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
             font-size: 13px;
-            color: #9ca3af;
-            flex-shrink: 0;
-            border-top: 1px solid #f0f0f5;
-            background: white;
+            font-weight: 500;
+            background: #eaf1ff;
+            color: #2563eb;
+            border: 1px solid #c7d9fb;
+            display: none;
         }
 
-        .vm-footer i {
-            color: #0F8B5D;
+        .info-message.show {
+            display: block;
         }
 
-        .vm-footer .footer-heart {
-            color: #e74c3c;
-            animation: pulse 1.5s ease-in-out infinite;
-            display: inline-block;
+        .info-message.warning {
+            background: #fff3df;
+            color: #b45309;
+            border-color: #f5dbaa;
         }
 
-        /* ===== TOAST ===== */
+        /* ============================================================ */
+        /* TOAST                                                         */
+        /* ============================================================ */
         .toast-container {
             position: fixed;
             bottom: 30px;
@@ -401,29 +486,35 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        /* ===== RESPONSIVE ===== */
+        /* ============================================================ */
+        /* RESPONSIVE                                                    */
+        /* ============================================================ */
         @media (max-width: 768px) {
             body { padding-top: 72px; }
-            .vm-header { padding: 10px 16px; }
+            .vm-header { padding: 10px 16px; border-radius: 0 0 16px 16px; }
             .vm-header .logo { font-size: 18px; }
             .vm-header .logo i { font-size: 22px; }
             .vm-header .header-badge { font-size: 10px; padding: 4px 12px; }
+            .vm-header .header-actions .btn-admin { font-size: 12px; padding: 4px 12px; }
             .vm-card { padding: 32px 22px 28px 22px; border-radius: 22px; }
             .vm-card h1 { font-size: 26px; }
             .vm-card .card-icon { font-size: 44px; }
             .form-group .input-wrapper input { font-size: 15px; padding: 12px 14px; }
             .btn-submit { font-size: 16px; padding: 14px; }
             .suggested-amounts .suggest-btn { font-size: 12px; padding: 6px 4px; }
+            .amount-wrapper .btn-edit { height: 48px; font-size: 13px; padding: 0 12px; }
             .vm-description { padding: 14px 16px; }
             .vm-description p { font-size: 13px; }
+            .vm-description .tech-tags span { font-size: 10px; padding: 3px 10px; }
         }
 
         @media (max-width: 480px) {
             body { padding-top: 64px; }
-            .vm-header { padding: 8px 12px; }
+            .vm-header { padding: 8px 12px; border-radius: 0 0 14px 14px; }
             .vm-header .logo { font-size: 15px; gap: 8px; }
             .vm-header .logo i { font-size: 18px; }
             .vm-header .header-badge { font-size: 9px; padding: 3px 10px; }
+            .vm-header .header-actions .btn-admin { font-size: 11px; padding: 3px 10px; }
             .vm-card { padding: 24px 16px 20px 16px; border-radius: 18px; }
             .vm-card h1 { font-size: 21px; }
             .vm-card .subtitle { font-size: 14px; }
@@ -432,34 +523,43 @@
             .btn-submit { font-size: 14px; padding: 12px; border-radius: 14px; }
             .suggested-amounts { gap: 6px; }
             .suggested-amounts .suggest-btn { font-size: 11px; padding: 5px 4px; min-width: 45px; }
+            .amount-wrapper .btn-edit { height: 42px; font-size: 12px; padding: 0 10px; }
             .vm-description { padding: 12px 14px; }
             .vm-description p { font-size: 12px; }
-            .vm-description .tech-tags span { font-size: 10px; padding: 3px 10px; }
-            .vm-footer { font-size: 11px; padding: 14px 16px 20px 16px; }
+            .vm-description .tech-tags span { font-size: 9px; padding: 2px 8px; }
             .toast-container { font-size: 13px; padding: 10px 16px; bottom: 16px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== HEADER FIXE ===== -->
+    <!-- ============================================================ -->
+    <!-- HEADER (BORDURES ARRONDIES)                                   -->
+    <!-- ============================================================ -->
     <header class="vm-header">
         <div class="logo">
-            <i class="fas fa-code"></i>
+            <i class="fas fa-rocket"></i>
             Virtual <span>Market</span>
         </div>
-        <span class="header-badge">
-            <i class="fas fa-circle" style="font-size:8px;"></i> Beta
-        </span>
+        <div class="header-actions">
+            <span class="header-badge">
+                <i class="fas fa-circle" style="font-size:8px;"></i> Beta
+            </span>
+            <a href="/admin" class="btn-admin">
+                <i class="fas fa-chart-bar"></i> Admin
+            </a>
+        </div>
     </header>
 
-    <!-- ===== CONTENU ===== -->
+    <!-- ============================================================ -->
+    <!-- CONTENU PRINCIPAL                                             -->
+    <!-- ============================================================ -->
     <main class="vm-main">
         <div class="vm-card">
 
             <!-- Icone -->
             <div class="card-icon animate animate-delay-1">
-                <i class="fas fa-rocket"></i>
+                <i class="fas fa-hand-holding-heart"></i>
             </div>
 
             <!-- Titre -->
@@ -498,65 +598,81 @@
                     <div class="form-hint">Nous vous remercierons personnellement</div>
                 </div>
 
+                <!-- Email -->
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Votre email</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        <input type="email" id="emailInput" placeholder="exemple@email.com" required autocomplete="email" />
+                    </div>
+                    <div class="form-hint">Nous vous enverrons un remerciement</div>
+                </div>
+
                 <!-- Montant -->
                 <div class="form-group">
-                    <label><i class="fas fa-heart"></i> Montant de votre soutien (FCFA)</label>
-                    <div class="input-wrapper">
-                        <span class="prefix">FCFA</span>
-                        <input type="number" id="amountInput" placeholder="Montant libre" min="1" required />
-                        <span class="input-icon"><i class="fas fa-arrow-right"></i></span>
+                    <label><i class="fas fa-heart"></i> Montant (FCFA)</label>
+                    <div class="amount-wrapper">
+                        <div class="input-wrapper">
+                            <span class="prefix">FCFA</span>
+                            <input type="number" id="amountInput" placeholder="150 minimum" min="150" value="150" required />
+                            <span class="input-icon"><i class="fas fa-arrow-right"></i></span>
+                        </div>
+                        <button type="button" class="btn-edit" id="editBtn">
+                            <i class="fas fa-pen"></i> Modifier
+                        </button>
                     </div>
-                    <div class="form-hint">Choisissez le montant qui vous convient</div>
 
                     <!-- Montants suggérés -->
                     <div class="suggested-amounts">
+                        <button type="button" class="suggest-btn default" data-amount="150">150</button>
                         <button type="button" class="suggest-btn" data-amount="500">500</button>
                         <button type="button" class="suggest-btn" data-amount="1000">1 000</button>
                         <button type="button" class="suggest-btn" data-amount="2500">2 500</button>
-                        <button type="button" class="suggest-btn" data-amount="5000">5 000</button>
                     </div>
                 </div>
 
                 <!-- Bouton -->
                 <button type="submit" class="btn-submit" id="submitBtn">
-                    <i class="fas fa-hand-holding-heart"></i> Soutenir le projet
+                    <i class="fas fa-rocket"></i> Soutenir le projet
                 </button>
 
+                <div id="infoMessage" class="info-message"></div>
             </form>
 
-            <!-- Petit message -->
+            <!-- Sécurité -->
             <p style="text-align:center;font-size:13px;color:#9ca3af;margin-top:16px;opacity:0.7;">
                 <i class="fas fa-lock" style="color:#0F8B5D;margin-right:4px;"></i>
-                Paiement sécurisé via Wave
+                Paiement sécurisé via Jèko
             </p>
 
         </div>
     </main>
 
-    <!-- ===== FOOTER ===== -->
-    <footer class="vm-footer">
-        <i class="fas fa-code"></i> Virtual Market — Construisons ensemble le commerce en ligne ivoirien
-        <span class="footer-heart"> ❤️</span>
-    </footer>
-
-    <!-- ===== TOAST ===== -->
+    <!-- ============================================================ -->
+    <!-- TOAST                                                         -->
+    <!-- ============================================================ -->
     <div class="toast-container" id="toast"></div>
 
-    <!-- ============================================================= -->
+    <!-- ============================================================ -->
     <!-- SCRIPTS                                                        -->
-    <!-- ============================================================= -->
+    <!-- ============================================================ -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ virtmak.html chargé');
+            console.log('✅ virtmak.html (connecté) chargé');
 
             // ===== RÉFÉRENCES =====
             const form = document.getElementById('virtmakForm');
             const nameInput = document.getElementById('nameInput');
+            const emailInput = document.getElementById('emailInput');
             const amountInput = document.getElementById('amountInput');
+            const editBtn = document.getElementById('editBtn');
             const submitBtn = document.getElementById('submitBtn');
+            const infoMessage = document.getElementById('infoMessage');
             const toast = document.getElementById('toast');
             const suggestBtns = document.querySelectorAll('.suggest-btn');
+
+            let isAmountEditable = false;
 
             // ===== TOAST =====
             function showToast(message, type = 'success') {
@@ -568,36 +684,70 @@
                 }, 4000);
             }
 
-            // ===== BOUTONS SUGGÉRÉS =====
+            // ===== MESSAGE INFO =====
+            function showInfo(message, type = 'info') {
+                infoMessage.textContent = message;
+                infoMessage.className = 'info-message show' + (type === 'warning' ? ' warning' : '');
+                setTimeout(() => {
+                    infoMessage.className = 'info-message';
+                }, 4000);
+            }
+
+            // ===== MONTANTS PRÉ-REMPLIS =====
             suggestBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
-                    suggestBtns.forEach(b => b.classList.remove('active'));
+                    const amount = parseInt(this.dataset.amount);
+                    amountInput.value = amount;
+                    suggestBtns.forEach(b => b.classList.remove('active', 'default'));
                     this.classList.add('active');
-                    amountInput.value = this.dataset.amount;
-                    amountInput.focus();
+                    isAmountEditable = false;
+                    editBtn.classList.remove('active');
+                    editBtn.innerHTML = '<i class="fas fa-pen"></i> Modifier';
+                    amountInput.disabled = true;
+                    validateForm();
                 });
             });
 
-            // ===== VALIDATION EN TEMPS RÉEL =====
+            // ===== BOUTON MODIFIER =====
+            editBtn.addEventListener('click', function() {
+                isAmountEditable = !isAmountEditable;
+                this.classList.toggle('active');
+                amountInput.disabled = !isAmountEditable;
+                this.innerHTML = isAmountEditable ?
+                    '<i class="fas fa-check"></i> Valider' :
+                    '<i class="fas fa-pen"></i> Modifier';
+
+                if (isAmountEditable) {
+                    amountInput.focus();
+                    amountInput.select();
+                    suggestBtns.forEach(b => b.classList.remove('active', 'default'));
+                } else {
+                    const val = parseInt(amountInput.value);
+                    if (val < 150) {
+                        amountInput.value = 150;
+                        showInfo('⚠️ Le montant minimum est de 150 FCFA.', 'warning');
+                    }
+                }
+                validateForm();
+            });
+
+            // ===== VALIDATION =====
             function validateForm() {
                 const name = nameInput.value.trim();
+                const email = emailInput.value.trim();
                 const amount = parseInt(amountInput.value);
 
-                if (name.length < 2) {
-                    submitBtn.disabled = true;
-                    return false;
-                }
+                let isValid = true;
+                if (name.length < 2) isValid = false;
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) isValid = false;
+                if (isNaN(amount) || amount < 150) isValid = false;
 
-                if (isNaN(amount) || amount < 1) {
-                    submitBtn.disabled = true;
-                    return false;
-                }
-
-                submitBtn.disabled = false;
-                return true;
+                submitBtn.disabled = !isValid;
+                return isValid;
             }
 
             nameInput.addEventListener('input', validateForm);
+            emailInput.addEventListener('input', validateForm);
             amountInput.addEventListener('input', validateForm);
 
             // ===== SOUMISSION =====
@@ -605,25 +755,28 @@
                 e.preventDefault();
 
                 const name = nameInput.value.trim();
+                const email = emailInput.value.trim();
                 const amount = parseInt(amountInput.value);
 
-                if (name.length < 2) {
-                    showToast('⚠️ Veuillez entrer votre nom.', 'error');
-                    nameInput.focus();
+                if (!validateForm()) {
+                    showInfo('⚠️ Veuillez remplir tous les champs correctement.', 'warning');
                     return;
                 }
 
-                if (isNaN(amount) || amount < 1) {
-                    showToast('⚠️ Veuillez entrer un montant valide.', 'error');
-                    amountInput.focus();
+                if (amount < 150) {
+                    showInfo('⚠️ Le montant minimum est de 150 FCFA.', 'warning');
                     return;
                 }
 
-                // ✅ Redirection vers pay.html avec les paramètres
-                const url = `/pay.html?name=${encodeURIComponent(name)}&amount=${amount}`;
+                console.log('📝 Formulaire soumis');
+                console.log('👤 Nom:', name);
+                console.log('📧 Email:', email);
+                console.log('💰 Montant:', amount);
+
+                // ✅ Redirection vers pay.html
+                const url = `/pay.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&amount=${amount}`;
                 console.log('🔗 Redirection vers:', url);
 
-                // Effet de chargement
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirection...';
 
@@ -633,6 +786,7 @@
             });
 
             // ===== INIT =====
+            amountInput.disabled = true;
             validateForm();
             console.log('✅ virtmak.html initialisé');
 
