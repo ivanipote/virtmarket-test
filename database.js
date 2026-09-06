@@ -82,6 +82,23 @@ async function initializeDatabase() {
         `);
         console.log('✅ Table soutiens créée');
 
+        // ===== NOUVELLE TABLE : pending_payments =====
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS pending_payments (
+                id SERIAL PRIMARY KEY,
+                reference TEXT UNIQUE NOT NULL,
+                email TEXT NOT NULL,
+                name TEXT NOT NULL,
+                amount INTEGER NOT NULL,
+                status TEXT DEFAULT 'pending',
+                payment_link_id TEXT,
+                transaction_id TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ Table pending_payments créée');
+
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_transaction_id ON payments_jeko(transaction_id)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_status ON payments_jeko(status)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_created_at ON payments_jeko(created_at)`);
@@ -91,6 +108,8 @@ async function initializeDatabase() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_soutiens_status ON soutiens(status)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_users_flex5 ON users(flex5)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_pending_payments_reference ON pending_payments(reference)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_pending_payments_status ON pending_payments(status)`);
 
         await client.query('COMMIT');
         console.log('✅ Toutes les tables créées avec succès');
@@ -103,6 +122,10 @@ async function initializeDatabase() {
         client.release();
     }
 }
+
+// ============================================================
+// FONCTIONS UTILISATEURS
+// ============================================================
 
 async function getOrCreateUser(name, email) {
     try {
@@ -138,6 +161,10 @@ async function updateUserStatus(email, userStatus) {
     }
 }
 
+// ============================================================
+// FONCTIONS PAIEMENTS JEKO
+// ============================================================
+
 async function saveJekoPayment(data) {
     const query = `
         INSERT INTO payments_jeko (
@@ -156,7 +183,7 @@ async function saveJekoPayment(data) {
         data.amount?.amount || 0,
         data.amount?.currency || 'XOF',
         data.status || 'pending',
-        data.counterpartIdentifier || null,
+        data.counterpartLabel || null,
         data.paymentMethod || null,
         data.storeId || null,
         data.storeName || null,
@@ -230,6 +257,143 @@ async function cleanPendingPayments() {
     }
 }
 
+// ============================================================
+// NOUVELLES FONCTIONS : PENDING PAYMENTS
+// ============================================================
+
+/**
+ * Créer un paiement en attente (pending)
+ */
+async function createPendingPayment(data) {
+    const query = `
+        INSERT INTO pending_payments (
+            reference, email, name, amount, status, payment_link_id
+        ) VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *
+    `;
+    const values = [
+        data.reference,
+        data.email,
+        data.name,
+        data.amount,
+        'pending',
+        data.payment_link_id || null
+    ];
+    try {
+        const result = await pool.query(query, values);
+        return result.rows[0];
+    } catch (error) {
+        console.error('❌ Erreur createPendingPayment:', error);
+        return null;
+    }
+}
+
+/**
+ * Récupérer un paiement en attente par sa référence
+ */
+async function getPendingPaymentByReference(reference) {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM pending_payments WHERE reference = $1',
+            [reference]
+        );
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('❌ Erreur getPendingPaymentByReference:', error);
+        return null;
+    }
+}
+
+/**
+ * Mettre à jour le statut d'un paiement en attente
+ */
+async function updatePendingPaymentStatus(reference, status, transactionId) {
+    try {
+        const result = await pool.query(
+            `UPDATE pending_payments 
+             SET status = $1, transaction_id = $2, updated_at = NOW() 
+             WHERE reference = $3 
+             RETURNING *`,
+            [status, transactionId, reference]
+        );
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('❌ Erreur updatePendingPaymentStatus:', error);
+        return null;
+    }
+}
+
+/**
+ * Mettre à jour le payment_link_id d'un paiement en attente
+ */
+async function updatePendingPaymentLinkId(reference, paymentLinkId) {
+    try {
+        const result = await pool.query(
+            `UPDATE pending_payments 
+             SET payment_link_id = $1, updated_at = NOW() 
+             WHERE reference = $2 
+             RETURNING *`,
+            [paymentLinkId, reference]
+        );
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('❌ Erreur updatePendingPaymentLinkId:', error);
+        return null;
+    }
+}
+
+/**
+ * Récupérer tous les paiements en attente
+ */
+async function getPendingPayments() {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM pending_payments ORDER BY created_at DESC'
+        );
+        return result.rows;
+    } catch (error) {
+        console.error('❌ Erreur getPendingPayments:', error);
+        return [];
+    }
+}
+
+/**
+ * Récupérer un paiement en attente par ID
+ */
+async function getPendingPaymentById(id) {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM pending_payments WHERE id = $1',
+            [id]
+        );
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('❌ Erreur getPendingPaymentById:', error);
+        return null;
+    }
+}
+
+/**
+ * Nettoyer les paiements en attente trop anciens (15 min)
+ */
+async function cleanPendingPaymentsOld() {
+    try {
+        const result = await pool.query(`
+            DELETE FROM pending_payments
+            WHERE status = 'pending'
+            AND created_at < NOW() - INTERVAL '15 minutes'
+        `);
+        return result.rowCount;
+    } catch (error) {
+        console.error('❌ Erreur cleanPendingPaymentsOld:', error);
+        return 0;
+    }
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+
 module.exports = {
     pool,
     query: (text, params) => pool.query(text, params),
@@ -237,11 +401,23 @@ module.exports = {
     all: (text, params) => pool.query(text, params).then(res => res.rows),
     run: (text, params) => pool.query(text, params),
     initialize: initializeDatabase,
+    
+    // Utilisateurs
     getOrCreateUser,
     updateUserStatus,
+    
+    // Paiements Jèko
     saveJekoPayment,
     updatePaymentStatus,
     getJekoPayments,
     getPaymentById,
-    cleanPendingPayments
+    cleanPendingPayments,
+     // Pending Payments (NOUVEAU)
+    createPendingPayment,
+    getPendingPaymentByReference,
+    updatePendingPaymentStatus,
+    updatePendingPaymentLinkId,
+    getPendingPayments,
+    getPendingPaymentById,
+    cleanPendingPaymentsOld
 };
