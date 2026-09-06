@@ -20,7 +20,7 @@ async function initializeDatabase() {
         await client.query('BEGIN');
 
         // ============================================================
-        // TABLE PAYMENTS_JEKO
+        // TABLE PAYMENTS_JEKO (avec flex1-8)
         // ============================================================
         await client.query(`
             CREATE TABLE IF NOT EXISTS payments_jeko (
@@ -58,7 +58,6 @@ async function initializeDatabase() {
                 name TEXT NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 phone TEXT,
-                user_status TEXT DEFAULT 'visiteur',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 flex1 TEXT DEFAULT NULL,
@@ -71,25 +70,7 @@ async function initializeDatabase() {
                 flex8 TEXT DEFAULT NULL
             )
         `);
-        console.log('✅ Table users créée (avec user_status)');
-
-        // ============================================================
-        // MIGRATION : garantir que user_status existe réellement
-        // ------------------------------------------------------------
-        // CREATE TABLE IF NOT EXISTS n'exécute RIEN si la table
-        // "users" existait déjà avant l'ajout de user_status dans ce
-        // fichier. Résultat : la colonne n'est jamais créée sur les
-        // bases existantes. On force donc l'ajout ici, comme pour les
-        // colonnes flex / fcm_token dans server-test.js.
-        // ============================================================
-        await client.query(`
-            ALTER TABLE users
-            ADD COLUMN IF NOT EXISTS user_status TEXT DEFAULT 'visiteur'
-        `);
-        await client.query(`
-            UPDATE users SET user_status = 'visiteur' WHERE user_status IS NULL
-        `);
-        console.log('✅ Colonne user_status vérifiée sur la table users');
+        console.log('✅ Table users créée');
 
         // ============================================================
         // TABLE SOUTIENS
@@ -127,7 +108,7 @@ async function initializeDatabase() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_soutiens_user_id ON soutiens(user_id)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_soutiens_status ON soutiens(status)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_users_user_status ON users(user_status)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_users_flex5 ON users(flex5)`);
 
         await client.query('COMMIT');
         console.log('✅ Toutes les tables créées avec succès');
@@ -142,67 +123,6 @@ async function initializeDatabase() {
 }
 
 // ============================================================
-// CRÉER OU RÉCUPÉRER UN UTILISATEUR
-// ============================================================
-async function getOrCreateUser(name, email) {
-    try {
-        // Vérifier si l'utilisateur existe
-        let user = await pool.query(
-            'SELECT * FROM users WHERE email = $1',
-            [email]
-        );
-
-        if (user.rows.length > 0) {
-            // Mettre à jour le nom si différent
-            if (user.rows[0].name !== name) {
-                await pool.query(
-                    'UPDATE users SET name = $1, updated_at = NOW() WHERE email = $2',
-                    [name, email]
-                );
-                user.rows[0].name = name;
-            }
-            console.log(`👤 Utilisateur existant : ${name} (${email})`);
-            return user.rows[0];
-        }
-
-        // Créer un nouvel utilisateur
-        const result = await pool.query(
-            `INSERT INTO users (name, email, user_status) 
-             VALUES ($1, $2, 'visiteur') 
-             RETURNING *`,
-            [name, email]
-        );
-        console.log(`✅ Nouvel utilisateur créé : ${name} (${email})`);
-        return result.rows[0];
-    } catch (error) {
-        console.error('❌ Erreur getOrCreateUser:', error);
-        return null;
-    }
-}
-
-// ============================================================
-// METTRE À JOUR LE STATUT UTILISATEUR
-// ============================================================
-async function updateUserStatus(email, userStatus) {
-    try {
-        const result = await pool.query(
-            `UPDATE users 
-             SET user_status = $1, updated_at = NOW() 
-             WHERE email = $2 
-             RETURNING id, name, email, user_status`,
-            [userStatus, email]
-        );
-        if (result.rowCount > 0) {
-            console.log(`✅ Statut utilisateur mis à jour : ${userStatus} (${email})`);
-        }
-        return result.rows[0] || null;
-    } catch (error) {
-        console.error('❌ Erreur updateUserStatus:', error);
-        return null;
-    }
-}
-
-// ============================================================
 // SAUVEGARDER UN PAIEMENT JEKO
 // ============================================================
 async function saveJekoPayment(data) {
@@ -211,9 +131,9 @@ async function saveJekoPayment(data) {
             transaction_id, amount, currency, status,
             counterpart_phone, payment_method, store_id,
             store_name, payment_link_id, executed_at,
-            flex1, flex2
+            flex1, flex2, flex3, flex4, flex5
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
         ON CONFLICT (transaction_id) DO NOTHING
         RETURNING id
     `;
@@ -229,8 +149,11 @@ async function saveJekoPayment(data) {
         data.storeName || null,
         data.transactionDetails?.paymentLinkId || null,
         data.executedAt ? new Date(data.executedAt) : null,
-        data.flex1 || null,
-        data.flex2 || null
+        data.flex1 || null,  // Nom
+        data.flex2 || null,  // Email
+        data.flex3 || null,  // Email envoyé (true/false)
+        data.flex4 || null,  // Date envoi email
+        data.flex5 || 'visiteur'  // Statut utilisateur: visiteur, participant, donateur
     ];
 
     try {
@@ -243,6 +166,28 @@ async function saveJekoPayment(data) {
         return result.rows[0]?.id || null;
     } catch (error) {
         console.error('❌ Erreur sauvegarde paiement Jèko:', error);
+        return null;
+    }
+}
+
+// ============================================================
+// METTRE À JOUR LE STATUT UTILISATEUR (via flex5)
+// ============================================================
+async function updateUserStatus(transactionId, userStatus) {
+    try {
+        const result = await pool.query(
+            `UPDATE payments_jeko 
+             SET flex5 = $1, updated_at = NOW() 
+             WHERE transaction_id = $2 
+             RETURNING id`,
+            [userStatus, transactionId]
+        );
+        if (result.rowCount > 0) {
+            console.log(`✅ Statut utilisateur mis à jour : ${userStatus} (transaction: ${transactionId})`);
+        }
+        return result.rows[0]?.id || null;
+    } catch (error) {
+        console.error('❌ Erreur mise à jour statut:', error);
         return null;
     }
 }
@@ -264,12 +209,15 @@ async function updatePaymentStatus(transactionId, status) {
 }
 
 // ============================================================
-// RÉCUPÉRER TOUS LES PAIEMENTS AVEC INFOS UTILISATEUR
+// RÉCUPÉRER TOUS LES PAIEMENTS
 // ============================================================
 async function getJekoPayments() {
     try {
         const result = await pool.query(`
-            SELECT p.*, u.name as user_name, u.email as user_email, u.user_status
+            SELECT 
+                p.*,
+                u.name as user_name,
+                u.email as user_email
             FROM payments_jeko p
             LEFT JOIN users u ON u.email = p.flex2
             ORDER BY p.created_at DESC
@@ -327,9 +275,8 @@ module.exports = {
     all: (text, params) => pool.query(text, params).then(res => res.rows),
     run: (text, params) => pool.query(text, params),
     initialize: initializeDatabase,
-    getOrCreateUser,
-    updateUserStatus,
     saveJekoPayment,
+    updateUserStatus,
     updatePaymentStatus,
     getJekoPayments,
     getPaymentById,
