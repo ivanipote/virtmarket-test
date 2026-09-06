@@ -213,6 +213,20 @@ app.post('/create-payment-link', async (req, res) => {
 });
 
 // ============================================================
+// ROUTE : RÉCUPÉRER LES UTILISATEURS
+// ============================================================
+app.get('/api/users', async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT * FROM users ORDER BY created_at DESC'
+        );
+        res.json({ success: true, count: result.rows.length, users: result.rows });
+    } catch (error) {
+        console.error('❌ Erreur récupération utilisateurs:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+// ============================================================
 // ROUTE : RÉCUPÉRER LES PAIEMENTS (API)
 // ============================================================
 app.get('/api/users', async (req, res) => {
