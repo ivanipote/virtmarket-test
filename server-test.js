@@ -89,7 +89,7 @@ app.post('/api/user/register', async (req, res) => {
         const user = await db.getOrCreateUser(name, email);
         
         // Mettre à jour le statut vers 'visiteur' si différent
-        if (user.user_status !== 'visiteur') {
+        if (user.flex5 !== 'visiteur') {
             await db.updateUserStatus(email, 'visiteur');
         }
 
@@ -112,7 +112,7 @@ app.post('/api/user/register', async (req, res) => {
 });
 
 // ============================================================
-// ROUTE : METTRE À JOUR LE STATUT UTILISATEUR (participant / donateur)
+// ROUTE : METTRE À JOUR LE STATUT UTILISATEUR
 // ============================================================
 app.post('/api/user/update-status', async (req, res) => {
     const { email, status } = req.body;
@@ -154,7 +154,7 @@ app.post('/api/user/update-status', async (req, res) => {
 });
 
 // ============================================================
-// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (API) - VERSION PAYMENT_REQUESTS
+// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (API)
 // ============================================================
 app.post('/create-payment-link', async (req, res) => {
     const { name, email, amount } = req.body;
@@ -162,7 +162,8 @@ app.post('/create-payment-link', async (req, res) => {
     // ✅ Convertir le montant en centimes (minimum 100 = 1 FCFA)
     const amountInCentimes = Math.round(amount * 100);
 
-    console.log(`📝 Création d'une demande de paiement pour ${name} (${amount} FCFA → ${amountInCentimes} centimes)`);
+    console.log(`📝 Création d'une demande de paiement pour ${name} (${email})`);
+    console.log(`💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
 
     try {
         const response = await fetch('https://api.jeko.africa/partner_api/payment_requests', {
@@ -174,13 +175,17 @@ app.post('/create-payment-link', async (req, res) => {
             },
             body: JSON.stringify({
                 storeId: process.env.JEKO_BUSINESS_ID,
+                title: `Commande - ${name}`,
                 amountCents: amountInCentimes,
                 currency: 'XOF',
                 reference: `VM-${Date.now()}`,
+                email: email,                    // ✅ Champ personnalisé
+                customerId: `user_${Date.now()}`, // ✅ Champ personnalisé
+                description: `Commande de ${name} (${email}) - ${amount} FCFA`,
                 paymentDetails: {
                     type: 'redirect',
                     data: {
-                        paymentMethod: 'wave',  // ✅ FORCER WAVE UNIQUEMENT
+                        paymentMethod: 'wave',
                         successUrl: 'https://virtmarket-test.onrender.com/verify',
                         errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
                     }
@@ -226,10 +231,11 @@ app.get('/api/users', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
 // ============================================================
-// ROUTE : RÉCUPÉRER LES PAIEMENTS (API)
+// ROUTE : RÉCUPÉRER TOUS LES PAIEMENTS
 // ============================================================
-app.get('/api/users', async (req, res) => {
+app.get('/api/payments', async (req, res) => {
     try {
         const payments = await db.getJekoPayments();
         res.json({ success: true, count: payments.length, payments });
@@ -258,27 +264,28 @@ app.get('/api/payment/status/:id', async (req, res) => {
 });
 
 // ============================================================
-// ROUTE : RÉCUPÉRER LES UTILISATEURS
-// ============================================================
-app.get('/api/users', async (req, res) => {
-    try {
-        const result = await db.query(
-            'SELECT * FROM users ORDER BY created_at DESC'
-        );
-        res.json({ success: true, count: result.rows.length, users: result.rows });
-    } catch (error) {
-        console.error('❌ Erreur récupération utilisateurs:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-// ============================================================
-// WEBHOOK JEKO
+// WEBHOOK JEKO - AVEC LOGS DÉTAILLÉS
 // ============================================================
 app.post('/webhook', async (req, res) => {
-    console.log('🔔 Webhook reçu');
+    console.log('\n' + '='.repeat(80));
+    console.log('🔔 WEBHOOK REÇU');
+    console.log('='.repeat(80));
 
     try {
-        // 1️⃣ Vérifier la signature
+        // ===== 1️⃣ AFFICHER TOUS LES HEADERS =====
+        console.log('\n📋 HEADERS REÇUS:');
+        console.log('-'.repeat(40));
+        const headers = req.headers;
+        Object.keys(headers).forEach(key => {
+            if (key.startsWith('jeko-')) {
+                console.log(`   ${key}: ${headers[key]}`);
+            }
+        });
+        console.log('   content-type:', headers['content-type']);
+        console.log('   user-agent:', headers['user-agent']);
+        console.log('   content-length:', headers['content-length']);
+
+        // ===== 2️⃣ VÉRIFIER LA SIGNATURE =====
         const signature = req.headers['jeko-signature'];
         const payload = JSON.stringify(req.body);
         const expectedSignature = crypto
@@ -288,43 +295,154 @@ app.post('/webhook', async (req, res) => {
 
         if (!signature || signature !== expectedSignature) {
             console.log('❌ Signature invalide !');
+            console.log(`   Reçu: ${signature}`);
+            console.log(`   Attendu: ${expectedSignature}`);
             return res.status(401).send('Invalid signature');
         }
 
         console.log('✅ Signature valide');
 
+        // ===== 3️⃣ AFFICHER TOUT LE CORPS DU WEBHOOK =====
+        console.log('\n📦 CORPS DU WEBHOOK (COMPLET):');
+        console.log('-'.repeat(40));
+        console.log(JSON.stringify(req.body, null, 2));
+
+        // ===== 4️⃣ EXTRAIRE TOUTES LES INFOS IMPORTANTES =====
+        console.log('\n📊 INFORMATIONS EXTRAITES:');
+        console.log('-'.repeat(40));
+
         const body = req.body;
 
-        // 2️⃣ Extraire les données
-        const donorName = body.counterpartLabel || null;
-        const donorEmail = body.flex2 || null;
-        const transactionId = body.id;
+        // ID Transaction
+        const transactionId = body.id || 'N/A';
+        console.log(`   🆔 Transaction ID: ${transactionId}`);
 
-        // 3️⃣ Mettre à jour le paiement en base
-        body.flex1 = donorName;
-        body.flex2 = donorEmail;
+        // Montant
+        const amount = body.amount?.amount || 'N/A';
+        const currency = body.amount?.currency || 'XOF';
+        console.log(`   💰 Montant: ${amount} ${currency} (${amount/100} FCFA)`);
+
+        // Statut
+        const status = body.status || 'N/A';
+        console.log(`   📊 Statut: ${status}`);
+
+        // Méthode de paiement
+        const paymentMethod = body.paymentMethod || 'N/A';
+        console.log(`   💳 Méthode: ${paymentMethod}`);
+
+        // Téléphone du payeur
+        const counterpartLabel = body.counterpartLabel || 'N/A';
+        console.log(`   📱 Téléphone: ${counterpartLabel}`);
+
+        // === CHAMPS PERSONNALISÉS ===
+        const email = body.email || body.flex2 || null;
+        console.log(`   📧 Email (champ personnalisé): ${email || 'NON FOURNI'}`);
+
+        const customerId = body.customerId || body.flex1 || null;
+        console.log(`   🆔 Customer ID: ${customerId || 'NON FOURNI'}`);
+
+        const title = body.title || 'N/A';
+        console.log(`   📝 Titre: ${title}`);
+
+        const description = body.description || 'N/A';
+        console.log(`   📄 Description: ${description}`);
+
+        // Reference
+        const reference = body.transactionDetails?.reference || body.reference || 'N/A';
+        console.log(`   🔗 Référence: ${reference}`);
+
+        // Payment Link ID
+        const paymentLinkId = body.transactionDetails?.paymentLinkId || body.paymentLinkId || 'N/A';
+        console.log(`   🔗 Payment Link ID: ${paymentLinkId}`);
+
+        // Date d'exécution
+        const executedAt = body.executedAt || 'N/A';
+        console.log(`   📅 Exécuté le: ${executedAt}`);
+
+        // Store
+        const storeName = body.storeName || 'N/A';
+        const storeId = body.storeId || 'N/A';
+        console.log(`   🏪 Store: ${storeName} (${storeId})`);
+
+        // Wallet balance
+        const walletBalance = body.walletAvailableBalance?.amount || 'N/A';
+        console.log(`   💰 Solde wallet: ${walletBalance} ${currency}`);
+
+        // ===== 5️⃣ ENREGISTRER LE PAIEMENT EN BASE =====
+        console.log('\n💾 ENREGISTREMENT EN BASE:');
+        console.log('-'.repeat(40));
+
+        // Ajouter les champs personnalisés pour la base
+        body.flex1 = customerId || null;
+        body.flex2 = email || null;
         body.flex5 = 'donateur';
 
         const savedId = await db.saveJekoPayment(body);
 
         if (savedId) {
-            console.log(`✅ Paiement enregistré en base (ID: ${savedId})`);
+            console.log(`   ✅ Paiement enregistré en base (ID: ${savedId})`);
+        } else {
+            console.log(`   ℹ️ Paiement déjà existant ou erreur`);
+        }
+
+        // ===== 6️⃣ METTRE À JOUR LE STATUT UTILISATEUR =====
+        console.log('\n👤 MISE À JOUR STATUT UTILISATEUR:');
+        console.log('-'.repeat(40));
+
+        if (email) {
+            console.log(`   📧 Email trouvé: ${email}`);
             
-            // 4️⃣ Mettre à jour le statut utilisateur vers 'donateur'
-            if (donorEmail) {
-                const updated = await db.updateUserStatus(donorEmail, 'donateur');
+            // Vérifier si l'utilisateur existe
+            const userCheck = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+            
+            if (userCheck.rows.length > 0) {
+                console.log(`   ✅ Utilisateur trouvé: ${userCheck.rows[0].name}`);
+                
+                // Mettre à jour le statut vers donateur
+                const updated = await db.updateUserStatus(email, 'donateur');
+                
                 if (updated) {
-                    console.log(`✅ Utilisateur ${donorEmail} → donateur`);
+                    console.log(`   ✅ Statut mis à jour: ${email} → donateur`);
+                } else {
+                    console.log(`   ❌ Erreur lors de la mise à jour du statut`);
+                }
+            } else {
+                console.log(`   ⚠️ Utilisateur non trouvé pour l'email: ${email}`);
+                console.log(`   💡 Création d'un nouvel utilisateur...`);
+                
+                // Créer l'utilisateur s'il n'existe pas
+                const newUser = await db.getOrCreateUser(
+                    title?.replace('Commande - ', '') || 'Donateur',
+                    email
+                );
+                
+                if (newUser) {
+                    console.log(`   ✅ Nouvel utilisateur créé: ${newUser.name}`);
+                    await db.updateUserStatus(email, 'donateur');
+                    console.log(`   ✅ Statut mis à jour: ${email} → donateur`);
                 }
             }
         } else {
-            console.log('ℹ️ Paiement déjà existant');
+            console.log(`   ⚠️ Aucun email trouvé dans le webhook !`);
+            console.log(`   💡 Impossible de mettre à jour le statut utilisateur`);
         }
+
+        // ===== 7️⃣ RÉSUMÉ FINAL =====
+        console.log('\n📋 RÉSUMÉ DU TRAITEMENT:');
+        console.log('-'.repeat(40));
+        console.log(`   ✅ Signature: OK`);
+        console.log(`   ✅ Paiement: ${status}`);
+        console.log(`   ✅ Enregistrement: ${savedId ? 'OK' : 'Déjà existant'}`);
+        console.log(`   ✅ Statut utilisateur: ${email ? 'Mise à jour effectuée' : 'Non disponible'}`);
+        console.log('='.repeat(80) + '\n');
 
         res.sendStatus(200);
 
     } catch (error) {
-        console.error('❌ Erreur webhook:', error);
+        console.error('\n❌ ERREUR WEBHOOK:');
+        console.error('-'.repeat(40));
+        console.error(error);
+        console.error('='.repeat(80) + '\n');
         res.sendStatus(500);
     }
 });
@@ -336,4 +454,6 @@ app.listen(PORT, () => {
     console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
     console.log(`🌐 Accès: https://virtmarket-test.onrender.com`);
     console.log(`📊 Admin: https://virtmarket-test.onrender.com/admin`);
+    console.log(`📋 API Payments: https://virtmarket-test.onrender.com/api/payments`);
+    console.log(`👥 API Users: https://virtmarket-test.onrender.com/api/users`);
 });
