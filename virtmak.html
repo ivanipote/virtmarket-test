@@ -91,7 +91,7 @@
         /* ============================================================ */
         .vm-title {
             text-align: center;
-            margin: 4px 0 20px 0;
+            margin: 4px 0 16px 0;
         }
 
         .vm-title .powered {
@@ -121,6 +121,46 @@
             font-weight: 700;
             color: #0F8B5D;
             letter-spacing: -0.3px;
+        }
+
+        /* ============================================================ */
+        /* DESCRIPTION TECH                                             */
+        /* ============================================================ */
+        .vm-description {
+            background: #f0faf5;
+            border-radius: 16px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0F8B5D;
+            width: 100%;
+        }
+
+        .vm-description p {
+            font-size: 13px;
+            color: #1a1a2e;
+            line-height: 1.6;
+            margin-bottom: 6px;
+        }
+
+        .vm-description .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .vm-description .tech-tags span {
+            background: white;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #0F8B5D;
+            border: 1px solid rgba(15, 139, 93, 0.12);
+        }
+
+        .vm-description .tech-tags span i {
+            margin-right: 4px;
+            font-size: 10px;
         }
 
         /* ============================================================ */
@@ -437,6 +477,13 @@
             .vm-title h2 {
                 font-size: 19px;
             }
+            .vm-description p {
+                font-size: 12px;
+            }
+            .vm-description .tech-tags span {
+                font-size: 10px;
+                padding: 2px 10px;
+            }
             .vm-card {
                 padding: 22px 18px 18px 18px;
                 border-radius: 20px;
@@ -487,6 +534,13 @@
             }
             .vm-title h2 {
                 font-size: 17px;
+            }
+            .vm-description p {
+                font-size: 11px;
+            }
+            .vm-description .tech-tags span {
+                font-size: 9px;
+                padding: 2px 8px;
             }
             .vm-card {
                 padding: 18px 14px 14px 14px;
@@ -544,6 +598,16 @@
             .vm-title h2 {
                 font-size: 15px;
             }
+            .vm-description {
+                padding: 10px 12px;
+            }
+            .vm-description p {
+                font-size: 10px;
+            }
+            .vm-description .tech-tags span {
+                font-size: 8px;
+                padding: 1px 6px;
+            }
             .vm-card {
                 padding: 14px 10px 12px 10px;
                 border-radius: 16px;
@@ -586,6 +650,22 @@
         <div class="vm-title">
             <span class="powered">⚡ powered by megane</span>
             <h2>Votre prochaine place e-commerce</h2>
+        </div>
+
+        <!-- Description Tech -->
+        <div class="vm-description">
+            <p>
+                <i class="fas fa-bolt" style="color:#0F8B5D;margin-right:6px;"></i>
+                Une plateforme 100% ivoirienne, sécurisée et innovante.
+                Soutenez le développement du système avec le montant de votre choix.
+            </p>
+            <div class="tech-tags">
+                <span><i class="fas fa-code"></i> Node.js</span>
+                <span><i class="fas fa-database"></i> PostgreSQL</span>
+                <span><i class="fas fa-cloud"></i> API Jèko</span>
+                <span><i class="fas fa-lock"></i> Sécurisé</span>
+                <span><i class="fas fa-rocket"></i> 100% CI</span>
+            </div>
         </div>
 
         <!-- Carte blanche -->
@@ -794,7 +874,7 @@
 
                     // ✅ 2. Redirection vers pay.html
                     const url =
-                    `/pay.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&amount=${amount}`;
+                        `/pay.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&amount=${amount}`;
                     console.log('🔗 Redirection vers:', url);
 
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirection...';
