@@ -22,35 +22,33 @@ async function initializeDatabase() {
         // ============================================================
         // TABLE PAYMENTS_JEKO (avec user_status et 8 flex)
         // ============================================================
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS payments_jeko (
-                id SERIAL PRIMARY KEY,
-                transaction_id TEXT UNIQUE NOT NULL,
-                amount INTEGER NOT NULL,
-                currency TEXT DEFAULT 'XOF',
-                status TEXT DEFAULT 'pending',
-                user_status TEXT DEFAULT 'visiteur',
-                counterpart_phone TEXT,
-                payment_method TEXT,
-                store_id TEXT,
-                store_name TEXT,
-                payment_link_id TEXT,
-                executed_at TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                -- ✅ 8 CHAMPS FLEX
-                flex1 TEXT DEFAULT NULL,  -- Nom du donateur
-                flex2 TEXT DEFAULT NULL,  -- Email du donateur
-                flex3 TEXT DEFAULT NULL,  -- Email envoyé (true/false)
-                flex4 TEXT DEFAULT NULL,  -- Date envoi email
-                flex5 TEXT DEFAULT NULL,  -- Réservé
-                flex6 TEXT DEFAULT NULL,  -- Réservé
-                flex7 TEXT DEFAULT NULL,  -- Réservé
-                flex8 TEXT DEFAULT NULL   -- Réservé
-            )
-        `);
-        console.log('✅ Table payments_jeko créée (avec user_status et 8 flex)');
-
+        // TABLE PAYMENTS_JEKO (corrigée)
+await client.query(`
+    CREATE TABLE IF NOT EXISTS payments_jeko (
+        id SERIAL PRIMARY KEY,
+        transaction_id TEXT UNIQUE NOT NULL,
+        amount INTEGER NOT NULL,
+        currency TEXT DEFAULT 'XOF',
+        status TEXT DEFAULT 'pending',
+        user_status TEXT DEFAULT 'visiteur',
+        counterpart_phone TEXT,
+        payment_method TEXT,
+        store_id TEXT,
+        store_name TEXT,
+        payment_link_id TEXT,
+        executed_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        flex1 TEXT DEFAULT NULL,
+        flex2 TEXT DEFAULT NULL,
+        flex3 TEXT DEFAULT NULL,
+        flex4 TEXT DEFAULT NULL,
+        flex5 TEXT DEFAULT NULL,
+        flex6 TEXT DEFAULT NULL,
+        flex7 TEXT DEFAULT NULL,
+        flex8 TEXT DEFAULT NULL
+    )
+`);
         // ============================================================
         // TABLE USERS (pour les donateurs)
         // ============================================================
