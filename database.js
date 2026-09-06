@@ -1,4 +1,4 @@
-const { Pool } = require('pg');
+)uconst { Pool } = require('pg');
 require('dotenv').config();
 
 // ============================================================
@@ -12,7 +12,7 @@ const pool = new Pool({
 });
 
 // ============================================================
-// INITIALISATION DES TABLES
+// INITIALISATION DES TABLES (SANS PASSWORD)
 // ============================================================
 async function initializeDatabase() {
     const client = await pool.connect();
@@ -20,10 +20,20 @@ async function initializeDatabase() {
         await client.query('BEGIN');
 
         // ============================================================
-        // TABLE PAYMENTS_JEKO
+        // 1. DROPPER LES TABLES SI ELLES EXISTENT
         // ============================================================
         await client.query(`
-            CREATE TABLE IF NOT EXISTS payments_jeko (
+            DROP TABLE IF EXISTS soutiens CASCADE;
+            DROP TABLE IF EXISTS users CASCADE;
+            DROP TABLE IF EXISTS payments_jeko CASCADE;
+        `);
+        console.log('🧹 Tables existantes supprimées');
+
+        // ============================================================
+        // 2. TABLE PAYMENTS_JEKO
+        // ============================================================
+        await client.query(`
+            CREATE TABLE payments_jeko (
                 id SERIAL PRIMARY KEY,
                 transaction_id TEXT UNIQUE NOT NULL,
                 amount INTEGER NOT NULL,
@@ -50,10 +60,10 @@ async function initializeDatabase() {
         console.log('✅ Table payments_jeko créée');
 
         // ============================================================
-        // TABLE USERS (SANS PASSWORD)
+        // 3. TABLE USERS (SANS PASSWORD)
         // ============================================================
         await client.query(`
-            CREATE TABLE IF NOT EXISTS users (
+            CREATE TABLE users (
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL,
                 email TEXT UNIQUE NOT NULL,
@@ -73,10 +83,10 @@ async function initializeDatabase() {
         console.log('✅ Table users créée (sans password)');
 
         // ============================================================
-        // TABLE SOUTIENS
+        // 4. TABLE SOUTIENS
         // ============================================================
         await client.query(`
-            CREATE TABLE IF NOT EXISTS soutiens (
+            CREATE TABLE soutiens (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
                 payment_id INTEGER REFERENCES payments_jeko(id) ON DELETE SET NULL,
@@ -98,17 +108,17 @@ async function initializeDatabase() {
         console.log('✅ Table soutiens créée');
 
         // ============================================================
-        // INDEX
+        // 5. INDEX
         // ============================================================
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_transaction_id ON payments_jeko(transaction_id)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_status ON payments_jeko(status)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_created_at ON payments_jeko(created_at)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_flex1 ON payments_jeko(flex1)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_flex2 ON payments_jeko(flex2)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_soutiens_user_id ON soutiens(user_id)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_soutiens_status ON soutiens(status)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_users_flex5 ON users(flex5)`);
+        await client.query(`CREATE INDEX idx_payments_jeko_transaction_id ON payments_jeko(transaction_id)`);
+        await client.query(`CREATE INDEX idx_payments_jeko_status ON payments_jeko(status)`);
+        await client.query(`CREATE INDEX idx_payments_jeko_created_at ON payments_jeko(created_at)`);
+        await client.query(`CREATE INDEX idx_payments_jeko_flex1 ON payments_jeko(flex1)`);
+        await client.query(`CREATE INDEX idx_payments_jeko_flex2 ON payments_jeko(flex2)`);
+        await client.query(`CREATE INDEX idx_soutiens_user_id ON soutiens(user_id)`);
+        await client.query(`CREATE INDEX idx_soutiens_status ON soutiens(status)`);
+        await client.query(`CREATE INDEX idx_users_email ON users(email)`);
+        await client.query(`CREATE INDEX idx_users_flex5 ON users(flex5)`);
 
         await client.query('COMMIT');
         console.log('✅ Toutes les tables créées avec succès');
@@ -134,8 +144,6 @@ async function getOrCreateUser(name, email) {
             [email]
         );
 
-        console.log(`📊 ${user.rows.length} utilisateur(s) trouvé(s)`);
-
         if (user.rows.length > 0) {
             if (user.rows[0].name !== name) {
                 await pool.query(
@@ -149,7 +157,6 @@ async function getOrCreateUser(name, email) {
             return user.rows[0];
         }
 
-        console.log(`🆕 Création utilisateur : ${name} (${email})`);
         const result = await pool.query(
             `INSERT INTO users (name, email) 
              VALUES ($1, $2) 
@@ -157,7 +164,7 @@ async function getOrCreateUser(name, email) {
             [name, email]
         );
         
-        console.log(`✅ Utilisateur créé : ${name} (${email}) (ID: ${result.rows[0].id})`);
+        console.log(`✅ Nouvel utilisateur créé : ${name} (${email}) (ID: ${result.rows[0].id})`);
         return result.rows[0];
         
     } catch (error) {
@@ -219,7 +226,7 @@ async function saveJekoPayment(data) {
         data.flex2 || null,
         data.flex3 || null,
         data.flex4 || null,
-        data.flex5 || 'visiteur'
+        data.flex5 || null
     ];
 
     try {
