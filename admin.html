@@ -835,7 +835,7 @@
 
                 if (currentFilter !== 'all') {
                     filtered = filtered.filter(u => {
-                        const status = u.user_status || u.flex5 || 'visiteur';
+                       const status = user.user_status || user.flex5 || user.payment_status || 'visiteur';
                         return status === currentFilter;
                     });
                 }
