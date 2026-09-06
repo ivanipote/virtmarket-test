@@ -43,7 +43,6 @@ async function cleanPendingPayments() {
     }
 }
 
-// Lancer le nettoyage toutes les 5 minutes
 setInterval(cleanPendingPayments, 5 * 60 * 1000);
 cleanPendingPayments();
 
@@ -62,6 +61,10 @@ app.get('/pay.html', (req, res) => {
     res.sendFile(__dirname + '/pay.html');
 });
 
+app.get('/payviaapi.html', (req, res) => {
+    res.sendFile(__dirname + '/payviaapi.html');
+});
+
 app.get('/verify', (req, res) => {
     res.sendFile(__dirname + '/verifypay.html');
 });
@@ -71,12 +74,15 @@ app.get('/admin', (req, res) => {
 });
 
 // ============================================================
-// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (version API)
+// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (API)
 // ============================================================
 app.post('/create-payment-link', async (req, res) => {
     const { name, amount } = req.body;
 
-    console.log(`📝 Création d'un lien de paiement pour ${name} (${amount} FCFA)`);
+    // ✅ Convertir le montant en centimes
+    const amountInCentimes = Math.round(amount * 100);
+
+    console.log(`📝 Création d'un lien de paiement pour ${name} (${amount} FCFA → ${amountInCentimes} centimes)`);
 
     try {
         const response = await fetch('https://api.jeko.africa/partner_api/payment_links', {
@@ -88,7 +94,7 @@ app.post('/create-payment-link', async (req, res) => {
             },
             body: JSON.stringify({
                 storeId: process.env.JEKO_BUSINESS_ID,
-                amount: amount || 100,
+                amount: amountInCentimes,
                 currency: 'XOF',
                 description: `Soutien Virtual Market - ${name || 'Anonyme'}`,
                 successUrl: 'https://virtmarket-test.onrender.com/verify',
@@ -100,10 +106,14 @@ app.post('/create-payment-link', async (req, res) => {
 
         if (!response.ok) {
             console.error('❌ Erreur Jèko:', data);
-            return res.status(response.status).json({ error: data.message || 'Erreur API Jèko' });
+            return res.status(response.status).json({ 
+                error: data.message || 'Erreur API Jèko',
+                details: data
+            });
         }
 
         if (!data.paymentLink) {
+            console.error('❌ Aucun lien reçu:', data);
             return res.status(500).json({ error: 'Aucun lien de paiement reçu' });
         }
 
@@ -159,7 +169,6 @@ app.post('/webhook', async (req, res) => {
     console.log('🔔 Webhook reçu');
 
     try {
-        // 1️⃣ Vérifier la signature
         const signature = req.headers['jeko-signature'];
         const payload = JSON.stringify(req.body);
         const expectedSignature = crypto
@@ -174,7 +183,6 @@ app.post('/webhook', async (req, res) => {
 
         console.log('✅ Signature valide');
 
-        // 2️⃣ Extraire le nom depuis counterpartLabel
         const body = req.body;
         const donorName = body.counterpartLabel || null;
 
@@ -186,7 +194,6 @@ app.post('/webhook', async (req, res) => {
             console.log('⚠️ Aucun nom trouvé dans le webhook');
         }
 
-        // 3️⃣ Sauvegarder en base
         const savedId = await db.saveJekoPayment(body);
 
         if (savedId) {
