@@ -20,7 +20,7 @@ async function initializeDatabase() {
         await client.query('BEGIN');
 
         // ============================================================
-        // TABLE PAYMENTS_JEKO (avec flex1-8)
+        // TABLE PAYMENTS_JEKO
         // ============================================================
         await client.query(`
             CREATE TABLE IF NOT EXISTS payments_jeko (
@@ -123,6 +123,67 @@ async function initializeDatabase() {
 }
 
 // ============================================================
+// CRÉER OU RÉCUPÉRER UN UTILISATEUR
+// ============================================================
+async function getOrCreateUser(name, email) {
+    try {
+        // Vérifier si l'utilisateur existe
+        let user = await pool.query(
+            'SELECT * FROM users WHERE email = $1',
+            [email]
+        );
+
+        if (user.rows.length > 0) {
+            // Mettre à jour le nom si différent
+            if (user.rows[0].name !== name) {
+                await pool.query(
+                    'UPDATE users SET name = $1, updated_at = NOW() WHERE email = $2',
+                    [name, email]
+                );
+                user.rows[0].name = name;
+            }
+            console.log(`👤 Utilisateur existant : ${name} (${email})`);
+            return user.rows[0];
+        }
+
+        // Créer un nouvel utilisateur
+        const result = await pool.query(
+            `INSERT INTO users (name, email) 
+             VALUES ($1, $2) 
+             RETURNING *`,
+            [name, email]
+        );
+        console.log(`✅ Nouvel utilisateur créé : ${name} (${email})`);
+        return result.rows[0];
+    } catch (error) {
+        console.error('❌ Erreur getOrCreateUser:', error);
+        return null;
+    }
+}
+
+// ============================================================
+// METTRE À JOUR LE STATUT UTILISATEUR (flex5)
+// ============================================================
+async function updateUserStatus(email, userStatus) {
+    try {
+        const result = await pool.query(
+            `UPDATE users 
+             SET flex5 = $1, updated_at = NOW() 
+             WHERE email = $2 
+             RETURNING id, name, email, flex5 as user_status`,
+            [userStatus, email]
+        );
+        if (result.rowCount > 0) {
+            console.log(`✅ Statut utilisateur mis à jour : ${userStatus} (${email})`);
+        }
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('❌ Erreur updateUserStatus:', error);
+        return null;
+    }
+}
+
+// ============================================================
 // SAUVEGARDER UN PAIEMENT JEKO
 // ============================================================
 async function saveJekoPayment(data) {
@@ -149,11 +210,11 @@ async function saveJekoPayment(data) {
         data.storeName || null,
         data.transactionDetails?.paymentLinkId || null,
         data.executedAt ? new Date(data.executedAt) : null,
-        data.flex1 || null,  // Nom
-        data.flex2 || null,  // Email
-        data.flex3 || null,  // Email envoyé (true/false)
-        data.flex4 || null,  // Date envoi email
-        data.flex5 || 'visiteur'  // Statut utilisateur: visiteur, participant, donateur
+        data.flex1 || null,
+        data.flex2 || null,
+        data.flex3 || null,
+        data.flex4 || null,
+        data.flex5 || 'visiteur'
     ];
 
     try {
@@ -166,28 +227,6 @@ async function saveJekoPayment(data) {
         return result.rows[0]?.id || null;
     } catch (error) {
         console.error('❌ Erreur sauvegarde paiement Jèko:', error);
-        return null;
-    }
-}
-
-// ============================================================
-// METTRE À JOUR LE STATUT UTILISATEUR (via flex5)
-// ============================================================
-async function updateUserStatus(transactionId, userStatus) {
-    try {
-        const result = await pool.query(
-            `UPDATE payments_jeko 
-             SET flex5 = $1, updated_at = NOW() 
-             WHERE transaction_id = $2 
-             RETURNING id`,
-            [userStatus, transactionId]
-        );
-        if (result.rowCount > 0) {
-            console.log(`✅ Statut utilisateur mis à jour : ${userStatus} (transaction: ${transactionId})`);
-        }
-        return result.rows[0]?.id || null;
-    } catch (error) {
-        console.error('❌ Erreur mise à jour statut:', error);
         return null;
     }
 }
@@ -217,7 +256,8 @@ async function getJekoPayments() {
             SELECT 
                 p.*,
                 u.name as user_name,
-                u.email as user_email
+                u.email as user_email,
+                u.flex5 as user_status
             FROM payments_jeko p
             LEFT JOIN users u ON u.email = p.flex2
             ORDER BY p.created_at DESC
@@ -265,9 +305,6 @@ async function cleanPendingPayments() {
     }
 }
 
-// ============================================================
-// EXPORT
-// ============================================================
 // ============================================================
 // EXPORT
 // ============================================================
