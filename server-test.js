@@ -113,10 +113,12 @@ app.post('/create-payment-link', async (req, res) => {
             });
         }
 
-        if (!data.paymentLink) {
-            console.error('❌ Aucun lien reçu:', data);
-            return res.status(500).json({ error: 'Aucun lien de paiement reçu' });
-        }
+        if (!data.link) {
+    console.error('❌ Aucun lien reçu:', data);
+    return res.status(500).json({ error: 'Aucun lien de paiement reçu' });
+}
+console.log(`✅ Lien généré : ${data.link}`);
+res.json({ checkout_url: data.link });
 
         console.log(`✅ Lien généré : ${data.paymentLink}`);
         res.json({ checkout_url: data.paymentLink });
