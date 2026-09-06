@@ -50,7 +50,7 @@ async function initializeDatabase() {
         console.log('✅ Table payments_jeko créée');
 
         // ============================================================
-        // TABLE USERS
+        // TABLE USERS (SANS PASSWORD)
         // ============================================================
         await client.query(`
             CREATE TABLE IF NOT EXISTS users (
@@ -70,7 +70,7 @@ async function initializeDatabase() {
                 flex8 TEXT DEFAULT NULL
             )
         `);
-        console.log('✅ Table users créée');
+        console.log('✅ Table users créée (sans password)');
 
         // ============================================================
         // TABLE SOUTIENS
@@ -127,34 +127,39 @@ async function initializeDatabase() {
 // ============================================================
 async function getOrCreateUser(name, email) {
     try {
-        // Vérifier si l'utilisateur existe
+        console.log(`🔍 Recherche utilisateur : ${email}`);
+        
         let user = await pool.query(
             'SELECT * FROM users WHERE email = $1',
             [email]
         );
 
+        console.log(`📊 ${user.rows.length} utilisateur(s) trouvé(s)`);
+
         if (user.rows.length > 0) {
-            // Mettre à jour le nom si différent
             if (user.rows[0].name !== name) {
                 await pool.query(
                     'UPDATE users SET name = $1, updated_at = NOW() WHERE email = $2',
                     [name, email]
                 );
                 user.rows[0].name = name;
+                console.log(`📝 Nom mis à jour : ${name}`);
             }
             console.log(`👤 Utilisateur existant : ${name} (${email})`);
             return user.rows[0];
         }
 
-        // Créer un nouvel utilisateur
+        console.log(`🆕 Création utilisateur : ${name} (${email})`);
         const result = await pool.query(
             `INSERT INTO users (name, email) 
              VALUES ($1, $2) 
              RETURNING *`,
             [name, email]
         );
-        console.log(`✅ Nouvel utilisateur créé : ${name} (${email})`);
+        
+        console.log(`✅ Utilisateur créé : ${name} (${email}) (ID: ${result.rows[0].id})`);
         return result.rows[0];
+        
     } catch (error) {
         console.error('❌ Erreur getOrCreateUser:', error);
         return null;
