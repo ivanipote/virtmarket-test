@@ -154,21 +154,18 @@ app.post('/api/user/update-status', async (req, res) => {
 });
 
 // ============================================================
-// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (API)
-// ============================================================
-// ============================================================
-// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (API)
+// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (API) - VERSION PAYMENT_REQUESTS
 // ============================================================
 app.post('/create-payment-link', async (req, res) => {
     const { name, email, amount } = req.body;
 
-    // ✅ Convertir le montant en centimes
+    // ✅ Convertir le montant en centimes (minimum 100 = 1 FCFA)
     const amountInCentimes = Math.round(amount * 100);
 
-    console.log(`📝 Création d'un lien de paiement pour ${name} (${amount} FCFA → ${amountInCentimes} centimes)`);
+    console.log(`📝 Création d'une demande de paiement pour ${name} (${amount} FCFA → ${amountInCentimes} centimes)`);
 
     try {
-        const response = await fetch('https://api.jeko.africa/partner_api/payment_links', {
+        const response = await fetch('https://api.jeko.africa/partner_api/payment_requests', {
             method: 'POST',
             headers: {
                 'X-API-KEY': process.env.JEKO_API_KEY,
@@ -177,13 +174,17 @@ app.post('/create-payment-link', async (req, res) => {
             },
             body: JSON.stringify({
                 storeId: process.env.JEKO_BUSINESS_ID,
-                title: `Soutien Virtual Market - ${name || 'Anonyme'}`,
                 amountCents: amountInCentimes,
                 currency: 'XOF',
-                paymentMethod: 'wave',  // ✅ FORCER WAVE
-                description: `Soutien Virtual Market - ${name || 'Anonyme'}`,
-                successUrl: 'https://virtmarket-test.onrender.com/verify',
-                cancelUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
+                reference: `VM-${Date.now()}`,
+                paymentDetails: {
+                    type: 'redirect',
+                    data: {
+                        paymentMethod: 'wave',  // ✅ FORCER WAVE UNIQUEMENT
+                        successUrl: 'https://virtmarket-test.onrender.com/verify',
+                        errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
+                    }
+                }
             })
         });
 
@@ -197,13 +198,13 @@ app.post('/create-payment-link', async (req, res) => {
             });
         }
 
-        if (!data.link) {
-            console.error('❌ Aucun lien reçu:', data);
-            return res.status(500).json({ error: 'Aucun lien de paiement reçu' });
+        if (!data.redirectUrl) {
+            console.error('❌ Aucune URL de redirection reçue:', data);
+            return res.status(500).json({ error: 'Aucune URL de paiement reçue' });
         }
 
-        console.log(`✅ Lien généré : ${data.link}`);
-        res.json({ checkout_url: data.link });
+        console.log(`✅ URL de redirection générée : ${data.redirectUrl}`);
+        res.json({ checkout_url: data.redirectUrl });
 
     } catch (error) {
         console.error('❌ Erreur:', error.message);
@@ -268,7 +269,7 @@ app.post('/webhook', async (req, res) => {
 
         // 2️⃣ Extraire les données
         const donorName = body.counterpartLabel || null;
-        const donorEmail = body.flex2 || null; // Sera envoyé depuis pay.html
+        const donorEmail = body.flex2 || null;
         const transactionId = body.id;
 
         // 3️⃣ Mettre à jour le paiement en base
@@ -291,9 +292,6 @@ app.post('/webhook', async (req, res) => {
         } else {
             console.log('ℹ️ Paiement déjà existant');
         }
-
-        // 5️⃣ Envoyer l'email de remerciement (à implémenter)
-        // await sendConfirmationEmail(donorName, donorEmail, amount, transactionId);
 
         res.sendStatus(200);
 
