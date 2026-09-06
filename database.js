@@ -268,6 +268,9 @@ async function cleanPendingPayments() {
 // ============================================================
 // EXPORT
 // ============================================================
+// ============================================================
+// EXPORT
+// ============================================================
 module.exports = {
     pool,
     query: (text, params) => pool.query(text, params),
@@ -275,8 +278,9 @@ module.exports = {
     all: (text, params) => pool.query(text, params).then(res => res.rows),
     run: (text, params) => pool.query(text, params),
     initialize: initializeDatabase,
-    saveJekoPayment,
+    getOrCreateUser,
     updateUserStatus,
+    saveJekoPayment,
     updatePaymentStatus,
     getJekoPayments,
     getPaymentById,
