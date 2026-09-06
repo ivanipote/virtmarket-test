@@ -768,14 +768,14 @@
             let selectedId = null;
             let currentFilter = 'all';
 
-            // ===== CHARGER LES DONNÉES =====
+            // ===== CHARGER LES UTILISATEURS (DEPUIS /API/USERS) =====
             async function loadData() {
                 try {
-                    const res = await fetch('/api/payments');
+                    const res = await fetch('/api/users');
                     const data = await res.json();
 
-                    if (data.success && data.payments) {
-                        allUsers = data.payments;
+                    if (data.success && data.users) {
+                        allUsers = data.users;
                         renderStats();
                         renderFilters();
                         renderUsers();
@@ -805,23 +805,21 @@
 
             // ===== STATS =====
             function renderStats() {
-                const visiteurs = allUsers.filter(u => u.user_status === 'visiteur' || u.flex5 === 'visiteur');
-                const participants = allUsers.filter(u => u.user_status === 'participant' || u.flex5 === 'participant');
-                const donateurs = allUsers.filter(u => u.user_status === 'donateur' || u.flex5 === 'donateur');
-
-                const totalDonations = donateurs.reduce((sum, u) => sum + (u.amount || 0), 0) / 100;
+                const visiteurs = allUsers.filter(u => u.flex5 === 'visiteur' || u.user_status === 'visiteur');
+                const participants = allUsers.filter(u => u.flex5 === 'participant' || u.user_status === 'participant');
+                const donateurs = allUsers.filter(u => u.flex5 === 'donateur' || u.user_status === 'donateur');
 
                 statVisiteur.textContent = visiteurs.length;
                 statParticipant.textContent = participants.length;
                 statDonateur.textContent = donateurs.length;
-                statTotal.textContent = totalDonations.toLocaleString() + ' FCFA';
+                statTotal.textContent = '0 FCFA'; // À calculer plus tard
             }
 
             // ===== FILTRES =====
             function renderFilters() {
-                const visiteurs = allUsers.filter(u => u.user_status === 'visiteur' || u.flex5 === 'visiteur');
-                const participants = allUsers.filter(u => u.user_status === 'participant' || u.flex5 === 'participant');
-                const donateurs = allUsers.filter(u => u.user_status === 'donateur' || u.flex5 === 'donateur');
+                const visiteurs = allUsers.filter(u => u.flex5 === 'visiteur' || u.user_status === 'visiteur');
+                const participants = allUsers.filter(u => u.flex5 === 'participant' || u.user_status === 'participant');
+                const donateurs = allUsers.filter(u => u.flex5 === 'donateur' || u.user_status === 'donateur');
 
                 countAll.textContent = allUsers.length;
                 countVisiteur.textContent = visiteurs.length;
@@ -835,7 +833,7 @@
 
                 if (currentFilter !== 'all') {
                     filtered = filtered.filter(u => {
-                       const status = user.user_status || user.flex5 || user.payment_status || 'visiteur';
+                        const status = u.flex5 || u.user_status || 'visiteur';
                         return status === currentFilter;
                     });
                 }
@@ -861,16 +859,9 @@
                     'donateur': '#34d399'
                 };
 
-                const statusIcons = {
-                    'visiteur': '🟣',
-                    'participant': '🟠',
-                    'donateur': '🟢'
-                };
-
                 usersList.innerHTML = filtered.map(u => {
-                    const status = u.user_status || u.flex5 || 'visiteur';
-                    const name = u.flex1 || u.user_name || 'Anonyme';
-                    const amount = (u.amount || 0) / 100;
+                    const status = u.flex5 || u.user_status || 'visiteur';
+                    const name = u.name || 'Anonyme';
                     const isActive = u.id === selectedId;
                     const initial = name.charAt(0).toUpperCase();
 
@@ -881,7 +872,6 @@
                                 <span class="user-status-dot ${status}"></span>
                                 ${name}
                             </div>
-                            <div class="user-amount">${amount.toLocaleString()} FCFA</div>
                         </div>
                     `;
                 }).join('');
@@ -909,13 +899,10 @@
                 emptyDetail.style.display = 'none';
                 detailContainer.style.display = 'block';
 
-                const status = user.user_status || user.flex5 || 'visiteur';
-                const name = user.flex1 || user.user_name || 'Anonyme';
-                const email = user.flex2 || user.user_email || 'Non renseigné';
-                const amount = (user.amount || 0) / 100;
-                const txId = user.transaction_id || '-';
+                const status = user.flex5 || user.user_status || 'visiteur';
+                const name = user.name || 'Anonyme';
+                const email = user.email || 'Non renseigné';
                 const createdAt = user.created_at ? new Date(user.created_at) : null;
-                const executedAt = user.executed_at ? new Date(user.executed_at) : null;
                 const updatedAt = user.updated_at ? new Date(user.updated_at) : null;
 
                 const statusLabels = {
@@ -925,14 +912,11 @@
                 };
                 const statusInfo = statusLabels[status] || statusLabels.visiteur;
 
-                // Formater les dates
                 const formatDate = (date) => {
                     if (!date) return '-';
                     return date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
                 };
 
-                // Déterminer les statuts avec horaires
-                const hasPayment = status === 'donateur' && executedAt;
                 const hasLink = status === 'participant' || status === 'donateur';
 
                 detailContainer.innerHTML = `
@@ -951,31 +935,17 @@
                             <span class="value">${email}</span>
                         </div>
                         <div class="detail-row">
-                            <span class="label">💰 Montant</span>
-                            <span class="value amount">${amount.toLocaleString()} FCFA</span>
-                        </div>
-                        <div class="detail-row">
                             <span class="label">📊 Statut</span>
                             <span class="value"><span class="status-badge ${statusInfo.class}">${statusInfo.label}</span></span>
                         </div>
                         <div class="detail-row">
-                            <span class="label">🔗 Transaction</span>
-                            <span class="value tx-id">${txId}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">📅 Date de soutien</span>
+                            <span class="label">📅 Date d'inscription</span>
                             <span class="value">${formatDate(createdAt)}</span>
                         </div>
                         ${hasLink ? `
                             <div class="detail-row">
                                 <span class="label">🔗 Lien généré</span>
                                 <span class="value">${formatDate(updatedAt)}</span>
-                            </div>
-                        ` : ''}
-                        ${hasPayment ? `
-                            <div class="detail-row">
-                                <span class="label">✅ Date de paiement</span>
-                                <span class="value">${formatDate(executedAt)}</span>
                             </div>
                         ` : ''}
 
@@ -1003,24 +973,16 @@
                                 <div class="status-item">
                                     <span class="status-label"><i class="fas fa-check-circle" style="color:#22c55e;"></i> Paiement réussi</span>
                                     <span class="status-time success">
-                                        ${formatDate(executedAt)}
+                                        ${formatDate(updatedAt)}
                                         <span class="badge success">✅ Succès</span>
                                     </span>
                                 </div>
-                                ${hasLink ? `
-                                    <div class="status-item" style="border-top:1px solid #f0f2f5;padding-top:6px;margin-top:2px;">
-                                        <span class="status-label"><i class="fas fa-link" style="color:#6b7280;"></i> Lien généré</span>
-                                        <span class="status-time" style="color:#6b7280;">
-                                            ${formatDate(updatedAt)}
-                                        </span>
-                                    </div>
-                                ` : ''}
                             ` : ''}
                         </div>
 
                         <div style="margin-top:16px;padding-top:12px;border-top:2px solid #f0f2f5;display:flex;gap:10px;flex-wrap:wrap;">
-                            <button class="copy-btn" data-copy="${txId}" style="background:#f8f9fc;border:1px solid #e6e8ef;border-radius:30px;padding:6px 16px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;">
-                                <i class="fas fa-copy"></i> Copier l'ID
+                            <button class="copy-btn" data-copy="${email}" style="background:#f8f9fc;border:1px solid #e6e8ef;border-radius:30px;padding:6px 16px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;">
+                                <i class="fas fa-copy"></i> Copier l'email
                             </button>
                             <button class="copy-btn" data-copy="${name}" style="background:#f8f9fc;border:1px solid #e6e8ef;border-radius:30px;padding:6px 16px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;">
                                 <i class="fas fa-copy"></i> Copier le nom
@@ -1040,7 +1002,7 @@
                             setTimeout(() => {
                                 this.style.background = '#f8f9fc';
                                 this.style.color = '#6b7280';
-                                this.innerHTML = '<i class="fas fa-copy"></i> ' + (this.textContent.includes('ID') ? "Copier l'ID" : 'Copier le nom');
+                                this.innerHTML = '<i class="fas fa-copy"></i> ' + (this.textContent.includes('email') ? "Copier l'email" : 'Copier le nom');
                             }, 2000);
                         }).catch(() => {
                             const input = document.createElement('input');
@@ -1055,7 +1017,7 @@
                             setTimeout(() => {
                                 this.style.background = '#f8f9fc';
                                 this.style.color = '#6b7280';
-                                this.innerHTML = '<i class="fas fa-copy"></i> ' + (this.textContent.includes('ID') ? "Copier l'ID" : 'Copier le nom');
+                                this.innerHTML = '<i class="fas fa-copy"></i> ' + (this.textContent.includes('email') ? "Copier l'email" : 'Copier le nom');
                             }, 2000);
                         });
                     });
