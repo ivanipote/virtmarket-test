@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : server.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 3.0 - Structure propre et routes nommées
+// VERSION : 3.3 - Email fonctionnel intégré
 // ================================================================
 
 require('dotenv').config();
@@ -53,7 +53,58 @@ setInterval(autoClean, 5 * 60 * 1000);
 autoClean();
 
 // ================================================================
-// 4. ROUTES PAGES STATIQUES
+// 4. FONCTION : ENVOI EMAIL DE REMERCIEMENT
+// ================================================================
+
+const EMAILJS_SERVICE_ID = 'service_2hkqcdm';
+const EMAILJS_TEMPLATE_ID = 'template_ndwcdwn';
+const EMAILJS_PUBLIC_KEY = '4TkvKRRbn9qDSIjG3';
+const SENDER_EMAIL = 'thanksvirtmak@gmail.com';
+const SENDER_NAME = 'VirtMak';
+
+async function sendThankYouEmail(email, name, amount, orderId) {
+    try {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('fr-FR') + ' ' + 
+                        now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+        console.log(`📧 Envoi email à ${email} depuis ${SENDER_EMAIL}...`);
+
+        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                service_id: EMAILJS_SERVICE_ID,
+                template_id: EMAILJS_TEMPLATE_ID,
+                user_id: EMAILJS_PUBLIC_KEY,
+                template_params: {
+                    name: name,
+                    email: email,
+                    amount: amount,
+                    order_id: orderId || 'DON-' + Date.now().toString().slice(-6),
+                    date: dateStr,
+                    sender_email: SENDER_EMAIL,
+                    sender_name: SENDER_NAME
+                }
+            })
+        });
+
+        if (response.ok) {
+            console.log(`✅ Email envoyé à ${email} depuis ${SENDER_EMAIL}`);
+            return { success: true, message: 'Email envoyé avec succès' };
+        } else {
+            const errorText = await response.text();
+            console.error(`❌ Erreur EmailJS: ${errorText}`);
+            return { success: false, message: errorText };
+        }
+    } catch (error) {
+        console.error(`❌ Erreur envoi email: ${error.message}`);
+        return { success: false, message: error.message };
+    }
+}
+
+// ================================================================
+// 5. ROUTES PAGES STATIQUES
 // ================================================================
 
 app.get('/', (req, res) => res.sendFile(__dirname + '/virtmak.html'));
@@ -65,13 +116,9 @@ app.get('/payviaapi.html', (req, res) => res.sendFile(__dirname + '/payviaapi.ht
 app.get('/testmail.html', (req, res) => res.sendFile(__dirname + '/testmail.html'));
 
 // ================================================================
-// 5. API : VISITEUR
+// 6. API : VISITEUR
 // ================================================================
 
-/**
- * POST /api/visiteur
- * Crée un utilisateur avec le statut 'visiteur'
- */
 app.post('/api/visiteur', async (req, res) => {
     const { name, email } = req.body;
 
@@ -101,13 +148,9 @@ app.post('/api/visiteur', async (req, res) => {
 });
 
 // ================================================================
-// 6. API : CRÉER UN PAIEMENT
+// 7. API : CRÉER UN PAIEMENT
 // ================================================================
 
-/**
- * POST /api/create-payment
- * Crée un paiement, génère la référence, enregistre en base
- */
 app.post('/api/create-payment', async (req, res) => {
     const { name, email, amount } = req.body;
 
@@ -127,18 +170,15 @@ app.post('/api/create-payment', async (req, res) => {
     }
 
     try {
-        // 1️⃣ Récupérer ou créer l'utilisateur
         const user = await db.getOrCreateUser(name, email);
         if (user.status !== 'visiteur' && user.status !== 'participant') {
             await db.updateUserStatus(email, 'participant');
         }
         console.log(`   ✅ Utilisateur: ${user.name} (${user.status})`);
 
-        // 2️⃣ Générer la référence
         const reference = `VM-${email}-${Date.now()}`;
         console.log(`   🔗 Référence: ${reference}`);
 
-        // 3️⃣ Créer la commande (orders)
         const order = await db.createOrder({
             reference,
             user_id: user.id,
@@ -153,11 +193,9 @@ app.post('/api/create-payment', async (req, res) => {
         }
         console.log(`   ✅ Commande créée (ID: ${order.id})`);
 
-        // 4️⃣ Mettre à jour le statut utilisateur → participant
         await db.updateUserStatus(email, 'participant');
         console.log(`   ✅ Statut mis à jour: participant`);
 
-        // 5️⃣ Appel API Jèko
         const amountInCentimes = Math.round(amount * 100);
         console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
 
@@ -204,7 +242,6 @@ app.post('/api/create-payment', async (req, res) => {
             throw new Error('Aucune URL de paiement reçue');
         }
 
-        // 6️⃣ Mettre à jour le payment_link_id
         if (data.id) {
             await db.updateOrderPaymentLink(reference, data.id);
             console.log(`   ✅ Payment Link ID: ${data.id}`);
@@ -227,13 +264,9 @@ app.post('/api/create-payment', async (req, res) => {
 });
 
 // ================================================================
-// 7. API : PAYLIST (commandes de paiement)
+// 8. API : PAYLIST
 // ================================================================
 
-/**
- * GET /api/paylist
- * Liste toutes les commandes de paiement
- */
 app.get('/api/paylist', async (req, res) => {
     try {
         const orders = await db.getAllOrders();
@@ -244,10 +277,6 @@ app.get('/api/paylist', async (req, res) => {
     }
 });
 
-/**
- * GET /api/paylist/:reference
- * Détail d'une commande par référence
- */
 app.get('/api/paylist/:reference', async (req, res) => {
     const { reference } = req.params;
     try {
@@ -263,13 +292,9 @@ app.get('/api/paylist/:reference', async (req, res) => {
 });
 
 // ================================================================
-// 8. API : PAIEMENTS CONFIRMÉS
+// 9. API : PAIEMENTS
 // ================================================================
 
-/**
- * GET /api/payments
- * Liste tous les paiements confirmés
- */
 app.get('/api/payments', async (req, res) => {
     try {
         const payments = await db.getAllPayments();
@@ -280,10 +305,6 @@ app.get('/api/payments', async (req, res) => {
     }
 });
 
-/**
- * GET /api/payment/:id
- * Détail d'un paiement par ID
- */
 app.get('/api/payment/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -299,13 +320,9 @@ app.get('/api/payment/:id', async (req, res) => {
 });
 
 // ================================================================
-// 9. API : UTILISATEURS
+// 10. API : UTILISATEURS
 // ================================================================
 
-/**
- * GET /api/users
- * Liste tous les utilisateurs
- */
 app.get('/api/users', async (req, res) => {
     try {
         const users = await db.getAllUsers();
@@ -316,10 +333,6 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-/**
- * GET /api/user/:email
- * Détail d'un utilisateur par email + envoi email de remerciement
- */
 app.get('/api/user/:email', async (req, res) => {
     const { email } = req.params;
     try {
@@ -335,13 +348,9 @@ app.get('/api/user/:email', async (req, res) => {
 });
 
 // ================================================================
-// 10. API : STATISTIQUES
+// 11. API : STATISTIQUES
 // ================================================================
 
-/**
- * GET /api/stats
- * Statistiques globales pour l'admin
- */
 app.get('/api/stats', async (req, res) => {
     try {
         const stats = await db.getStats();
@@ -353,13 +362,9 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // ================================================================
-// 11. API : UPDATE STATUS (manuel)
+// 12. API : UPDATE STATUS
 // ================================================================
 
-/**
- * POST /api/update-status
- * Mise à jour manuelle du statut utilisateur
- */
 app.post('/api/update-status', async (req, res) => {
     const { email, status } = req.body;
 
@@ -386,20 +391,15 @@ app.post('/api/update-status', async (req, res) => {
 });
 
 // ================================================================
-// 12. WEBHOOK JEKO
+// 13. WEBHOOK JEKO AVEC ENVOI EMAIL
 // ================================================================
 
-/**
- * POST /webhook
- * Réception du webhook Jèko
- */
 app.post('/webhook', async (req, res) => {
     console.log('\n' + '='.repeat(80));
     console.log('🔔 WEBHOOK REÇU');
     console.log('='.repeat(80));
 
     try {
-        // 1️⃣ Vérifier la signature
         const signature = req.headers['jeko-signature'];
         const payload = JSON.stringify(req.body);
         const expectedSignature = crypto
@@ -413,7 +413,6 @@ app.post('/webhook', async (req, res) => {
         }
         console.log('✅ Signature valide');
 
-        // 2️⃣ Extraire les données
         const body = req.body;
         console.log('📦 Webhook reçu');
 
@@ -425,7 +424,6 @@ app.post('/webhook', async (req, res) => {
             return res.status(400).send('Reference not found');
         }
 
-        // 3️⃣ Chercher la commande
         console.log('🔍 Recherche de la commande...');
         const order = await db.getOrderByReference(reference);
 
@@ -436,25 +434,21 @@ app.post('/webhook', async (req, res) => {
 
         console.log(`✅ Commande trouvée: ID ${order.id}, statut: ${order.status}`);
 
-        // 4️⃣ Vérifier si déjà traité
         if (order.status === 'success') {
             console.log('ℹ️ Déjà traité, ignoré');
             return res.sendStatus(200);
         }
 
-        // 5️⃣ Mettre à jour la commande
         console.log('💾 Mise à jour de la commande...');
-        const updatedOrder = await db.updateOrderStatus(reference, 'success', body.id);
+        await db.updateOrderStatus(reference, 'success', body.id);
         console.log(`✅ Commande mise à jour: ${reference} → success`);
 
-        // 6️⃣ Mettre à jour l'utilisateur
         console.log('👤 Mise à jour de l\'utilisateur...');
         const user = await db.updateUserStatus(order.email, 'donateur');
         if (user) {
             console.log(`✅ Utilisateur mis à jour: ${order.email} → donateur`);
         }
 
-        // 7️⃣ Enregistrer le paiement
         console.log('💾 Enregistrement du paiement...');
         const paymentData = {
             transaction_id: body.id,
@@ -473,30 +467,82 @@ app.post('/webhook', async (req, res) => {
         const savedPayment = await db.savePayment(paymentData);
         console.log(`✅ Paiement enregistré: ${savedPayment ? 'OK' : 'Déjà existant'}`);
 
-        // 8️⃣ RÉSUMÉ
-        console.log('\n📋 RÉSUMÉ:');
-        console.log('   ✅ Signature: OK');
-        console.log('   ✅ Commande: pending → success');
+        // ============================================================
+        // 🔥 ENVOI DE L'EMAIL DE REMERCIEMENT
+        // ============================================================
+        console.log('\n📧 ENVOI DE L\'EMAIL DE REMERCIEMENT');
+        console.log('-'.repeat(40));
+
+        let emailStatus = 'echec';
+        let emailMessage = '';
+
+        if (order.email) {
+            const emailResult = await sendThankYouEmail(
+                order.email,
+                order.name,
+                order.amount,
+                reference
+            );
+
+            if (emailResult.success) {
+                emailStatus = 'succes';
+                emailMessage = 'Email envoyé avec succès';
+                console.log(`✅ ${emailMessage} depuis ${SENDER_EMAIL}`);
+            } else {
+                emailStatus = 'echec';
+                emailMessage = emailResult.message;
+                console.error(`❌ ${emailMessage}`);
+            }
+        } else {
+            emailStatus = 'echec';
+            emailMessage = 'Aucun email fourni pour le donateur';
+            console.warn(`⚠️ ${emailMessage}`);
+        }
+
+        // ✅ Mettre à jour le statut de l'envoi dans la base
+        try {
+            await db.query(
+                'UPDATE users SET flex1 = $1, flex2 = $2 WHERE email = $3',
+                [emailStatus, emailMessage, order.email]
+            );
+            console.log(`✅ Statut email enregistré: ${emailStatus} - ${emailMessage}`);
+        } catch (error) {
+            console.error('❌ Erreur enregistrement statut email:', error);
+        }
+
+        // ============================================================
+        // RÉSUMÉ FINAL
+        // ============================================================
+        console.log('\n📋 RÉSUMÉ DU TRAITEMENT:');
+        console.log('-'.repeat(40));
+        console.log(`   ✅ Signature: OK`);
+        console.log(`   ✅ Commande: pending → success`);
         console.log(`   ✅ Utilisateur: ${order.email} → donateur`);
         console.log(`   ✅ Paiement: ${savedPayment ? 'OK' : 'Déjà existant'}`);
+        console.log(`   📧 Email: ${emailStatus} - ${emailMessage}`);
+        console.log(`   📧 Expéditeur: ${SENDER_EMAIL}`);
         console.log('='.repeat(80) + '\n');
 
         res.sendStatus(200);
 
     } catch (error) {
-        console.error('❌ Erreur webhook:', error);
+        console.error('\n❌ ERREUR WEBHOOK:');
+        console.error('-'.repeat(40));
+        console.error(error);
+        console.error('='.repeat(80) + '\n');
         res.sendStatus(500);
     }
 });
 
 // ================================================================
-// 13. DÉMARRAGE
+// 14. DÉMARRAGE
 // ================================================================
 
 app.listen(PORT, () => {
     console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
     console.log(`🌐 https://virtmarket-test.onrender.com`);
     console.log(`📊 Admin: /admin`);
+    console.log(`📧 Email expéditeur: ${SENDER_EMAIL}`);
     console.log(`\n📋 API disponibles:`);
     console.log(`   POST /api/visiteur`);
     console.log(`   POST /api/create-payment`);
