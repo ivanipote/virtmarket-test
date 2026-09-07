@@ -22,17 +22,17 @@
         }
 
         /* ============================================================ */
-        /* HEADER (VERT ARRONDI)                                         */
+        /* HEADER - BLEU                                                 */
         /* ============================================================ */
         .admin-header {
-            background: #0F8B5D;
+            background: #156FE6;
             padding: 12px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             height: 68px;
             border-radius: 0 0 20px 20px;
-            box-shadow: 0 4px 20px rgba(15, 139, 93, 0.2);
+            box-shadow: 0 4px 20px rgba(21, 111, 230, 0.2);
             position: fixed;
             top: 0;
             left: 0;
@@ -136,7 +136,7 @@
         }
 
         /* ============================================================ */
-        /* FILTRES (HEADER)                                              */
+        /* FILTRES                                                       */
         /* ============================================================ */
         .filter-bar {
             background: white;
@@ -169,14 +169,14 @@
         }
 
         .filter-bar .filter-btn:hover {
-            border-color: #0F8B5D;
-            color: #0F8B5D;
+            border-color: #156FE6;
+            color: #156FE6;
         }
 
         .filter-bar .filter-btn.active {
-            background: #0F8B5D;
+            background: #156FE6;
             color: white;
-            border-color: #0F8B5D;
+            border-color: #156FE6;
         }
 
         .filter-bar .filter-btn .badge-count {
@@ -192,7 +192,7 @@
         }
 
         /* ============================================================ */
-        /* LAYOUT PRINCIPAL                                             */
+        /* LAYOUT                                                        */
         /* ============================================================ */
         .admin-layout {
             display: flex;
@@ -202,10 +202,10 @@
         }
 
         /* ============================================================ */
-        /* SIDEBAR (HAUTEUR FIXE, CONTENU SCROLLABLE)                   */
+        /* SIDEBAR                                                        */
         /* ============================================================ */
         .admin-sidebar {
-            width: 300px;
+            width: 320px;
             min-width: 280px;
             background: white;
             border-right: 1px solid #e6e8ef;
@@ -235,13 +235,12 @@
         .admin-sidebar .sidebar-header .sidebar-count {
             font-size: 12px;
             font-weight: 600;
-            color: #0F8B5D;
-            background: #e6f7ee;
+            color: #156FE6;
+            background: #eaf1ff;
             padding: 2px 12px;
             border-radius: 20px;
         }
 
-        /* ===== LISTE DES UTILISATEURS (SCROLLABLE) ===== */
         .admin-sidebar .users-list {
             flex: 1;
             overflow-y: auto;
@@ -257,7 +256,7 @@
             border-radius: 10px;
         }
 
-        /* ===== CADRE UTILISATEUR ===== */
+        /* ===== USER ITEM ===== */
         .user-item {
             background: #f8f9fc;
             border-radius: 12px;
@@ -272,15 +271,15 @@
         }
 
         .user-item:hover {
-            border-color: #0F8B5D;
-            background: #f0faf5;
+            border-color: #156FE6;
+            background: #f0f7ff;
             transform: translateX(4px);
         }
 
         .user-item.active {
-            border-color: #0F8B5D;
-            background: #e6f7ee;
-            box-shadow: 0 2px 12px rgba(15, 139, 93, 0.08);
+            border-color: #156FE6;
+            background: #eaf1ff;
+            box-shadow: 0 2px 12px rgba(21, 111, 230, 0.08);
         }
 
         .user-item .user-name {
@@ -290,6 +289,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex: 1;
         }
 
         .user-item .user-name .avatar {
@@ -318,14 +318,15 @@
         .user-item .user-status-dot.participant { background: #fbbf24; }
         .user-item .user-status-dot.donateur { background: #34d399; }
 
-        .user-item .user-amount {
-            font-size: 13px;
-            font-weight: 700;
-            color: #0F8B5D;
-            font-family: 'Courier New', monospace;
+        .user-item .user-email-small {
+            font-size: 11px;
+            color: #9ca3af;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        /* ===== EMPTY SIDEBAR ===== */
         .users-list .empty-users {
             text-align: center;
             padding: 30px 20px;
@@ -340,7 +341,7 @@
         }
 
         /* ============================================================ */
-        /* CONTENU PRINCIPAL (DÉTAIL)                                   */
+        /* CONTENU PRINCIPAL                                             */
         /* ============================================================ */
         .admin-content {
             flex: 1;
@@ -358,7 +359,7 @@
             border-radius: 10px;
         }
 
-        /* ===== DÉTAIL CARD ===== */
+        /* ===== DETAIL CARD ===== */
         .detail-card {
             background: white;
             border-radius: 20px;
@@ -392,7 +393,7 @@
         }
 
         .detail-card .detail-header .detail-title i {
-            color: #0F8B5D;
+            color: #156FE6;
             margin-right: 8px;
         }
 
@@ -431,7 +432,7 @@
         }
 
         .detail-card .detail-row .value.amount {
-            color: #0F8B5D;
+            color: #156FE6;
             font-size: 20px;
             font-weight: 800;
         }
@@ -459,13 +460,29 @@
             color: #0e7a49;
         }
 
-        .detail-card .detail-row .value .tx-id {
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
+        .detail-card .detail-row .value .email-status {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .detail-card .detail-row .value .email-status.succes {
+            background: #e6f7ee;
+            color: #0e7a49;
+        }
+
+        .detail-card .detail-row .value .email-status.echec {
+            background: #fcebea;
+            color: #c0342a;
+        }
+
+        .detail-card .detail-row .value .email-status.inconnu {
+            background: #f3f4f6;
             color: #6b7280;
         }
 
-        /* ===== STATUT AVEC HORAIRE (FOOTER) ===== */
         .detail-status-footer {
             margin-top: 16px;
             padding-top: 12px;
@@ -528,7 +545,11 @@
             color: #0e7a49;
         }
 
-        /* ===== EMPTY STATE ===== */
+        .detail-status-footer .status-item .status-time .badge.unknown {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
         .empty-detail {
             text-align: center;
             padding: 60px 20px;
@@ -545,6 +566,36 @@
         .empty-detail h3 {
             color: #1a1a2e;
             margin-bottom: 4px;
+        }
+
+        .detail-actions {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 2px solid #f0f2f5;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .detail-actions .copy-btn {
+            background: #f8f9fc;
+            border: 1px solid #e6e8ef;
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-actions .copy-btn:hover {
+            border-color: #156FE6;
+            color: #156FE6;
+            background: #f0f7ff;
         }
 
         /* ============================================================ */
@@ -633,7 +684,7 @@
             .admin-sidebar { max-height: 35vh; }
             .user-item { padding: 10px 12px; }
             .user-item .user-name { font-size: 13px; }
-            .user-item .user-amount { font-size: 12px; }
+            .user-item .user-email-small { font-size: 10px; max-width: 80px; }
 
             .admin-content { padding: 12px; }
             .detail-card {
@@ -652,7 +703,7 @@
 <body>
 
     <!-- ============================================================ -->
-    <!-- HEADER (VERT ARRONDI)                                         -->
+    <!-- HEADER                                                        -->
     <!-- ============================================================ -->
     <header class="admin-header">
         <div class="logo">
@@ -702,11 +753,11 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- LAYOUT PRINCIPAL                                             -->
+    <!-- LAYOUT                                                        -->
     <!-- ============================================================ -->
     <div class="admin-layout">
 
-        <!-- ===== SIDEBAR ===== -->
+        <!-- SIDEBAR -->
         <aside class="admin-sidebar">
             <div class="sidebar-header">
                 <span class="sidebar-title"><i class="fas fa-users"></i> Utilisateurs</span>
@@ -721,7 +772,7 @@
             </div>
         </aside>
 
-        <!-- ===== CONTENU PRINCIPAL ===== -->
+        <!-- CONTENU -->
         <main class="admin-content" id="adminContent">
             <div class="empty-detail" id="emptyDetail">
                 <i class="fas fa-hand-holding-heart"></i>
@@ -742,7 +793,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ admin.html (filtres) chargé');
+            console.log('✅ admin.html chargé');
 
             // ===== RÉFÉRENCES =====
             const usersList = document.getElementById('usersList');
@@ -768,7 +819,19 @@
             let selectedId = null;
             let currentFilter = 'all';
 
-            // ===== CHARGER LES UTILISATEURS (DEPUIS /API/USERS) =====
+            const statusColors = {
+                'visiteur': '#a78bfa',
+                'participant': '#fbbf24',
+                'donateur': '#34d399'
+            };
+
+            const statusLabels = {
+                'visiteur': { label: '🟣 Visiteur', class: 'visiteur' },
+                'participant': { label: '🟠 Participant', class: 'participant' },
+                'donateur': { label: '🟢 Donateur', class: 'donateur' }
+            };
+
+            // ===== CHARGER LES UTILISATEURS =====
             async function loadData() {
                 try {
                     const res = await fetch('/api/users');
@@ -779,7 +842,6 @@
                         renderStats();
                         renderFilters();
                         renderUsers();
-                        // Sélectionner le premier si disponible
                         if (!selectedId && allUsers.length > 0) {
                             selectedId = allUsers[0].id;
                             renderDetail(selectedId);
@@ -805,21 +867,21 @@
 
             // ===== STATS =====
             function renderStats() {
-                const visiteurs = allUsers.filter(u => u.flex5 === 'visiteur' || u.user_status === 'visiteur');
-                const participants = allUsers.filter(u => u.flex5 === 'participant' || u.user_status === 'participant');
-                const donateurs = allUsers.filter(u => u.flex5 === 'donateur' || u.user_status === 'donateur');
+                const visiteurs = allUsers.filter(u => u.status === 'visiteur');
+                const participants = allUsers.filter(u => u.status === 'participant');
+                const donateurs = allUsers.filter(u => u.status === 'donateur');
 
                 statVisiteur.textContent = visiteurs.length;
                 statParticipant.textContent = participants.length;
                 statDonateur.textContent = donateurs.length;
-                statTotal.textContent = '0 FCFA'; // À calculer plus tard
+                statTotal.textContent = '0 FCFA';
             }
 
             // ===== FILTRES =====
             function renderFilters() {
-                const visiteurs = allUsers.filter(u => u.flex5 === 'visiteur' || u.user_status === 'visiteur');
-                const participants = allUsers.filter(u => u.flex5 === 'participant' || u.user_status === 'participant');
-                const donateurs = allUsers.filter(u => u.flex5 === 'donateur' || u.user_status === 'donateur');
+                const visiteurs = allUsers.filter(u => u.status === 'visiteur');
+                const participants = allUsers.filter(u => u.status === 'participant');
+                const donateurs = allUsers.filter(u => u.status === 'donateur');
 
                 countAll.textContent = allUsers.length;
                 countVisiteur.textContent = visiteurs.length;
@@ -832,13 +894,9 @@
                 let filtered = allUsers;
 
                 if (currentFilter !== 'all') {
-                    filtered = filtered.filter(u => {
-                        const status = u.flex5 || u.user_status || 'visiteur';
-                        return status === currentFilter;
-                    });
+                    filtered = filtered.filter(u => u.status === currentFilter);
                 }
 
-                // Trier par date (plus récent en premier)
                 filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
                 sidebarCount.textContent = filtered.length;
@@ -853,14 +911,8 @@
                     return;
                 }
 
-                const statusColors = {
-                    'visiteur': '#a78bfa',
-                    'participant': '#fbbf24',
-                    'donateur': '#34d399'
-                };
-
                 usersList.innerHTML = filtered.map(u => {
-                    const status = u.flex5 || u.user_status || 'visiteur';
+                    const status = u.status || 'visiteur';
                     const name = u.name || 'Anonyme';
                     const isActive = u.id === selectedId;
                     const initial = name.charAt(0).toUpperCase();
@@ -868,15 +920,15 @@
                     return `
                         <div class="user-item ${isActive ? 'active' : ''}" data-id="${u.id}">
                             <div class="user-name">
-                                <span class="avatar" style="background:${statusColors[status]};">${initial}</span>
+                                <span class="avatar" style="background:${statusColors[status] || '#6b7280'};">${initial}</span>
                                 <span class="user-status-dot ${status}"></span>
                                 ${name}
                             </div>
+                            <div class="user-email-small">${u.email || ''}</div>
                         </div>
                     `;
                 }).join('');
 
-                // Événements de clic
                 document.querySelectorAll('.user-item').forEach(item => {
                     item.addEventListener('click', function() {
                         const id = parseInt(this.dataset.id);
@@ -899,17 +951,16 @@
                 emptyDetail.style.display = 'none';
                 detailContainer.style.display = 'block';
 
-                const status = user.flex5 || user.user_status || 'visiteur';
+                const status = user.status || 'visiteur';
                 const name = user.name || 'Anonyme';
                 const email = user.email || 'Non renseigné';
                 const createdAt = user.created_at ? new Date(user.created_at) : null;
                 const updatedAt = user.updated_at ? new Date(user.updated_at) : null;
 
-                const statusLabels = {
-                    'visiteur': { label: '🟣 Visiteur', class: 'visiteur' },
-                    'participant': { label: '🟠 Participant', class: 'participant' },
-                    'donateur': { label: '🟢 Donateur', class: 'donateur' }
-                };
+                // Statut email (flex1 = succes / echec / null)
+                const emailStatus = user.flex1 || null;
+                const emailMessage = user.flex2 || '';
+
                 const statusInfo = statusLabels[status] || statusLabels.visiteur;
 
                 const formatDate = (date) => {
@@ -918,6 +969,17 @@
                 };
 
                 const hasLink = status === 'participant' || status === 'donateur';
+
+                let emailStatusHtml = '';
+                if (emailStatus === 'succes') {
+                    emailStatusHtml = `<span class="email-status succes">✅ Envoyé</span>`;
+                } else if (emailStatus === 'echec') {
+                    emailStatusHtml = `<span class="email-status echec">❌ Échec</span>`;
+                } else {
+                    emailStatusHtml = `<span class="email-status inconnu">⏳ En attente</span>`;
+                }
+
+                let emailMessageDisplay = emailMessage || '-';
 
                 detailContainer.innerHTML = `
                     <div class="detail-card">
@@ -949,7 +1011,17 @@
                             </div>
                         ` : ''}
 
-                        <!-- ===== STATUT AVEC HORAIRES ===== -->
+                        <!-- STATUT EMAIL -->
+                        <div class="detail-row" style="border-bottom: 2px solid #f0f2f5; padding-bottom: 12px; margin-bottom: 4px;">
+                            <span class="label">📧 Email de remerciement</span>
+                            <span class="value">${emailStatusHtml}</span>
+                        </div>
+                        <div class="detail-row" style="border-bottom: none; padding-top: 4px;">
+                            <span class="label" style="font-size:12px;color:#9ca3af;">Message</span>
+                            <span class="value" style="font-size:12px;font-weight:400;color:#6b7280;max-width:50%;">${emailMessageDisplay}</span>
+                        </div>
+
+                        <!-- STATUS FOOTER -->
                         <div class="detail-status-footer">
                             ${status === 'visiteur' ? `
                                 <div class="status-item">
@@ -980,29 +1052,38 @@
                             ` : ''}
                         </div>
 
-                        <div style="margin-top:16px;padding-top:12px;border-top:2px solid #f0f2f5;display:flex;gap:10px;flex-wrap:wrap;">
-                            <button class="copy-btn" data-copy="${email}" style="background:#f8f9fc;border:1px solid #e6e8ef;border-radius:30px;padding:6px 16px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;">
+                        <!-- ACTIONS -->
+                        <div class="detail-actions">
+                            <button class="copy-btn" data-copy="${email}">
                                 <i class="fas fa-copy"></i> Copier l'email
                             </button>
-                            <button class="copy-btn" data-copy="${name}" style="background:#f8f9fc;border:1px solid #e6e8ef;border-radius:30px;padding:6px 16px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;">
+                            <button class="copy-btn" data-copy="${name}">
                                 <i class="fas fa-copy"></i> Copier le nom
                             </button>
+                            ${user.id ? `
+                                <button class="copy-btn" data-copy="#${user.id}">
+                                    <i class="fas fa-copy"></i> Copier l'ID
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
                 `;
 
-                // Événements copie
+                // ===== COPIE =====
                 document.querySelectorAll('.detail-card .copy-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const text = this.dataset.copy;
                         navigator.clipboard.writeText(text).then(() => {
                             this.style.background = '#e6f7ee';
-                            this.style.color = '#0F8B5D';
+                            this.style.color = '#156FE6';
                             this.innerHTML = '<i class="fas fa-check"></i> Copié !';
                             setTimeout(() => {
                                 this.style.background = '#f8f9fc';
                                 this.style.color = '#6b7280';
-                                this.innerHTML = '<i class="fas fa-copy"></i> ' + (this.textContent.includes('email') ? "Copier l'email" : 'Copier le nom');
+                                const label = this.textContent.includes('email') ? "Copier l'email" :
+                                             this.textContent.includes('nom') ? "Copier le nom" :
+                                             "Copier l'ID";
+                                this.innerHTML = `<i class="fas fa-copy"></i> ${label}`;
                             }, 2000);
                         }).catch(() => {
                             const input = document.createElement('input');
@@ -1012,12 +1093,15 @@
                             document.execCommand('copy');
                             document.body.removeChild(input);
                             this.style.background = '#e6f7ee';
-                            this.style.color = '#0F8B5D';
+                            this.style.color = '#156FE6';
                             this.innerHTML = '<i class="fas fa-check"></i> Copié !';
                             setTimeout(() => {
                                 this.style.background = '#f8f9fc';
                                 this.style.color = '#6b7280';
-                                this.innerHTML = '<i class="fas fa-copy"></i> ' + (this.textContent.includes('email') ? "Copier l'email" : 'Copier le nom');
+                                const label = this.textContent.includes('email') ? "Copier l'email" :
+                                             this.textContent.includes('nom') ? "Copier le nom" :
+                                             "Copier l'ID";
+                                this.innerHTML = `<i class="fas fa-copy"></i> ${label}`;
                             }, 2000);
                         });
                     });
@@ -1031,7 +1115,6 @@
                     this.classList.add('active');
                     currentFilter = this.dataset.filter;
                     renderUsers();
-                    // Sélectionner le premier utilisateur du filtre
                     const firstUser = document.querySelector('.user-item');
                     if (firstUser) {
                         const id = parseInt(firstUser.dataset.id);
