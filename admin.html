@@ -25,10 +25,10 @@
                 📋 Tous <span class="badge-count" id="countAll">0</span>
             </button>
             <button class="filter-btn" data-filter="visiteur">
-                🟣 Visiteurs <span class="badge-count" id="countVisiteur">0</span>
+                🟡 Visiteurs <span class="badge-count" id="countVisiteur">0</span>
             </button>
             <button class="filter-btn" data-filter="participant">
-                🟠 Participants <span class="badge-count" id="countParticipant">0</span>
+                🔵 Participants <span class="badge-count" id="countParticipant">0</span>
             </button>
             <button class="filter-btn" data-filter="donateur">
                 🟢 Donateurs <span class="badge-count" id="countDonateur">0</span>
@@ -81,7 +81,8 @@
                 <p>Cliquez sur un utilisateur dans la liste de gauche</p>
             </div>
 
-            <div id="detailContainer" style="display:none;">
+            <!-- Scroll interne pour les détails -->
+            <div class="detail-scroll" id="detailContainer" style="display:none;">
                 <!-- Rempli par JS -->
             </div>
         </main>

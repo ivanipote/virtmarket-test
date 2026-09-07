@@ -1,6 +1,6 @@
 /* ================================================================
    admin.css - Styles pour le tableau de bord admin
-   VERSION : 2.0 - Header avec filtres intégrés
+   VERSION : 2.1 - Cadres fixes avec scroll interne
    ================================================================ */
 
 /* ============================================================ */
@@ -272,7 +272,6 @@ body {
 }
 
 /* ===== USER ITEM ===== */
-
 .user-item {
     background: white;
     border-radius: 12px;
@@ -282,8 +281,8 @@ body {
     cursor: pointer;
     transition: all 0.25s;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 10px;
 }
 
 .user-item:last-child {
@@ -302,18 +301,7 @@ body {
     box-shadow: 0 2px 12px rgba(21, 111, 230, 0.08);
 }
 
-.user-item .user-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1a1a2e;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    min-width: 0;
-}
-
-.user-item .user-name .avatar {
+.user-item .user-avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -326,23 +314,24 @@ body {
     flex-shrink: 0;
 }
 
+/* ----- STATUT COULEURS ----- */
 .user-item .user-status-dot {
     display: inline-block;
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    margin-right: 4px;
     flex-shrink: 0;
 }
 
-.user-item .user-status-dot.visiteur { background: #a78bfa; }
-.user-item .user-status-dot.participant { background: #fbbf24; }
-.user-item .user-status-dot.donateur { background: #34d399; }
+.user-item .user-status-dot.visiteur { background: #eab308; }   /* Jaune */
+.user-item .user-status-dot.participant { background: #3b82f6; } /* Bleu */
+.user-item .user-status-dot.donateur { background: #22c55e; }    /* Vert */
 
-.user-item .user-email-small {
-    font-size: 11px;
-    color: #9ca3af;
-    max-width: 120px;
+.user-item .user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+    flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -368,19 +357,32 @@ body {
 
 .admin-content {
     flex: 1;
-    padding: 20px 24px;
-    overflow-y: auto;
+    overflow: hidden;          /* ← Bloque le scroll du cadre */
+    padding: 16px 20px;
     background: #f5f6f9;
+    display: flex;
+    flex-direction: column;
     height: 100%;
 }
 
-.admin-content::-webkit-scrollbar {
+/* ----- Scroll interne pour les détails ----- */
+.admin-content .detail-scroll {
+    flex: 1;
+    overflow-y: auto;         /* ← Seul le contenu scroll */
+    padding-right: 4px;
+}
+
+.admin-content .detail-scroll::-webkit-scrollbar {
     width: 6px;
 }
 
-.admin-content::-webkit-scrollbar-thumb {
+.admin-content .detail-scroll::-webkit-scrollbar-thumb {
     background: #d8dbe4;
     border-radius: 10px;
+}
+
+.admin-content .detail-scroll::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 /* ============================================================ */
@@ -467,13 +469,13 @@ body {
 }
 
 .detail-card .detail-row .value .status-badge.visiteur {
-    background: #f1ebfe;
-    color: #7c3aed;
+    background: #fef3c7;
+    color: #b45309;
 }
 
 .detail-card .detail-row .value .status-badge.participant {
-    background: #fff3df;
-    color: #b45309;
+    background: #dbeafe;
+    color: #1d4ed8;
 }
 
 .detail-card .detail-row .value .status-badge.donateur {
@@ -580,6 +582,11 @@ body {
     text-align: center;
     padding: 60px 20px;
     color: #9ca3af;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .empty-detail i {
@@ -777,7 +784,7 @@ body {
     .admin-content {
         flex: 1;
         padding: 12px 14px;
-        overflow-y: auto;
+        overflow: hidden;
     }
     .detail-card {
         padding: 16px 18px;
@@ -801,8 +808,7 @@ body {
     .admin-sidebar { max-height: 30vh; padding: 6px 8px; }
     .user-item { padding: 8px 10px; }
     .user-item .user-name { font-size: 12px; }
-    .user-item .user-email-small { font-size: 9px; max-width: 60px; }
-    .user-item .user-name .avatar { width: 26px; height: 26px; font-size: 12px; }
+    .user-item .user-avatar { width: 26px; height: 26px; font-size: 12px; }
 
     .admin-content { padding: 10px 10px; }
     .detail-card {
