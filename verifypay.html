@@ -3,16 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✅ Paiement réussi - VirtMak</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <title>✅ Merci - VirtMak</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent !important;
-            outline: none !important;
         }
 
         body {
@@ -20,135 +16,71 @@
             background: #f5f6f9;
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
 
-        .success-card {
+        .card {
             background: white;
             border-radius: 24px;
             padding: 48px 32px 32px 32px;
-            max-width: 480px;
+            max-width: 420px;
             width: 100%;
+            text-align: center;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(21, 111, 230, 0.06);
-            text-align: center;
             animation: fadeInUp 0.6s ease;
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .success-card .icon-wrapper {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #156FE6, #0F1B4D);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px auto;
-            box-shadow: 0 8px 30px rgba(21, 111, 230, 0.25);
+        .card .icon {
+            font-size: 64px;
+            margin-bottom: 12px;
         }
 
-        .success-card .icon-wrapper i {
-            font-size: 48px;
-            color: white;
-        }
-
-        .success-card h1 {
+        .card h1 {
             font-size: 28px;
             font-weight: 800;
             color: #156FE6;
             margin-bottom: 4px;
         }
 
-        .success-card .subtitle {
+        .card .sub {
             font-size: 16px;
             color: #0F1B4D;
             font-weight: 600;
             margin-bottom: 8px;
         }
 
-        .success-card .message {
+        .card .message {
             font-size: 14px;
             color: #1a1a2e;
             line-height: 1.6;
-            margin-bottom: 16px;
+            margin-bottom: 24px;
         }
 
-        .success-card .message .highlight {
+        .card .message .highlight {
             color: #156FE6;
             font-weight: 700;
         }
 
-        /* ===== DÉTAILS DU PAIEMENT ===== */
-        .payment-details {
-            background: #f8f9fc;
-            border-radius: 16px;
-            padding: 16px 20px;
-            border: 1px solid #e6e8ef;
-            text-align: left;
-            margin-bottom: 16px;
-        }
-
-        .payment-details .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            font-size: 13px;
-            border-bottom: 1px solid #f0f2f5;
-        }
-
-        .payment-details .detail-row:last-child {
-            border-bottom: none;
-        }
-
-        .payment-details .detail-row .label {
-            color: #6b7280;
-        }
-
-        .payment-details .detail-row .value {
-            font-weight: 600;
-            color: #0F1B4D;
-            text-align: right;
-        }
-
-        .payment-details .detail-row .value.amount {
-            color: #156FE6;
-            font-size: 18px;
-            font-weight: 800;
-        }
-
-        .payment-details .detail-row .value.status {
-            color: #0F8B5D;
-        }
-
-        /* ===== BOUTONS ===== */
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 8px;
-        }
-
         .btn-home {
+            display: inline-block;
             background: linear-gradient(135deg, #156FE6, #0F1B4D);
             color: white;
             border: none;
-            padding: 16px;
+            padding: 14px 40px;
             border-radius: 16px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
             text-decoration: none;
-            display: inline-block;
-            text-align: center;
+            transition: all 0.3s;
         }
 
         .btn-home:hover {
@@ -156,227 +88,29 @@
             box-shadow: 0 8px 30px rgba(21, 111, 230, 0.3);
         }
 
-        .btn-admin {
-            background: #f0f7ff;
-            color: #156FE6;
-            border: 2px solid #156FE6;
-            padding: 14px;
-            border-radius: 16px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-admin:hover {
-            background: #e8f0fe;
-            transform: scale(1.02);
-        }
-
-        /* ===== SPAM ALERT ===== */
-        .spam-alert {
-            margin-top: 12px;
-            padding: 12px 16px;
-            background: #fff3df;
-            border-radius: 12px;
-            border: 1px solid #f5dbaa;
-            font-size: 12px;
-            color: #b45309;
-            text-align: left;
-        }
-
-        .spam-alert i {
-            color: #b45309;
-            margin-right: 6px;
-        }
-
-        .spam-alert .highlight {
-            font-weight: 700;
-            color: #b45309;
-        }
-
-        /* ===== LOADING ===== */
-        #loadingStatus {
-            margin-top: 12px;
-            padding: 10px;
-            border-radius: 8px;
-            background: #fff3cd;
-            color: #856404;
-            display: none;
-        }
-
-        .loader {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #156FE6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            vertical-align: middle;
-            margin-right: 8px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* ============================================================ */
-        /* RESPONSIVE                                                    */
-        /* ============================================================ */
         @media (max-width: 500px) {
-            .success-card { padding: 32px 20px 24px 20px; }
-            .success-card h1 { font-size: 24px; }
-            .success-card .icon-wrapper { width: 80px; height: 80px; }
-            .success-card .icon-wrapper i { font-size: 36px; }
-            .payment-details .detail-row { font-size: 12px; }
-            .payment-details .detail-row .value.amount { font-size: 16px; }
-            .btn-home { font-size: 14px; padding: 14px; }
-            .btn-admin { font-size: 13px; padding: 12px; }
-        }
-
-        @media (max-width: 400px) {
-            .success-card { padding: 24px 16px 18px 16px; }
-            .success-card h1 { font-size: 20px; }
-            .success-card .icon-wrapper { width: 64px; height: 64px; }
-            .success-card .icon-wrapper i { font-size: 28px; }
-            .payment-details { padding: 12px 14px; }
-            .payment-details .detail-row { font-size: 11px; }
-            .spam-alert { font-size: 11px; padding: 10px 14px; }
+            .card { padding: 32px 20px 24px 20px; }
+            .card h1 { font-size: 24px; }
+            .card .icon { font-size: 48px; }
+            .btn-home { font-size: 14px; padding: 12px 32px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="success-card" id="successCard">
-
-        <!-- Icône -->
-        <div class="icon-wrapper">
-            <i class="fas fa-check-circle"></i>
-        </div>
-
-        <h1>Merci ! ❤️</h1>
-        <div class="subtitle">Votre paiement a été confirmé</div>
-
+    <div class="card">
+        <div class="icon">❤️</div>
+        <h1>MERCI !</h1>
+        <div class="sub">Votre paiement a été confirmé</div>
         <div class="message">
-            Nous vous remercions sincèrement pour votre don.
-            Votre soutien nous aide à construire une plateforme ivoirienne innovante et sécurisée.
-            <br><br>
-            Vous allez recevoir un <span class="highlight">email de confirmation</span> dans quelques instants.
-        </div>
-
-        <!-- Détails du paiement -->
-        <div class="payment-details" id="paymentDetails">
-            <div class="detail-row">
-                <span class="label">📧 Email</span>
-                <span class="value" id="txEmail">-</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">💰 Montant</span>
-                <span class="value amount" id="txAmount">-</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">💳 Moyen</span>
-                <span class="value" id="txMethod">Wave</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">📊 Statut</span>
-                <span class="value status" id="txStatus">✅ Confirmé</span>
-            </div>
-            <div class="detail-row" style="border-bottom: none;">
-                <span class="label">📅 Date</span>
-                <span class="value" id="txDate">-</span>
-            </div>
-        </div>
-
-        <!-- Alerte spam -->
-        <div class="spam-alert">
-            <i class="fas fa-info-circle"></i>
-            <strong>Pensez à vérifier vos spams</strong>
+            Nous vous remercions sincèrement pour votre soutien.
             <br>
-            Si vous ne voyez pas notre email dans votre boîte de réception, n'oubliez pas de regarder dans vos <span class="highlight">spams</span> ou <span class="highlight">promotions</span>.
-            <br>
-            <span style="font-size:11px;color:#b45309;display:block;margin-top:4px;">
-                📩 Expéditeur : VirtMak (ipoteivan23@gmail.com)
-            </span>
+            <span class="highlight">VirtMak</span> grandit grâce à vous.
         </div>
-
-        <!-- Chargement -->
-        <div id="loadingStatus">
-            <span class="loader"></span> Vérification du paiement...
-        </div>
-
-        <!-- Boutons -->
-        <div class="btn-group">
-            <a href="/" class="btn-home">
-                <i class="fas fa-home"></i> Retour à l'accueil
-            </a>
-            
-        </div>
-
+        <a href="/virtmak.html" class="btn-home">
+            🏠 Retour à l'accueil
+        </a>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-
-            console.log('✅ verifypay.html chargé');
-
-            const loadingStatus = document.getElementById('loadingStatus');
-            const paymentDetails = document.getElementById('paymentDetails');
-            const txEmail = document.getElementById('txEmail');
-            const txAmount = document.getElementById('txAmount');
-            const txMethod = document.getElementById('txMethod');
-            const txStatus = document.getElementById('txStatus');
-            const txDate = document.getElementById('txDate');
-
-            // Récupérer les paramètres URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const transactionId = urlParams.get('transaction_id');
-            const email = urlParams.get('email');
-            const amount = urlParams.get('amount');
-
-            // Si on a l'email et le montant dans l'URL, les afficher directement
-            if (email) txEmail.textContent = email;
-            if (amount) txAmount.textContent = amount + ' FCFA';
-            txDate.textContent = new Date().toLocaleString('fr-FR');
-
-            // Vérifier la transaction si un ID est présent
-            if (transactionId) {
-                loadingStatus.style.display = 'block';
-                loadingStatus.innerHTML = '<span class="loader"></span> Vérification du paiement...';
-
-                try {
-                    const response = await fetch(`/api/payment/status/${transactionId}`);
-                    const data = await response.json();
-
-                    loadingStatus.style.display = 'none';
-
-                    if (data.success && data.payment) {
-                        const p = data.payment;
-                        txEmail.textContent = p.email || email || '-';
-                        txAmount.textContent = (p.amount || amount || 0) + ' FCFA';
-                        txMethod.textContent = p.payment_method || 'Wave';
-                        txStatus.textContent = p.status === 'success' ? '✅ Confirmé' : '⏳ ' + p.status;
-                        txDate.textContent = p.executed_at ? new Date(p.executed_at).toLocaleString('fr-FR') : new Date().toLocaleString('fr-FR');
-                        paymentDetails.style.display = 'block';
-                    }
-                } catch (error) {
-                    console.error('❌ Erreur vérification:', error);
-                    loadingStatus.style.display = 'none';
-                }
-            } else {
-                // Si pas de transaction_id, afficher les infos de l'URL
-                paymentDetails.style.display = 'block';
-            }
-
-            console.log('✅ verifypay.html initialisé');
-
-        });
-    </script>
 
 </body>
 </html>
