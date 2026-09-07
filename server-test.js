@@ -1,7 +1,7 @@
 // ================================================================
-// FICHIER : server.js
+// FICHIER : server-test.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 4.2 - Email avec image et anneau bleu
+// VERSION : 5.0 - Avec Gold et Premium
 // ================================================================
 
 require('dotenv').config();
@@ -39,7 +39,7 @@ app.use(express.static('.'));
 // ================================================================
 
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-const SENDER_EMAIL = process.env.SENDGRID_MAIL || 'noreply@virtmak.com';
+const SENDER_EMAIL = process.env.SENDGRID_MAIL || 'ipoteivan23@gmail.com';
 const SENDER_NAME = 'VirtMak';
 
 if (!SENDGRID_API_KEY) {
@@ -56,16 +56,7 @@ if (!SENDER_EMAIL) {
 sgMail.setApiKey(SENDGRID_API_KEY);
 
 // ================================================================
-// 4. FONCTION : ENVOI EMAIL AVEC IMAGE
-// ================================================================
-
-
-// ================================================================
-// FONCTION : ENVOI EMAIL AVEC IMAGE
-// ================================================================
-
-// ================================================================
-// FONCTION : ENVOI EMAIL AVEC TEMPLATE VARIANTE 4 (SOBRE)
+// 4. FONCTION : ENVOI EMAIL
 // ================================================================
 
 async function sendThankYouEmail(email, name, amount, orderId) {
@@ -78,16 +69,12 @@ async function sendThankYouEmail(email, name, amount, orderId) {
 
         const htmlContent = `
             <div style="font-family: 'Segoe UI', system-ui, sans-serif; max-width: 600px; margin: auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e6e8ef; padding: 0;">
-                
-                <!-- Header avec icône -->
                 <div style="text-align: center; padding: 24px 20px 8px 20px; background: white;">
                     <div style="font-size: 32px; margin-bottom: 4px;">🙏</div>
                     <div style="font-size: 18px; font-weight: 700; color: #0F1B4D; border-bottom: 2px solid #156FE6; padding-bottom: 12px;">
                         Merci pour votre don
                     </div>
                 </div>
-
-                <!-- Corps -->
                 <div style="padding: 0 24px 24px 24px;">
                     <p style="font-size: 15px; font-weight: 600; color: #0F1B4D; margin-bottom: 4px;">
                         Bonjour <span style="color: #156FE6;">${name}</span>,
@@ -96,8 +83,6 @@ async function sendThankYouEmail(email, name, amount, orderId) {
                         <strong>Nous vous remercions !!!</strong><br>
                         Votre don de <strong style="color: #156FE6;">${amount} FCFA</strong> nous aide à construire une plateforme ivoirienne innovante et sécurisée.
                     </p>
-
-                    <!-- Récapitulatif -->
                     <div style="background: #f8f9fc; border-radius: 12px; padding: 12px 16px; border: 1px solid #e6e8ef; margin: 8px 0 14px 0;">
                         <div style="font-size: 12px; font-weight: 700; color: #0F1B4D; border-bottom: 1px solid #e6e8ef; padding-bottom: 6px; margin-bottom: 6px;">
                             📋 Récapitulatif du don
@@ -123,8 +108,6 @@ async function sendThankYouEmail(email, name, amount, orderId) {
                             <span style="font-weight: 600; color: #0F1B4D;">${orderId}</span>
                         </div>
                     </div>
-
-                    <!-- Signature -->
                     <div style="text-align: center; padding-top: 12px; border-top: 2px solid #f0f2f5; font-size: 12px; color: #6b7280;">
                         <div style="font-weight: 600; color: #0F1B4D;">Avec toute notre gratitude,</div>
                         <div>L'équipe <strong style="color: #156FE6;">VirtMak</strong></div>
@@ -147,7 +130,7 @@ async function sendThankYouEmail(email, name, amount, orderId) {
         };
 
         await sgMail.send(msg);
-        console.log(`✅ Email envoyé à ${email} (template sobre)`);
+        console.log(`✅ Email envoyé à ${email}`);
         return { success: true, message: 'Email envoyé avec succès' };
 
     } catch (error) {
@@ -158,24 +141,63 @@ async function sendThankYouEmail(email, name, amount, orderId) {
         return { success: false, message: error.message };
     }
 }
+
 // ================================================================
-// 5. NETTOYAGE AUTO
+// 5. FONCTION : CALCULER LE STATUT (GOLD / PREMIUM)
 // ================================================================
 
-async function autoClean() {
+async function calculateAndUpdateStatus(email) {
     try {
-        const orders = await db.cleanOldOrders(15);
-        const payments = await db.cleanOldPayments(15);
-        if (orders > 0 || payments > 0) {
-            console.log(`🧹 Nettoyage: ${orders} commandes, ${payments} paiements supprimés`);
+        // Récupérer les commandes et paiements
+        const orders = await db.query('SELECT * FROM orders WHERE email = $1', [email]);
+        const payments = await db.query('SELECT * FROM payments WHERE user_email = $1 OR email = $1', [email]);
+
+        const allOrders = orders.rows;
+        const allPayments = payments.rows;
+
+        const successCount = allPayments.filter(p => p.status === 'success').length;
+        const pendingCount = allOrders.filter(o => o.status === 'pending').length;
+
+        let flex1 = null; // Gold
+        let flex2 = null; // Premium
+        let flex5 = 'visiteur';
+
+        // 1️⃣ Premium : 2+ paiements success
+        if (successCount >= 2) {
+            flex5 = 'donateur';
+            flex2 = 'true';   // Premium
+            flex1 = 'true';   // Gold aussi
         }
+        // 2️⃣ Gold : 1 paiement success + au moins 1 pending
+        else if (successCount >= 1 && pendingCount >= 1) {
+            flex5 = 'donateur';
+            flex1 = 'true';   // Gold
+        }
+        // 3️⃣ Donateur : 1+ paiement success
+        else if (successCount >= 1) {
+            flex5 = 'donateur';
+        }
+        // 4️⃣ Participant : 1+ commande pending
+        else if (pendingCount >= 1) {
+            flex5 = 'participant';
+        }
+        // 5️⃣ Visiteur : par défaut
+
+        // Mettre à jour l'utilisateur
+        await db.query(
+            'UPDATE users SET flex1 = $1, flex2 = $2, flex5 = $3, updated_at = NOW() WHERE email = $4',
+            [flex1, flex2, flex5, email]
+        );
+
+        const user = await db.getUserByEmail(email);
+        console.log(`📊 Statut mis à jour pour ${email}: flex5=${flex5}, flex1=${flex1}, flex2=${flex2}`);
+        return user;
+
     } catch (error) {
-        console.error('❌ Erreur nettoyage:', error);
+        console.error('❌ Erreur calculateAndUpdateStatus:', error);
+        return null;
     }
 }
-
-setInterval(autoClean, 5 * 60 * 1000);
-autoClean();
 
 // ================================================================
 // 6. ROUTES PAGES STATIQUES
@@ -233,7 +255,7 @@ app.post('/api/visiteur', async (req, res) => {
     try {
         const user = await db.getOrCreateUser(name, email);
         
-        if (user.status !== 'visiteur') {
+        if (user.flex5 !== 'visiteur') {
             await db.updateUserStatus(email, 'visiteur');
         }
 
@@ -249,122 +271,6 @@ app.post('/api/visiteur', async (req, res) => {
     }
 });
 
-// ================================================================
-// ROUTE : RÉCUPÉRER LES COMMANDES D'UN UTILISATEUR PAR EMAIL
-// ================================================================
-
-app.get('/api/orders/user/:email', async (req, res) => {
-    const { email } = req.params;
-
-    console.log(`📝 Récupération des commandes pour: ${email}`);
-
-    if (!email) {
-        return res.status(400).json({ error: 'Email requis' });
-    }
-
-    try {
-        // Récupérer les commandes par email
-        const result = await db.query(
-            'SELECT * FROM orders WHERE email = $1 ORDER BY created_at DESC',
-            [email]
-        );
-
-        const orders = result.rows;
-
-        console.log(`✅ ${orders.length} commande(s) trouvée(s) pour ${email}`);
-
-        res.json({
-            success: true,
-            count: orders.length,
-            orders: orders
-        });
-
-    } catch (error) {
-        console.error('❌ Erreur récupération commandes:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.get('/api/pending-orders', async (req, res) => {
-    const result = await db.query('SELECT * FROM orders WHERE status = $1', ['pending']);
-    res.json({ success: true, count: result.rows.length, orders: result.rows });
-});
-
-app.get('/api/pending-payments', async (req, res) => {
-    try {
-        const result = await db.query('SELECT * FROM pending_payments ORDER BY created_at DESC');
-        res.json({ success: true, count: result.rows.length, payments: result.rows });
-    } catch (error) {
-        console.error('❌ Erreur:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// ================================================================
-// ROUTE ADMIN : RECRÉER UNE COMMANDE PERDUE
-// ================================================================
-
-app.post('/api/admin/recreate-order', async (req, res) => {
-    const { reference, email, name, amount, payment_link_id } = req.body;
-
-    console.log('\n' + '='.repeat(80));
-    console.log('🛠️ RECRÉATION D\'UNE COMMANDE PERDUE');
-    console.log('='.repeat(80));
-    console.log(`   🔗 Référence: ${reference}`);
-    console.log(`   📧 Email: ${email}`);
-    console.log(`   👤 Nom: ${name}`);
-    console.log(`   💰 Montant: ${amount} FCFA`);
-    console.log(`   🔗 Payment Link ID: ${payment_link_id}`);
-
-    if (!reference || !email || !name || !amount) {
-        return res.status(400).json({
-            success: false,
-            error: 'Données manquantes : reference, email, name, amount requis'
-        });
-    }
-
-    try {
-        // 1️⃣ Vérifier si la commande existe déjà
-        const existing = await db.query('SELECT * FROM orders WHERE reference = $1', [reference]);
-
-        if (existing.rows.length > 0) {
-            console.log('   ⚠️ La commande existe déjà (ID: ' + existing.rows[0].id + ')');
-            return res.json({
-                success: false,
-                message: 'La commande existe déjà',
-                order: existing.rows[0]
-            });
-        }
-
-        // 2️⃣ Récupérer l'utilisateur
-        const user = await db.getUserByEmail(email);
-        const userId = user?.id || null;
-
-        // 3️⃣ Insérer la commande
-        const result = await db.query(
-            `INSERT INTO orders (reference, user_id, email, name, amount, status, payment_link_id, created_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-             RETURNING *`,
-            [reference, userId, email, name, amount, 'pending', payment_link_id || null]
-        );
-
-        console.log(`   ✅ Commande recréée avec succès (ID: ${result.rows[0].id})`);
-        console.log('='.repeat(80) + '\n');
-
-        res.json({
-            success: true,
-            message: 'Commande recréée avec succès',
-            order: result.rows[0]
-        });
-
-    } catch (error) {
-        console.error('   ❌ Erreur:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
 // ================================================================
 // 9. API : CRÉER UN PAIEMENT
 // ================================================================
@@ -388,15 +294,15 @@ app.post('/api/create-payment', async (req, res) => {
     }
 
     try {
+        // 1️⃣ Récupérer ou créer l'utilisateur
         const user = await db.getOrCreateUser(name, email);
-        if (user.status !== 'visiteur' && user.status !== 'participant') {
-            await db.updateUserStatus(email, 'participant');
-        }
-        console.log(`   ✅ Utilisateur: ${user.name} (${user.status})`);
+        console.log(`   ✅ Utilisateur: ${user.name} (${user.flex5 || 'visiteur'})`);
 
+        // 2️⃣ Générer la référence
         const reference = `VM-${email}-${Date.now()}`;
         console.log(`   🔗 Référence: ${reference}`);
 
+        // 3️⃣ Créer la commande (orders)
         const order = await db.createOrder({
             reference,
             user_id: user.id,
@@ -411,9 +317,11 @@ app.post('/api/create-payment', async (req, res) => {
         }
         console.log(`   ✅ Commande créée (ID: ${order.id})`);
 
+        // 4️⃣ Mettre à jour le statut utilisateur → participant
         await db.updateUserStatus(email, 'participant');
         console.log(`   ✅ Statut mis à jour: participant`);
 
+        // 5️⃣ Appel API Jèko
         const amountInCentimes = Math.round(amount * 100);
         console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
 
@@ -460,6 +368,7 @@ app.post('/api/create-payment', async (req, res) => {
             throw new Error('Aucune URL de paiement reçue');
         }
 
+        // 6️⃣ Mettre à jour le payment_link_id
         if (data.id) {
             await db.updateOrderPaymentLink(reference, data.id);
             console.log(`   ✅ Payment Link ID: ${data.id}`);
@@ -482,7 +391,7 @@ app.post('/api/create-payment', async (req, res) => {
 });
 
 // ================================================================
-// 10. API : PAYLIST
+// 10. API : PAYLIST (commandes)
 // ================================================================
 
 app.get('/api/paylist', async (req, res) => {
@@ -538,16 +447,62 @@ app.get('/api/payment/:id', async (req, res) => {
 });
 
 // ================================================================
-// 12. API : UTILISATEURS
+// 12. API : UTILISATEURS (avec statuts calculés)
 // ================================================================
 
 app.get('/api/users', async (req, res) => {
     try {
         const users = await db.getAllUsers();
-        res.json({ success: true, count: users.length, users });
+        
+        // Calculer les statuts pour chaque utilisateur
+        const usersWithStatus = [];
+        for (const user of users) {
+            // Récupérer les commandes et paiements
+            const orders = await db.query('SELECT * FROM orders WHERE email = $1', [user.email]);
+            const payments = await db.query('SELECT * FROM payments WHERE user_email = $1 OR email = $1', [user.email]);
+            
+            const allOrders = orders.rows;
+            const allPayments = payments.rows;
+            
+            const successCount = allPayments.filter(p => p.status === 'success').length;
+            const pendingCount = allOrders.filter(o => o.status === 'pending').length;
+            
+            let calculatedStatus = 'visiteur';
+            let flex1 = user.flex1 || null;
+            let flex2 = user.flex2 || null;
+            
+            // Premium : 2+ paiements success
+            if (successCount >= 2) {
+                calculatedStatus = 'premium';
+                flex1 = 'true';
+                flex2 = 'true';
+            }
+            // Gold : 1 paiement success + au moins 1 pending
+            else if (successCount >= 1 && pendingCount >= 1) {
+                calculatedStatus = 'gold';
+                flex1 = 'true';
+            }
+            // Donateur : 1+ paiement success
+            else if (successCount >= 1) {
+                calculatedStatus = 'donateur';
+            }
+            // Participant : 1+ commande pending
+            else if (pendingCount >= 1) {
+                calculatedStatus = 'participant';
+            }
+            
+            usersWithStatus.push({
+                ...user,
+                calculated_status: calculatedStatus,
+                flex1: flex1,
+                flex2: flex2
+            });
+        }
+        
+        res.json({ success: true, count: usersWithStatus.length, users: usersWithStatus });
     } catch (error) {
-        console.error('❌ Erreur:', error);
-        res.status(500).json({ error: error.message });
+        console.error('❌ Erreur récupération utilisateurs:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -609,7 +564,93 @@ app.post('/api/update-status', async (req, res) => {
 });
 
 // ================================================================
-// 15. WEBHOOK JEKO AVEC ENVOI EMAIL (SendGrid)
+// 15. API : COMMANDES D'UN UTILISATEUR
+// ================================================================
+
+app.get('/api/orders/user/:email', async (req, res) => {
+    const { email } = req.params;
+
+    console.log(`📝 Récupération des commandes pour: ${email}`);
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email requis' });
+    }
+
+    try {
+        const result = await db.query(
+            'SELECT * FROM orders WHERE email = $1 ORDER BY created_at DESC',
+            [email]
+        );
+
+        const orders = result.rows;
+        console.log(`✅ ${orders.length} commande(s) trouvée(s) pour ${email}`);
+        res.json({ success: true, count: orders.length, orders });
+    } catch (error) {
+        console.error('❌ Erreur récupération commandes:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ================================================================
+// 16. API : ADMIN RECREATE ORDER
+// ================================================================
+
+app.post('/api/admin/recreate-order', async (req, res) => {
+    const { reference, email, name, amount, payment_link_id } = req.body;
+
+    console.log('\n' + '='.repeat(80));
+    console.log('🛠️ RECRÉATION D\'UNE COMMANDE PERDUE');
+    console.log('='.repeat(80));
+    console.log(`   🔗 Référence: ${reference}`);
+    console.log(`   📧 Email: ${email}`);
+    console.log(`   👤 Nom: ${name}`);
+    console.log(`   💰 Montant: ${amount} FCFA`);
+
+    if (!reference || !email || !name || !amount) {
+        return res.status(400).json({
+            success: false,
+            error: 'Données manquantes : reference, email, name, amount requis'
+        });
+    }
+
+    try {
+        const existing = await db.query('SELECT * FROM orders WHERE reference = $1', [reference]);
+        if (existing.rows.length > 0) {
+            console.log('   ⚠️ La commande existe déjà (ID: ' + existing.rows[0].id + ')');
+            return res.json({
+                success: false,
+                message: 'La commande existe déjà',
+                order: existing.rows[0]
+            });
+        }
+
+        const user = await db.getUserByEmail(email);
+        const userId = user?.id || null;
+
+        const result = await db.query(
+            `INSERT INTO orders (reference, user_id, email, name, amount, status, payment_link_id, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+             RETURNING *`,
+            [reference, userId, email, name, amount, 'pending', payment_link_id || null]
+        );
+
+        console.log(`   ✅ Commande recréée avec succès (ID: ${result.rows[0].id})`);
+        console.log('='.repeat(80) + '\n');
+
+        res.json({
+            success: true,
+            message: 'Commande recréée avec succès',
+            order: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('   ❌ Erreur:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ================================================================
+// 17. WEBHOOK JEKO
 // ================================================================
 
 app.post('/webhook', async (req, res) => {
@@ -680,13 +721,22 @@ app.post('/webhook', async (req, res) => {
             store_name: body.storeName || null,
             payment_link_id: body.transactionDetails?.paymentLinkId || null,
             reference: reference,
-            executed_at: body.executedAt || null
+            executed_at: body.executedAt || null,
+            user_email: order.email,
+            email: order.email
         };
         const savedPayment = await db.savePayment(paymentData);
         console.log(`✅ Paiement enregistré: ${savedPayment ? 'OK' : 'Déjà existant'}`);
 
         // ============================================================
-        // 🔥 ENVOI DE L'EMAIL DE REMERCIEMENT AVEC SENDGRID
+        // 🔥 CALCULER LE STATUT (GOLD / PREMIUM)
+        // ============================================================
+        console.log('\n📊 CALCUL DU STATUT (GOLD / PREMIUM)...');
+        console.log('-'.repeat(40));
+        await calculateAndUpdateStatus(order.email);
+
+        // ============================================================
+        // 🔥 ENVOI DE L'EMAIL DE REMERCIEMENT
         // ============================================================
         console.log('\n📧 ENVOI DE L\'EMAIL DE REMERCIEMENT');
         console.log('-'.repeat(40));
@@ -717,7 +767,7 @@ app.post('/webhook', async (req, res) => {
             console.warn(`⚠️ ${emailMessage}`);
         }
 
-        // ✅ Mettre à jour le statut de l'envoi dans la base
+        // Mettre à jour le statut de l'envoi
         try {
             await db.query(
                 'UPDATE users SET flex1 = $1, flex2 = $2 WHERE email = $3',
@@ -740,7 +790,7 @@ app.post('/webhook', async (req, res) => {
         console.log(`   📧 Email: ${emailStatus} - ${emailMessage}`);
         console.log(`   📧 Expéditeur: ${SENDER_EMAIL}`);
         console.log(`   📧 Service: SendGrid`);
-        console.log(`   🖼️ Image: logo.png avec anneau bleu`);
+        console.log(`   🖼️ Logo: avec anneau bleu`);
         console.log('='.repeat(80) + '\n');
 
         res.sendStatus(200);
@@ -755,7 +805,7 @@ app.post('/webhook', async (req, res) => {
 });
 
 // ================================================================
-// 16. DÉMARRAGE
+// 18. DÉMARRAGE
 // ================================================================
 
 app.listen(PORT, () => {
@@ -772,7 +822,7 @@ app.listen(PORT, () => {
     console.log(`   GET  /api/paylist/:reference`);
     console.log(`   GET  /api/payments`);
     console.log(`   GET  /api/payment/:id`);
-    console.log(`   GET  /api/users`);
+    console.log(`   GET  /api/users (avec statuts calculés)`);
     console.log(`   GET  /api/user/:email`);
     console.log(`   GET  /api/stats`);
     console.log(`   POST /api/update-status`);
