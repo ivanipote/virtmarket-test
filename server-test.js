@@ -38,11 +38,21 @@ app.use(express.static('.'));
 // 3. CONFIGURATION SENDGRID
 // ================================================================
 
-const SENDGRID_API_KEY = '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';
-const SENDER_EMAIL = 'thanksvirtmak@gmail.com';
+// ================================================================
+// CONFIGURATION SENDGRID
+// ================================================================
+
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const SENDER_EMAIL = process.env.SENDGRID_MAIL || 'noreply@virtmak.com';
 const SENDER_NAME = 'VirtMak';
 
-sgMail.setApiKey(SENDGRID_API_KEY);
+// Vérification au démarrage
+if (!SENDGRID_API_KEY) {
+    console.warn('⚠️ SENDGRID_API_KEY non définie dans les variables d\'environnement');
+}
+if (!SENDER_EMAIL) {
+    console.warn('⚠️ SENDGRID_MAIL non définie dans les variables d\'environnement');
+}
 
 // ================================================================
 // 4. FONCTION : ENVOI EMAIL AVEC SENDGRID
