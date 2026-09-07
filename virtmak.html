@@ -443,7 +443,6 @@
             display: flex;
         }
 
-        /* Dots */
         .overlay-dot .dot-loader {
             display: flex;
             gap: 14px;
@@ -477,7 +476,6 @@
             }
         }
 
-        /* Texte stylé avec Playfair Display */
         .overlay-dot .overlay-text {
             font-family: 'Playfair Display', serif;
             font-size: 22px;
@@ -662,7 +660,7 @@
     <div class="toast-container" id="toast"></div>
 
     <!-- ============================================================ -->
-    <!-- OVERLAY DOT - fond blanc, texte stylé                         -->
+    <!-- OVERLAY DOT                                                   -->
     <!-- ============================================================ -->
     <div class="overlay-dot" id="overlayDot">
         <div class="dot-loader">
@@ -679,7 +677,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ virtmak.html (overlay DOT) chargé');
+            console.log('✅ virtmak.html chargé');
 
             // ===== RÉFÉRENCES =====
             const form = document.getElementById('virtmakForm');
@@ -709,6 +707,15 @@
                 setTimeout(() => {
                     infoMessage.className = 'info-message';
                 }, 4000);
+            }
+
+            // ===== OVERLAY =====
+            function showOverlay() {
+                overlay.classList.add('active');
+            }
+
+            function hideOverlay() {
+                overlay.classList.remove('active');
             }
 
             // ===== MONTANTS SUGGÉRÉS =====
@@ -759,20 +766,7 @@
             amountInput.addEventListener('input', validateForm);
 
             // ============================================================
-            // AFFICHER L'OVERLAY DOT
-            // ============================================================
-            function showOverlay() {
-                overlay.classList.add('active');
-                console.log('📱 Overlay DOT affiché');
-            }
-
-            function hideOverlay() {
-                overlay.classList.remove('active');
-                console.log('✅ Overlay DOT fermé');
-            }
-
-            // ============================================================
-            // SOUMISSION - ENREGISTRE L'UTILISATEUR (VISITEUR)
+            // SOUMISSION - API /api/visiteur
             // ============================================================
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -795,32 +789,31 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
 
-                // ✅ Afficher l'overlay DOT
+                // ✅ Afficher l'overlay
                 showOverlay();
 
                 try {
-                    // ✅ 1. Enregistrer l'utilisateur (statut: visiteur)
-                    const registerRes = await fetch('/api/user/register', {
+                    // ✅ Appel à l'API /api/visiteur
+                    const response = await fetch('/api/visiteur', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name, email })
                     });
 
-                    const registerData = await registerRes.json();
+                    const data = await response.json();
 
-                    if (!registerRes.ok) {
-                        throw new Error(registerData.error || 'Erreur enregistrement');
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Erreur enregistrement');
                     }
 
-                    console.log('✅ Utilisateur enregistré (visiteur):', registerData.user);
+                    console.log('✅ Visiteur enregistré:', data.user);
 
-                    // ✅ 2. Redirection vers pay.html avec les infos
+                    // ✅ Redirection vers pay.html
                     const url = `/pay.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&amount=${amount}`;
-                    console.log('🔗 Redirection vers:', url);
+                    console.log('🔗 Redirection:', url);
 
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirection...';
 
-                    // ✅ Petite pause pour voir l'overlay
                     setTimeout(() => {
                         hideOverlay();
                         window.location.href = url;
@@ -837,7 +830,7 @@
 
             // ===== INIT =====
             validateForm();
-            console.log('✅ virtmak.html (overlay DOT) initialisé');
+            console.log('✅ virtmak.html initialisé');
 
         });
     </script>
