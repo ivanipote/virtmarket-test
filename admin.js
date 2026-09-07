@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 3.1 - Avec commandes en attente pour participants
+// VERSION : 3.2 - Avec montant pour les participants
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -330,6 +330,19 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
 
+        // ===== MONTANT DU PARTICIPANT DANS LE STATUS FOOTER =====
+        let participantAmountHtml = '';
+        if (status === 'participant' && pendingOrders.length > 0) {
+            participantAmountHtml = `
+                <div class="status-item" style="border-top:1px solid #f0f2f5;padding-top:6px;margin-top:4px;">
+                    <span class="status-label"><i class="fas fa-money-bill-wave" style="color:#3b82f6;"></i> Montant</span>
+                    <span class="status-time" style="color:#156FE6;font-weight:700;">
+                        ${pendingOrders[0].amount || 0} FCFA
+                    </span>
+                </div>
+            `;
+        }
+
         // ===== EMAIL STATUS =====
         let emailStatusHtml = '';
         if (emailStatus === 'succes') {
@@ -392,6 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="badge pending">⏳ En attente</span>
                             </span>
                         </div>
+                        ${participantAmountHtml}
                     ` : ''}
                     ${status === 'donateur' ? `
                         <div class="status-item">
