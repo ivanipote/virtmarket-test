@@ -301,6 +301,71 @@ app.get('/api/pending-payments', async (req, res) => {
 });
 
 // ================================================================
+// ROUTE ADMIN : RECRÉER UNE COMMANDE PERDUE
+// ================================================================
+
+app.post('/api/admin/recreate-order', async (req, res) => {
+    const { reference, email, name, amount, payment_link_id } = req.body;
+
+    console.log('\n' + '='.repeat(80));
+    console.log('🛠️ RECRÉATION D\'UNE COMMANDE PERDUE');
+    console.log('='.repeat(80));
+    console.log(`   🔗 Référence: ${reference}`);
+    console.log(`   📧 Email: ${email}`);
+    console.log(`   👤 Nom: ${name}`);
+    console.log(`   💰 Montant: ${amount} FCFA`);
+    console.log(`   🔗 Payment Link ID: ${payment_link_id}`);
+
+    if (!reference || !email || !name || !amount) {
+        return res.status(400).json({
+            success: false,
+            error: 'Données manquantes : reference, email, name, amount requis'
+        });
+    }
+
+    try {
+        // 1️⃣ Vérifier si la commande existe déjà
+        const existing = await db.query('SELECT * FROM orders WHERE reference = $1', [reference]);
+
+        if (existing.rows.length > 0) {
+            console.log('   ⚠️ La commande existe déjà (ID: ' + existing.rows[0].id + ')');
+            return res.json({
+                success: false,
+                message: 'La commande existe déjà',
+                order: existing.rows[0]
+            });
+        }
+
+        // 2️⃣ Récupérer l'utilisateur
+        const user = await db.getUserByEmail(email);
+        const userId = user?.id || null;
+
+        // 3️⃣ Insérer la commande
+        const result = await db.query(
+            `INSERT INTO orders (reference, user_id, email, name, amount, status, payment_link_id, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+             RETURNING *`,
+            [reference, userId, email, name, amount, 'pending', payment_link_id || null]
+        );
+
+        console.log(`   ✅ Commande recréée avec succès (ID: ${result.rows[0].id})`);
+        console.log('='.repeat(80) + '\n');
+
+        res.json({
+            success: true,
+            message: 'Commande recréée avec succès',
+            order: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('   ❌ Erreur:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+// ================================================================
 // 9. API : CRÉER UN PAIEMENT
 // ================================================================
 
