@@ -142,7 +142,7 @@ app.post('/api/create-order', async (req, res) => {
                 currency: 'XOF',
                 reference: reference,
                 email: email,
-                customerId: name,  // ✅ ICI : le nom de l'utilisateur
+                customerId: name,
                 description: `Commande de ${name} (${email}) - ${amount} FCFA`,
                 paymentDetails: {
                     type: 'redirect',
@@ -235,17 +235,59 @@ app.post('/api/user/update-status', async (req, res) => {
 });
 
 // ============================================================
-// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (LEGACY)
+// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO - VERSION PRINCIPALE
 // ============================================================
 app.post('/create-payment-link', async (req, res) => {
-    const { name, email, amount } = req.body;
+    const { name, email, amount, reference } = req.body;
+
+    console.log('\n' + '='.repeat(80));
+    console.log('💳 CRÉATION D\'UN LIEN DE PAIEMENT');
+    console.log('='.repeat(80));
+    console.log(`   👤 Nom: ${name}`);
+    console.log(`   📧 Email: ${email}`);
+    console.log(`   💰 Montant: ${amount} FCFA`);
+    console.log(`   🔗 Référence reçue: ${reference || 'NON FOURNIE'}`);
+
+    if (!name || !email || !amount) {
+        return res.status(400).json({ error: 'Nom, email et montant requis' });
+    }
+
+    if (amount < 1) {
+        return res.status(400).json({ error: 'Le montant minimum est de 1 FCFA' });
+    }
+
+    // ✅ Utiliser la référence reçue ou en créer une nouvelle
+    const finalReference = reference || `VM-${email}-${Date.now()}`;
+    console.log(`   🔗 Référence finale: ${finalReference}`);
 
     const amountInCentimes = Math.round(amount * 100);
-
-    console.log(`📝 Création d'une demande de paiement pour ${name} (${email})`);
-    console.log(`💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
+    console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
 
     try {
+        // ✅ Construire la requête avec la référence
+        const requestBody = {
+            storeId: process.env.JEKO_BUSINESS_ID,
+            title: `Commande - ${name}`,
+            amountCents: amountInCentimes,
+            currency: 'XOF',
+            reference: finalReference,
+            email: email,
+            customerId: name,
+            description: `Commande de ${name} (${email}) - ${amount} FCFA`,
+            paymentDetails: {
+                type: 'redirect',
+                data: {
+                    paymentMethod: 'wave',
+                    successUrl: 'https://virtmarket-test.onrender.com/verify',
+                    errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
+                }
+            }
+        };
+
+        console.log(`\n📤 REQUÊTE ENVOYÉE À JÈKO:`);
+        console.log('-'.repeat(40));
+        console.log(JSON.stringify(requestBody, null, 2));
+
         const response = await fetch('https://api.jeko.africa/partner_api/payment_requests', {
             method: 'POST',
             headers: {
@@ -253,24 +295,7 @@ app.post('/create-payment-link', async (req, res) => {
                 'X-API-KEY-ID': process.env.JEKO_API_KEY_ID,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                storeId: process.env.JEKO_BUSINESS_ID,
-                title: `Commande - ${name}`,
-                amountCents: amountInCentimes,
-                currency: 'XOF',
-                reference: `VM-${email}-${Date.now()}`,
-                email: email,
-                customerId: name,  // ✅ ICI : le nom de l'utilisateur
-                description: `Commande de ${name} (${email}) - ${amount} FCFA`,
-                paymentDetails: {
-                    type: 'redirect',
-                    data: {
-                        paymentMethod: 'wave',
-                        successUrl: 'https://virtmarket-test.onrender.com/verify',
-                        errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
-                    }
-                }
-            })
+            body: JSON.stringify(requestBody)
         });
 
         const data = await response.json();
@@ -283,13 +308,41 @@ app.post('/create-payment-link', async (req, res) => {
             });
         }
 
+        // ============================================================
+        // 📋 AFFICHER TOUTES LES INFOS RETOURNÉES PAR JÈKO
+        // ============================================================
+        console.log(`\n📥 RÉPONSE COMPLÈTE DE JÈKO:`);
+        console.log('-'.repeat(40));
+        console.log(JSON.stringify(data, null, 2));
+
+        console.log(`\n📊 DÉTAILS DU PAIEMENT GÉNÉRÉ:`);
+        console.log('-'.repeat(40));
+        console.log(`   🆔 ID du lien: ${data.id || 'N/A'}`);
+        console.log(`   🔗 Référence: ${data.reference || 'N/A'}`);
+        console.log(`   💰 Montant: ${data.amountCents ? data.amountCents / 100 : amount} FCFA`);
+        console.log(`   📊 Statut: ${data.status || 'pending'}`);
+        console.log(`   📅 Créé le: ${data.createdAt || 'N/A'}`);
+        console.log(`   🔗 URL de paiement: ${data.redirectUrl || 'N/A'}`);
+        console.log(`   🏪 Store: ${data.storeName || 'N/A'}`);
+        console.log(`   📧 Email: ${data.email || 'N/A'}`);
+        console.log(`   🆔 Customer ID: ${data.customerId || 'N/A'}`);
+        console.log(`   📝 Description: ${data.description || 'N/A'}`);
+
+        // Vérifier si data.redirectUrl existe
         if (!data.redirectUrl) {
-            console.error('❌ Aucune URL de redirection reçue:', data);
+            console.error('❌ Aucune URL de redirection reçue');
             return res.status(500).json({ error: 'Aucune URL de paiement reçue' });
         }
 
-        console.log(`✅ URL de redirection générée : ${data.redirectUrl}`);
-        res.json({ checkout_url: data.redirectUrl });
+        console.log(`\n✅ URL de redirection générée: ${data.redirectUrl}`);
+        console.log('='.repeat(80) + '\n');
+
+        // ✅ Retourner la réponse
+        res.json({ 
+            checkout_url: data.redirectUrl,
+            payment_id: data.id,
+            reference: data.reference || finalReference
+        });
 
     } catch (error) {
         console.error('❌ Erreur:', error.message);
