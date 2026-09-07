@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💳 Paiement - Virtual Market</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -277,6 +278,102 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
+        /* ============================================================ */
+        /* OVERLAY JAUGE - fond blanc, pas de flou                      */
+        /* ============================================================ */
+        .overlay-jauge {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .overlay-jauge.active {
+            display: flex;
+        }
+
+        /* ===== Jauge ===== */
+        .overlay-jauge .jauge-wrapper {
+            width: 280px;
+            max-width: 80%;
+        }
+
+        .overlay-jauge .jauge-track {
+            width: 100%;
+            height: 8px;
+            background: #e6e8ef;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .overlay-jauge .jauge-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #0F8B5D, #0A6B47);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .overlay-jauge .jauge-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .overlay-jauge .jauge-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0F1B4D;
+            margin-top: 8px;
+        }
+
+        .overlay-jauge .jauge-label .percent {
+            color: #0F8B5D;
+        }
+
+        /* ===== Texte stylé ===== */
+        .overlay-jauge .overlay-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 400;
+            font-style: italic;
+            color: #0F1B4D;
+            letter-spacing: 0.5px;
+            opacity: 0.8;
+            animation: textPulse 2s ease-in-out infinite;
+            margin-top: 4px;
+        }
+
+        @keyframes textPulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE                                                    */
+        /* ============================================================ */
         @media (max-width: 600px) {
             .pay-header { height: 54px; border-radius: 40px; margin: 10px 12px 0 12px; }
             .pay-header .header-text { font-size: 12px; }
@@ -289,6 +386,8 @@
             .btn-pay { padding: 16px 32px; font-size: 16px; max-width: 300px; }
             .btn-pay .btn-wave-icon { width: 24px; height: 24px; }
             .btn-pay .btn-text { font-size: 16px; }
+            .overlay-jauge .jauge-wrapper { width: 220px; }
+            .overlay-jauge .overlay-text { font-size: 18px; }
         }
 
         @media (max-width: 420px) {
@@ -305,6 +404,9 @@
             .btn-pay .btn-wave-icon { width: 20px; height: 20px; }
             .btn-pay .btn-text { font-size: 14px; }
             .toast-container { font-size: 13px; padding: 10px 16px; bottom: 16px; }
+            .overlay-jauge .jauge-wrapper { width: 180px; }
+            .overlay-jauge .overlay-text { font-size: 16px; }
+            .overlay-jauge .jauge-label { font-size: 11px; }
         }
 
         @media (max-width: 350px) {
@@ -313,6 +415,8 @@
             .btn-pay { padding: 12px 20px; font-size: 13px; max-width: 220px; }
             .btn-pay .btn-wave-icon { width: 18px; height: 18px; }
             .btn-pay .btn-text { font-size: 13px; }
+            .overlay-jauge .jauge-wrapper { width: 150px; }
+            .overlay-jauge .overlay-text { font-size: 14px; }
         }
     </style>
 </head>
@@ -367,10 +471,26 @@
 
     <div class="toast-container" id="toast"></div>
 
+    <!-- ============================================================ -->
+    <!-- OVERLAY JAUGE - fond blanc                                    -->
+    <!-- ============================================================ -->
+    <div class="overlay-jauge" id="overlayJauge">
+        <div class="jauge-wrapper">
+            <div class="jauge-track">
+                <div class="jauge-bar" id="jaugeBar"></div>
+            </div>
+            <div class="jauge-label">
+                <span>Préparation</span>
+                <span class="percent" id="jaugePercent">0%</span>
+            </div>
+        </div>
+        <div class="overlay-text">Veuillez patienter...</div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ pay.html (bouton unique) chargé');
+            console.log('✅ pay.html (overlay jauge) chargé');
 
             // ===== RÉFÉRENCES =====
             const displayName = document.getElementById('displayName');
@@ -379,6 +499,9 @@
             const payBtn = document.getElementById('payBtn');
             const toast = document.getElementById('toast');
             const infoMessage = document.getElementById('infoMessage');
+            const overlay = document.getElementById('overlayJauge');
+            const jaugeBar = document.getElementById('jaugeBar');
+            const jaugePercent = document.getElementById('jaugePercent');
 
             // ===== RÉCUPÉRER LES PARAMÈTRES =====
             const urlParams = new URLSearchParams(window.location.search);
@@ -415,15 +538,56 @@
                 }, 6000);
             }
 
+            // ===== AFFICHER L'OVERLAY AVEC JAUGE =====
+            function showOverlay() {
+                overlay.classList.add('active');
+                console.log('📱 Overlay JAUGE affiché');
+                animateJauge();
+            }
+
+            function hideOverlay() {
+                overlay.classList.remove('active');
+                jaugeBar.style.width = '0%';
+                jaugePercent.textContent = '0%';
+                console.log('✅ Overlay JAUGE fermé');
+            }
+
+            // ===== ANIMATION JAUGE =====
+            function animateJauge() {
+                let progress = 0;
+                const duration = 2000; // 2 secondes
+                const interval = 50;
+                const steps = duration / interval;
+                const increment = 100 / steps;
+
+                const timer = setInterval(function() {
+                    progress += increment;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(timer);
+                        // La jauge est pleine, on attend un peu puis on redirige
+                        setTimeout(function() {
+                            // La redirection sera gérée par le callback
+                        }, 300);
+                    }
+                    jaugeBar.style.width = progress + '%';
+                    jaugePercent.textContent = Math.round(progress) + '%';
+                }, interval);
+
+                // Stocker le timer pour pouvoir l'arrêter en cas d'erreur
+                window.jaugeTimer = timer;
+            }
+
             // ===== PAYER - TOUT EN UN =====
             payBtn.addEventListener('click', async function() {
                 console.log('🔄 Lancement du paiement...');
 
                 // Désactiver le bouton
                 payBtn.disabled = true;
-                payBtn.innerHTML = '<span class="spinner"></span> Préparation du paiement...';
+                payBtn.innerHTML = '<span class="spinner"></span> Préparation...';
 
-                showInfo('🔄 Création du lien de paiement en cours...', 'info');
+                // ✅ Afficher l'overlay avec jauge
+                showOverlay();
 
                 try {
                     // ✅ Appel au serveur pour créer le paiement
@@ -447,16 +611,20 @@
                     console.log('   🔗 Référence:', data.reference);
                     console.log('   🔗 URL:', data.checkout_url);
 
-                    showInfo('✅ Paiement préparé ! Redirection vers Jèko...', 'success');
-                    showToast('✅ Redirection vers Jèko...', 'success');
-
-                    // ✅ Redirection automatique vers Jèko
-                    setTimeout(() => {
+                    // ✅ Attendre que la jauge soit à 100% puis rediriger
+                    setTimeout(function() {
+                        hideOverlay();
+                        showToast('✅ Redirection vers Jèko...', 'success');
                         window.location.href = data.checkout_url;
-                    }, 800);
+                    }, 2500);
 
                 } catch (error) {
                     console.error('❌ Erreur:', error);
+                    // Arrêter l'animation de la jauge
+                    if (window.jaugeTimer) {
+                        clearInterval(window.jaugeTimer);
+                    }
+                    hideOverlay();
                     showInfo('❌ ' + error.message, 'warning');
                     showToast('❌ ' + error.message, 'error');
                     payBtn.disabled = false;
