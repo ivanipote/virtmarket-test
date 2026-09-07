@@ -59,6 +59,11 @@ sgMail.setApiKey(SENDGRID_API_KEY);
 // 4. FONCTION : ENVOI EMAIL AVEC IMAGE
 // ================================================================
 
+
+// ================================================================
+// FONCTION : ENVOI EMAIL AVEC IMAGE
+// ================================================================
+
 async function sendThankYouEmail(email, name, amount, orderId) {
     try {
         const now = new Date();
@@ -75,13 +80,9 @@ async function sendThankYouEmail(email, name, amount, orderId) {
                     <div style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #156FE6; padding: 6px; margin: 0 auto; background: white; box-shadow: 0 4px 20px rgba(21,111,230,0.12);">
                         <img src="https://virtmarket-test.onrender.com/logo.png" alt="VirtMak" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" />
                     </div>
-                </div>
-
-                <!-- Titre -->
-                <div style="text-align: center; padding: 0 24px 16px 24px;">
-                    <span style="font-size: 20px; font-weight: 700; color: #0F1B4D; border-bottom: 3px solid #156FE6; padding-bottom: 8px;">
-                        ❤️ Merci pour votre don
-                    </span>
+                    <div style="margin-top: 8px; font-size: 18px; font-weight: 700; color: #0F1B4D;">
+                        <span style="border-bottom: 3px solid #156FE6; padding-bottom: 4px;">❤️ Merci pour votre don</span>
+                    </div>
                 </div>
 
                 <!-- Corps -->
@@ -127,10 +128,13 @@ async function sendThankYouEmail(email, name, amount, orderId) {
                         <div style="border-top: 2px solid #f0f2f5;"></div>
                     </div>
 
-                    <!-- Signature -->
+                    <!-- Signature avec logo mini -->
                     <div style="text-align: center; font-size: 13px; color: #6b7280;">
-                        <div style="font-weight: 600; color: #0F1B4D; font-size: 15px;">Avec toute notre gratitude,</div>
-                        <div style="margin-top: 2px;">L'équipe <strong style="color: #156FE6;">VirtMak</strong></div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 4px;">
+                            <img src="https://virtmarket-test.onrender.com/logo.png" alt="VirtMak" style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid #156FE6; padding: 2px;" />
+                            <span style="font-weight: 600; color: #0F1B4D; font-size: 15px;">Avec toute notre gratitude,</span>
+                        </div>
+                        <div>L'équipe <strong style="color: #156FE6;">VirtMak</strong></div>
                         <div style="font-size: 11px; color: #9ca3af; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f2f5;">
                             🔒 Cet email a été envoyé automatiquement.
                         </div>
