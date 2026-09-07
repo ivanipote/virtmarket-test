@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : database.js
 // DESCRIPTION : Gestion de la base de données PostgreSQL
-// VERSION : 2.0 - Structure propre et organisée
+// VERSION : 2.1 - Avec migration des tables existantes
 // ================================================================
 
 const { Pool } = require('pg');
@@ -34,12 +34,23 @@ async function initializeDatabase() {
                 name TEXT NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 phone TEXT,
-                status TEXT DEFAULT 'visiteur',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log('✅ Table users créée');
+        console.log('✅ Table users créée/vérifiée');
+
+        // Migration : ajouter la colonne status si elle n'existe pas
+        await client.query(`
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                               WHERE table_name='users' AND column_name='status') THEN
+                    ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'visiteur';
+                END IF;
+            END $$;
+        `);
+        console.log('✅ Colonne status ajoutée à users');
 
         // ---------- 2.2 Table : payments ----------
         await client.query(`
@@ -61,9 +72,36 @@ async function initializeDatabase() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log('✅ Table payments créée');
+        console.log('✅ Table payments créée/vérifiée');
 
-        // ---------- 2.3 Table : orders (pending payments) ----------
+        // Migration : migrer les données depuis payments_jeko si elle existe
+        await client.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='payments_jeko') THEN
+                    INSERT INTO payments (transaction_id, amount, currency, status, counterpart_phone, payment_method, store_id, store_name, payment_link_id, reference, executed_at, created_at, updated_at)
+                    SELECT 
+                        transaction_id, 
+                        amount, 
+                        currency, 
+                        status, 
+                        counterpart_phone, 
+                        payment_method, 
+                        store_id, 
+                        store_name, 
+                        payment_link_id, 
+                        NULL as reference, 
+                        executed_at, 
+                        created_at, 
+                        updated_at
+                    FROM payments_jeko
+                    ON CONFLICT (transaction_id) DO NOTHING;
+                END IF;
+            END $$;
+        `);
+        console.log('✅ Migration payments_jeko → payments effectuée');
+
+        // ---------- 2.3 Table : orders ----------
         await client.query(`
             CREATE TABLE IF NOT EXISTS orders (
                 id SERIAL PRIMARY KEY,
@@ -79,7 +117,30 @@ async function initializeDatabase() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log('✅ Table orders créée');
+        console.log('✅ Table orders créée/vérifiée');
+
+        // Migration : migrer les données depuis pending_payments si elle existe
+        await client.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='pending_payments') THEN
+                    INSERT INTO orders (reference, email, name, amount, status, payment_link_id, transaction_id, created_at, updated_at)
+                    SELECT 
+                        reference, 
+                        email, 
+                        name, 
+                        amount, 
+                        status, 
+                        payment_link_id, 
+                        transaction_id, 
+                        created_at, 
+                        updated_at
+                    FROM pending_payments
+                    ON CONFLICT (reference) DO NOTHING;
+                END IF;
+            END $$;
+        `);
+        console.log('✅ Migration pending_payments → orders effectuée');
 
         // ---------- 2.4 Index ----------
         await client.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
@@ -90,7 +151,7 @@ async function initializeDatabase() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_reference ON orders(reference)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`);
-        console.log('✅ Index créés');
+        console.log('✅ Index créés/vérifiés');
 
         await client.query('COMMIT');
         console.log('✅ Base de données initialisée avec succès');
@@ -420,7 +481,47 @@ async function getStats() {
 }
 
 // ================================================================
-// 7. EXPORT
+// 7. NETTOYAGE
+// ================================================================
+
+/**
+ * Nettoyer les commandes pending trop anciennes
+ */
+async function cleanOldOrders(minutes = 15) {
+    try {
+        const result = await pool.query(
+            `DELETE FROM orders 
+             WHERE status = 'pending' 
+             AND created_at < NOW() - INTERVAL '${minutes} minutes'
+             RETURNING id`
+        );
+        return result.rowCount || 0;
+    } catch (error) {
+        console.error('❌ cleanOldOrders:', error);
+        return 0;
+    }
+}
+
+/**
+ * Nettoyer les paiements pending trop anciens
+ */
+async function cleanOldPayments(minutes = 15) {
+    try {
+        const result = await pool.query(
+            `DELETE FROM payments 
+             WHERE status = 'pending' 
+             AND created_at < NOW() - INTERVAL '${minutes} minutes'
+             RETURNING id`
+        );
+        return result.rowCount || 0;
+    } catch (error) {
+        console.error('❌ cleanOldPayments:', error);
+        return 0;
+    }
+}
+
+// ================================================================
+// 8. EXPORT
 // ================================================================
 
 module.exports = {
@@ -454,5 +555,9 @@ module.exports = {
     getPaymentsByStatus,
     
     // Statistiques
-    getStats
+    getStats,
+    
+    // Nettoyage
+    cleanOldOrders,
+    cleanOldPayments
 };
