@@ -10,16 +10,14 @@
 <body>
 
     <!-- ============================================================ -->
-    <!-- HEADER - Avec logo et filtres intégrés                        -->
+    <!-- HEADER                                                        -->
     <!-- ============================================================ -->
     <header class="admin-header">
-        <!-- Logo + Titre -->
         <div class="logo">
             <img src="/logo.png" alt="VirtMak" class="logo-img" />
             Virtual <span>Market</span>
         </div>
 
-        <!-- Filtres dans le header -->
         <div class="header-filters">
             <button class="filter-btn active" data-filter="all">
                 📋 Tous <span class="badge-count" id="countAll">0</span>
@@ -33,9 +31,14 @@
             <button class="filter-btn" data-filter="donateur">
                 🟢 Donateurs <span class="badge-count" id="countDonateur">0</span>
             </button>
+            <button class="filter-btn" data-filter="gold">
+                🟣 Gold <span class="badge-count" id="countGold">0</span>
+            </button>
+            <button class="filter-btn" data-filter="premium">
+                🟠 Premium <span class="badge-count" id="countPremium">0</span>
+            </button>
         </div>
 
-        <!-- Stats + Actions -->
         <div class="header-right">
             <div class="header-stats">
                 <span class="stat-item" id="statTotalItem">
@@ -46,7 +49,7 @@
                 <button class="btn-refresh" id="refreshBtn">
                     <i class="fas fa-sync-alt"></i> <span>Rafraîchir</span>
                 </button>
-                <a href="/virtmak.html" class="btn-paybeta">
+                <a href="/pay.html" class="btn-paybeta">
                     🔵 PayBETA
                 </a>
             </div>
@@ -58,13 +61,12 @@
     <!-- ============================================================ -->
     <div class="admin-layout">
 
-        <!-- ===== SIDEBAR - Liste utilisateurs (cadre fixe) ===== -->
+        <!-- SIDEBAR -->
         <aside class="admin-sidebar">
             <div class="sidebar-header">
                 <span class="sidebar-title"><i class="fas fa-users"></i> Utilisateurs</span>
                 <span class="sidebar-count" id="sidebarCount">0</span>
             </div>
-
             <div class="users-list" id="usersList">
                 <div class="empty-users" id="emptyUsers">
                     <i class="fas fa-inbox"></i>
@@ -73,15 +75,13 @@
             </div>
         </aside>
 
-        <!-- ===== CONTENU - Détails utilisateur (cadre fixe) ===== -->
+        <!-- CONTENU -->
         <main class="admin-content" id="adminContent">
             <div class="empty-detail" id="emptyDetail">
                 <i class="fas fa-hand-holding-heart"></i>
                 <h3>Aucun utilisateur sélectionné</h3>
                 <p>Cliquez sur un utilisateur dans la liste de gauche</p>
             </div>
-
-            <!-- Scroll interne pour les détails -->
             <div class="detail-scroll" id="detailContainer" style="display:none;">
                 <!-- Rempli par JS -->
             </div>
