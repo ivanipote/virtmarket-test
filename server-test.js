@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : server-test.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 6.1 - Version simplifiée (3 statuts)
+// VERSION : 6.2 - Version finale avec total_amount
 // ================================================================
 
 require('dotenv').config();
@@ -143,7 +143,7 @@ async function sendThankYouEmail(email, name, amount, orderId) {
 }
 
 // ================================================================
-// 5. FONCTION : RÉCUPÉRER LES UTILISATEURS AVEC STATUT
+// 5. FONCTION : RÉCUPÉRER LES UTILISATEURS AVEC STATUT ET TOTAL
 // ================================================================
 
 async function getUsersWithStatus() {
@@ -156,6 +156,11 @@ async function getUsersWithStatus() {
 
         const successCount = payments.filter(p => p.status === 'success').length;
         const pendingCount = orders.filter(o => o.status === 'pending').length;
+
+        // ✅ Calcul du total en FCFA (centimes → FCFA)
+        const totalAmount = payments
+            .filter(p => p.status === 'success')
+            .reduce((sum, p) => sum + (p.amount / 100), 0);
 
         let status = 'visiteur';
 
@@ -173,6 +178,7 @@ async function getUsersWithStatus() {
             ...user,
             calculated_status: status,
             success_payments: successCount,
+            total_amount: totalAmount,  // ✅ AJOUTÉ
             pending_orders: pendingCount,
             total_orders: orders.length
         });
@@ -527,12 +533,16 @@ app.get('/api/user/:email', async (req, res) => {
         const payments = await db.getPaymentsByEmail(email);
         const successCount = payments.filter(p => p.status === 'success').length;
         const pendingCount = orders.filter(o => o.status === 'pending').length;
+        const totalAmount = payments
+            .filter(p => p.status === 'success')
+            .reduce((sum, p) => sum + (p.amount / 100), 0);
         
         res.json({ 
             success: true, 
             user: {
                 ...user,
                 success_payments: successCount,
+                total_amount: totalAmount,
                 pending_orders: pendingCount
             }
         });
@@ -770,7 +780,7 @@ app.listen(PORT, () => {
     console.log(`   GET  /api/paylist/:reference`);
     console.log(`   GET  /api/payments`);
     console.log(`   GET  /api/payment/:id`);
-    console.log(`   GET  /api/users (3 statuts)`);
+    console.log(`   GET  /api/users (3 statuts + total_amount)`);
     console.log(`   GET  /api/users/filter/:status`);
     console.log(`   GET  /api/users/donateurs`);
     console.log(`   GET  /api/users/participants`);
