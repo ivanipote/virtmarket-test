@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : database.js
 // DESCRIPTION : Gestion de la base de données PostgreSQL
-// VERSION : 2.1 - Avec migration des tables existantes
+// VERSION : 3.0 - Refonte complète avec flow utilisateur
 // ================================================================
 
 const { Pool } = require('pg');
@@ -35,7 +35,15 @@ async function initializeDatabase() {
                 email TEXT UNIQUE NOT NULL,
                 phone TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                flex1 TEXT DEFAULT NULL,
+                flex2 TEXT DEFAULT NULL,
+                flex3 TEXT DEFAULT NULL,
+                flex4 TEXT DEFAULT NULL,
+                flex5 TEXT DEFAULT NULL,
+                flex6 TEXT DEFAULT NULL,
+                flex7 TEXT DEFAULT NULL,
+                flex8 TEXT DEFAULT NULL
             )
         `);
         console.log('✅ Table users créée/vérifiée');
@@ -52,12 +60,54 @@ async function initializeDatabase() {
         `);
         console.log('✅ Colonne status ajoutée à users');
 
-        // ---------- 2.2 Table : payments ----------
+        // ---------- 2.2 Table : orders ----------
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS orders (
+                id SERIAL PRIMARY KEY,
+                reference TEXT UNIQUE NOT NULL,
+                user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                email TEXT NOT NULL,
+                name TEXT NOT NULL,
+                amount INTEGER NOT NULL,
+                status TEXT DEFAULT 'pending',
+                payment_link_id TEXT,
+                transaction_id TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ Table orders créée/vérifiée');
+
+        // Migration : migrer les données depuis pending_payments si elle existe
+        await client.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='pending_payments') THEN
+                    INSERT INTO orders (reference, email, name, amount, status, payment_link_id, transaction_id, created_at, updated_at)
+                    SELECT 
+                        reference, 
+                        email, 
+                        name, 
+                        amount, 
+                        status, 
+                        payment_link_id, 
+                        transaction_id, 
+                        created_at, 
+                        updated_at
+                    FROM pending_payments
+                    ON CONFLICT (reference) DO NOTHING;
+                END IF;
+            END $$;
+        `);
+        console.log('✅ Migration pending_payments → orders effectuée');
+
+        // ---------- 2.3 Table : payments ----------
         await client.query(`
             CREATE TABLE IF NOT EXISTS payments (
                 id SERIAL PRIMARY KEY,
                 transaction_id TEXT UNIQUE NOT NULL,
                 user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                email TEXT,
                 amount INTEGER NOT NULL,
                 currency TEXT DEFAULT 'XOF',
                 status TEXT DEFAULT 'pending',
@@ -101,56 +151,15 @@ async function initializeDatabase() {
         `);
         console.log('✅ Migration payments_jeko → payments effectuée');
 
-        // ---------- 2.3 Table : orders ----------
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS orders (
-                id SERIAL PRIMARY KEY,
-                reference TEXT UNIQUE NOT NULL,
-                user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-                email TEXT NOT NULL,
-                name TEXT NOT NULL,
-                amount INTEGER NOT NULL,
-                status TEXT DEFAULT 'pending',
-                payment_link_id TEXT,
-                transaction_id TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-        console.log('✅ Table orders créée/vérifiée');
-
-        // Migration : migrer les données depuis pending_payments si elle existe
-        await client.query(`
-            DO $$ 
-            BEGIN
-                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='pending_payments') THEN
-                    INSERT INTO orders (reference, email, name, amount, status, payment_link_id, transaction_id, created_at, updated_at)
-                    SELECT 
-                        reference, 
-                        email, 
-                        name, 
-                        amount, 
-                        status, 
-                        payment_link_id, 
-                        transaction_id, 
-                        created_at, 
-                        updated_at
-                    FROM pending_payments
-                    ON CONFLICT (reference) DO NOTHING;
-                END IF;
-            END $$;
-        `);
-        console.log('✅ Migration pending_payments → orders effectuée');
-
         // ---------- 2.4 Index ----------
         await client.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_users_status ON users(status)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_transaction_id ON payments(transaction_id)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_reference ON orders(reference)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_transaction_id ON payments(transaction_id)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status)`);
         console.log('✅ Index créés/vérifiés');
 
         await client.query('COMMIT');
@@ -172,19 +181,27 @@ async function initializeDatabase() {
 /**
  * Récupère un utilisateur par son email, ou le crée s'il n'existe pas
  */
-async function getOrCreateUser(name, email) {
+async function getOrCreateUser(name, email, amount) {
     try {
         let user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (user.rows.length > 0) {
+            // Mettre à jour le nom et le montant saisi (flex3)
             if (user.rows[0].name !== name) {
                 await pool.query('UPDATE users SET name = $1, updated_at = NOW() WHERE email = $2', [name, email]);
                 user.rows[0].name = name;
             }
+            // Mettre à jour le montant saisi (flex3) s'il est différent
+            if (amount && user.rows[0].flex3 !== String(amount)) {
+                await pool.query('UPDATE users SET flex3 = $1, updated_at = NOW() WHERE email = $2', [String(amount), email]);
+                user.rows[0].flex3 = String(amount);
+            }
             return user.rows[0];
         }
+        // Créer un nouvel utilisateur avec le montant dans flex3
         const result = await pool.query(
-            'INSERT INTO users (name, email, status) VALUES ($1, $2, $3) RETURNING *',
-            [name, email, 'visiteur']
+            `INSERT INTO users (name, email, status, flex3) 
+             VALUES ($1, $2, $3, $4) RETURNING *`,
+            [name, email, 'visiteur', String(amount || '')]
         );
         return result.rows[0];
     } catch (error) {
@@ -205,6 +222,22 @@ async function updateUserStatus(email, status) {
         return result.rows[0] || null;
     } catch (error) {
         console.error('❌ updateUserStatus:', error);
+        return null;
+    }
+}
+
+/**
+ * Met à jour les flex (Gold/Premium)
+ */
+async function updateUserFlex(email, flex1, flex2) {
+    try {
+        const result = await pool.query(
+            'UPDATE users SET flex1 = $1, flex2 = $2, updated_at = NOW() WHERE email = $3 RETURNING *',
+            [flex1, flex2, email]
+        );
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('❌ updateUserFlex:', error);
         return null;
     }
 }
@@ -341,6 +374,22 @@ async function getAllOrders() {
 }
 
 /**
+ * Récupère les commandes par email
+ */
+async function getOrdersByEmail(email) {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM orders WHERE email = $1 ORDER BY created_at DESC',
+            [email]
+        );
+        return result.rows;
+    } catch (error) {
+        console.error('❌ getOrdersByEmail:', error);
+        return [];
+    }
+}
+
+/**
  * Récupère les commandes par statut
  */
 async function getOrdersByStatus(status) {
@@ -363,16 +412,17 @@ async function getOrdersByStatus(status) {
 async function savePayment(data) {
     const query = `
         INSERT INTO payments (
-            transaction_id, user_id, amount, currency, status,
+            transaction_id, user_id, email, amount, currency, status,
             payment_method, counterpart_phone, store_id, store_name,
             payment_link_id, reference, executed_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         ON CONFLICT (transaction_id) DO NOTHING
         RETURNING *
     `;
     const values = [
         data.transaction_id,
         data.user_id || null,
+        data.email || null,
         data.amount || 0,
         data.currency || 'XOF',
         data.status || 'success',
@@ -438,6 +488,22 @@ async function getAllPayments() {
 }
 
 /**
+ * Récupère les paiements par email
+ */
+async function getPaymentsByEmail(email) {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM payments WHERE email = $1 ORDER BY created_at DESC',
+            [email]
+        );
+        return result.rows;
+    } catch (error) {
+        console.error('❌ getPaymentsByEmail:', error);
+        return [];
+    }
+}
+
+/**
  * Récupère les paiements par statut
  */
 async function getPaymentsByStatus(status) {
@@ -468,10 +534,10 @@ async function getStats() {
                 (SELECT COUNT(*) FROM users WHERE status = 'visiteur') as total_visiteurs,
                 (SELECT COUNT(*) FROM users WHERE status = 'participant') as total_participants,
                 (SELECT COUNT(*) FROM users WHERE status = 'donateur') as total_donateurs,
-                (SELECT COUNT(*) FROM payments WHERE status = 'success') as total_paiements,
-                (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'success') as total_montant,
                 (SELECT COUNT(*) FROM orders WHERE status = 'pending') as total_commandes_pending,
-                (SELECT COUNT(*) FROM orders WHERE status = 'success') as total_commandes_success
+                (SELECT COUNT(*) FROM orders WHERE status = 'success') as total_commandes_success,
+                (SELECT COUNT(*) FROM payments WHERE status = 'success') as total_paiements,
+                (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'success') as total_montant
         `);
         return result.rows[0] || null;
     } catch (error) {
@@ -481,60 +547,20 @@ async function getStats() {
 }
 
 // ================================================================
-// 7. NETTOYAGE
+// 7. FONCTIONS DE NETTOYAGE (DESACTIVÉES)
 // ================================================================
 
 /**
- * Nettoyer les commandes pending trop anciennes
+ * Nettoyage désactivé - on ne supprime jamais les commandes pending
  */
 async function cleanOldOrders(minutes = 15) {
-    try {
-        const result = await pool.query(
-            `DELETE FROM orders 
-             WHERE status = 'pending' 
-             AND created_at < NOW() - INTERVAL '${minutes} minutes'
-             RETURNING id`
-        );
-        return result.rowCount || 0;
-    } catch (error) {
-        console.error('❌ cleanOldOrders:', error);
-        return 0;
-    }
+    // Désactivé : on ne supprime jamais les commandes en attente
+    return 0;
 }
 
-/**
- * Nettoyer les paiements pending trop anciens
- */
 async function cleanOldPayments(minutes = 15) {
-    try {
-        const result = await pool.query(
-            `DELETE FROM payments 
-             WHERE status = 'pending' 
-             AND created_at < NOW() - INTERVAL '${minutes} minutes'
-             RETURNING id`
-        );
-        return result.rowCount || 0;
-    } catch (error) {
-        console.error('❌ cleanOldPayments:', error);
-        return 0;
-    }
-}
-
-// Marquer l'email comme envoyé
-async function markEmailSent(email) {
-    await pool.query(
-        'UPDATE users SET flex1 = $1, flex2 = NOW() WHERE email = $2',
-        ['sent', email]
-    );
-}
-
-// Vérifier si l'email a déjà été envoyé
-async function isEmailSent(email) {
-    const result = await pool.query(
-        'SELECT flex1 FROM users WHERE email = $1',
-        [email]
-    );
-    return result.rows[0]?.flex1 === 'sent';
+    // Désactivé : on ne supprime jamais les paiements
+    return 0;
 }
 
 // ================================================================
@@ -552,6 +578,7 @@ module.exports = {
     // Utilisateurs
     getOrCreateUser,
     updateUserStatus,
+    updateUserFlex,
     getUserById,
     getUserByEmail,
     getAllUsers,
@@ -562,6 +589,7 @@ module.exports = {
     updateOrderStatus,
     updateOrderPaymentLink,
     getAllOrders,
+    getOrdersByEmail,
     getOrdersByStatus,
     
     // Paiements (Payments)
@@ -569,12 +597,13 @@ module.exports = {
     getPaymentByTransactionId,
     getPaymentById,
     getAllPayments,
+    getPaymentsByEmail,
     getPaymentsByStatus,
     
     // Statistiques
     getStats,
     
-    // Nettoyage
+    // Nettoyage (désactivé)
     cleanOldOrders,
     cleanOldPayments
 };
