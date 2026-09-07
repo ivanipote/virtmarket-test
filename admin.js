@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 3.2 - Avec montant pour les participants
+// VERSION : 3.3 - Avec API dédiée pour les commandes
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -179,18 +179,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // RÉCUPÉRER LES COMMANDES D'UN UTILISATEUR
+    // RÉCUPÉRER LES COMMANDES D'UN UTILISATEUR (via API dédiée)
     // ============================================================
 
-    function getOrdersByEmail(email) {
-        return allOrders.filter(o => o.email === email);
+    async function getOrdersByEmail(email) {
+        try {
+            const response = await fetch(`/api/orders/user/${encodeURIComponent(email)}`);
+            const data = await response.json();
+            if (data.success) {
+                return data.orders;
+            }
+            return [];
+        } catch (error) {
+            console.error('❌ Erreur récupération commandes:', error);
+            return [];
+        }
     }
 
     // ============================================================
     // AFFICHER LE DÉTAIL D'UN UTILISATEUR
     // ============================================================
 
-    function renderDetail(id) {
+    async function renderDetail(id) {
         const user = allUsers.find(u => u.id === id);
         if (!user) {
             emptyDetail.style.display = 'flex';
@@ -227,8 +237,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const successPayments = allUserPayments.filter(p => p.status === 'success');
         const totalAmount = successPayments.reduce((sum, p) => sum + ((p.amount || 0) / 100), 0);
 
-        // ===== RÉCUPÉRER LES COMMANDES EN ATTENTE (participant) =====
-        const userOrders = getOrdersByEmail(email);
+        // ===== RÉCUPÉRER LES COMMANDES EN ATTENTE (via API dédiée) =====
+        const userOrders = await getOrdersByEmail(email);
         const pendingOrders = userOrders.filter(o => o.status === 'pending');
 
         const formatDate = (date) => {
@@ -239,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // ===== HTML COMMANDES EN ATTENTE (pour participants) =====
         let ordersHtml = '';
-        if (status === 'participant' && pendingOrders.length > 0) {
+        if (pendingOrders.length > 0) {
             ordersHtml = `
                 <div style="margin-top:16px;padding-top:12px;border-top:2px solid #f0f2f5;">
                     <div class="payment-history-title">
@@ -272,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             `;
-        } else if (status === 'participant' && pendingOrders.length === 0) {
+        } else if (status === 'participant') {
             ordersHtml = `
                 <div style="margin-top:16px;padding-top:12px;border-top:2px solid #f0f2f5;text-align:center;color:#9ca3af;font-size:14px;">
                     <i class="fas fa-hourglass-half" style="display:block;font-size:32px;color:#d8dbe4;margin-bottom:8px;"></i>
@@ -418,10 +428,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     ` : ''}
                 </div>
 
-                <!-- COMMANDES EN ATTENTE (pour participants) -->
+                <!-- COMMANDES EN ATTENTE -->
                 ${ordersHtml}
 
-                <!-- HISTORIQUE DES PAIEMENTS (pour donateurs) -->
+                <!-- HISTORIQUE DES PAIEMENTS -->
                 ${paymentsHtml}
 
                 <!-- ACTIONS -->
