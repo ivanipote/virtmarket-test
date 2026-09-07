@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : server-test.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 5.1 - Avec routes de filtrage par statut
+// VERSION : 6.0 - Nouveau flow avec intention (flex3)
 // ================================================================
 
 require('dotenv').config();
@@ -148,54 +148,47 @@ async function sendThankYouEmail(email, name, amount, orderId) {
 
 async function calculateAndUpdateStatus(email) {
     try {
-        // Récupérer l'utilisateur pour son ID
-        const user = await db.getUserByEmail(email);
-        const userId = user?.id;
+        // Récupérer les commandes et paiements par email
+        const orders = await db.getOrdersByEmail(email);
+        const payments = await db.getPaymentsByEmail(email);
 
-        // Récupérer les commandes et paiements
-        const orders = await db.query('SELECT * FROM orders WHERE email = $1', [email]);
-        const payments = await db.query('SELECT * FROM payments WHERE email = $1', [email]);
-
-        const allOrders = orders.rows;
-        const allPayments = payments.rows;
-
-        const successCount = allPayments.filter(p => p.status === 'success').length;
-        const pendingCount = allOrders.filter(o => o.status === 'pending').length;
+        const successCount = payments.filter(p => p.status === 'success').length;
+        const pendingCount = orders.filter(o => o.status === 'pending').length;
 
         let flex1 = null; // Gold
         let flex2 = null; // Premium
-        let flex5 = 'visiteur';
+        let status = 'visiteur';
 
         // 1️⃣ Premium : 2+ paiements success
         if (successCount >= 2) {
-            flex5 = 'donateur';
+            status = 'donateur';
             flex2 = 'true';   // Premium
             flex1 = 'true';   // Gold aussi
         }
         // 2️⃣ Gold : 1 paiement success + au moins 1 pending
         else if (successCount >= 1 && pendingCount >= 1) {
-            flex5 = 'donateur';
+            status = 'donateur';
             flex1 = 'true';   // Gold
         }
         // 3️⃣ Donateur : 1+ paiement success
         else if (successCount >= 1) {
-            flex5 = 'donateur';
+            status = 'donateur';
         }
         // 4️⃣ Participant : 1+ commande pending
         else if (pendingCount >= 1) {
-            flex5 = 'participant';
+            status = 'participant';
         }
         // 5️⃣ Visiteur : par défaut
 
         // Mettre à jour l'utilisateur
         await db.query(
-            'UPDATE users SET flex1 = $1, flex2 = $2, flex5 = $3, updated_at = NOW() WHERE email = $4',
-            [flex1, flex2, flex5, email]
+            'UPDATE users SET flex1 = $1, flex2 = $2, status = $3, updated_at = NOW() WHERE email = $4',
+            [flex1, flex2, status, email]
         );
 
-        const updatedUser = await db.getUserByEmail(email);
-        console.log(`📊 Statut mis à jour pour ${email}: flex5=${flex5}, flex1=${flex1}, flex2=${flex2}`);
-        return updatedUser;
+        const user = await db.getUserByEmail(email);
+        console.log(`📊 Statut mis à jour pour ${email}: status=${status}, flex1=${flex1}, flex2=${flex2}`);
+        return user;
 
     } catch (error) {
         console.error('❌ Erreur calculateAndUpdateStatus:', error);
@@ -212,15 +205,11 @@ async function getUsersWithCalculatedStatus() {
     const result = [];
 
     for (const user of users) {
-        // Récupérer les commandes et paiements
-        const orders = await db.query('SELECT * FROM orders WHERE email = $1', [user.email]);
-        const payments = await db.query('SELECT * FROM payments WHERE email = $1', [user.email]);
+        const orders = await db.getOrdersByEmail(user.email);
+        const payments = await db.getPaymentsByEmail(user.email);
 
-        const allOrders = orders.rows;
-        const allPayments = payments.rows;
-
-        const successCount = allPayments.filter(p => p.status === 'success').length;
-        const pendingCount = allOrders.filter(o => o.status === 'pending').length;
+        const successCount = payments.filter(p => p.status === 'success').length;
+        const pendingCount = orders.filter(o => o.status === 'pending').length;
 
         let calculatedStatus = 'visiteur';
         let flex1 = user.flex1 || null;
@@ -300,29 +289,47 @@ app.post('/api/test-email', async (req, res) => {
 });
 
 // ================================================================
-// 9. API : VISITEUR
+// 9. API : VISITEUR (avec enregistrement de l'intention)
 // ================================================================
 
 app.post('/api/visiteur', async (req, res) => {
-    const { name, email } = req.body;
+    const { name, email, amount } = req.body;
 
-    console.log(`📝 Enregistrement visiteur: ${name} (${email})`);
+    console.log(`\n📝 ENREGISTREMENT VISITEUR`);
+    console.log('='.repeat(40));
+    console.log(`   👤 Nom: ${name}`);
+    console.log(`   📧 Email: ${email}`);
+    console.log(`   💰 Montant saisi: ${amount} FCFA`);
 
-    if (!name || !email) {
-        return res.status(400).json({ error: 'Nom et email requis' });
+    if (!name || !email || !amount) {
+        return res.status(400).json({ error: 'Nom, email et montant requis' });
+    }
+
+    if (amount < 1) {
+        return res.status(400).json({ error: 'Le montant minimum est de 1 FCFA' });
     }
 
     try {
-        const user = await db.getOrCreateUser(name, email);
+        // Enregistrer l'utilisateur avec le montant dans flex3 (intention)
+        const user = await db.getOrCreateUser(name, email, amount);
         
-        if (user.flex5 !== 'visiteur') {
+        if (user.status !== 'visiteur') {
             await db.updateUserStatus(email, 'visiteur');
         }
 
         console.log(`✅ Visiteur enregistré: ${email}`);
+        console.log(`   💰 Intention: ${amount} FCFA (flex3)`);
+        console.log('='.repeat(40) + '\n');
+
         res.json({
             success: true,
-            user: { id: user.id, name: user.name, email: user.email, status: 'visiteur' }
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                status: 'visiteur',
+                intention: user.flex3 || amount
+            }
         });
 
     } catch (error) {
@@ -354,12 +361,19 @@ app.post('/api/create-payment', async (req, res) => {
     }
 
     try {
-        const user = await db.getOrCreateUser(name, email);
-        console.log(`   ✅ Utilisateur: ${user.name} (${user.flex5 || 'visiteur'})`);
+        // 1️⃣ Récupérer l'utilisateur (existe déjà via /api/visiteur)
+        const user = await db.getUserByEmail(email);
+        if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non trouvé. Veuillez d\'abord vous inscrire.' });
+        }
+        console.log(`   ✅ Utilisateur: ${user.name} (${user.status})`);
+        console.log(`   💰 Intention initiale: ${user.flex3 || 'Non renseignée'} FCFA`);
 
+        // 2️⃣ Générer la référence
         const reference = `VM-${email}-${Date.now()}`;
         console.log(`   🔗 Référence: ${reference}`);
 
+        // 3️⃣ Créer la commande (orders)
         const order = await db.createOrder({
             reference,
             user_id: user.id,
@@ -374,9 +388,11 @@ app.post('/api/create-payment', async (req, res) => {
         }
         console.log(`   ✅ Commande créée (ID: ${order.id})`);
 
+        // 4️⃣ Mettre à jour le statut utilisateur → participant
         await db.updateUserStatus(email, 'participant');
         console.log(`   ✅ Statut mis à jour: participant`);
 
+        // 5️⃣ Appel API Jèko
         const amountInCentimes = Math.round(amount * 100);
         console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
 
@@ -423,6 +439,7 @@ app.post('/api/create-payment', async (req, res) => {
             throw new Error('Aucune URL de paiement reçue');
         }
 
+        // 6️⃣ Mettre à jour le payment_link_id
         if (data.id) {
             await db.updateOrderPaymentLink(reference, data.id);
             console.log(`   ✅ Payment Link ID: ${data.id}`);
@@ -504,10 +521,6 @@ app.get('/api/payment/:id', async (req, res) => {
 // 13. API : UTILISATEURS (avec statuts calculés)
 // ================================================================
 
-/**
- * GET /api/users
- * Récupère tous les utilisateurs avec leur statut calculé
- */
 app.get('/api/users', async (req, res) => {
     try {
         const users = await getUsersWithCalculatedStatus();
@@ -518,10 +531,6 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-/**
- * GET /api/users/filter/:status
- * Récupère les utilisateurs par statut (visiteur, participant, donateur, gold, premium)
- */
 app.get('/api/users/filter/:status', async (req, res) => {
     const { status } = req.params;
     
@@ -543,10 +552,6 @@ app.get('/api/users/filter/:status', async (req, res) => {
     }
 });
 
-/**
- * GET /api/users/gold
- * Récupère uniquement les utilisateurs Gold
- */
 app.get('/api/users/gold', async (req, res) => {
     try {
         const users = await getUsersWithCalculatedStatus();
@@ -558,10 +563,6 @@ app.get('/api/users/gold', async (req, res) => {
     }
 });
 
-/**
- * GET /api/users/premium
- * Récupère uniquement les utilisateurs Premium
- */
 app.get('/api/users/premium', async (req, res) => {
     try {
         const users = await getUsersWithCalculatedStatus();
@@ -573,10 +574,6 @@ app.get('/api/users/premium', async (req, res) => {
     }
 });
 
-/**
- * GET /api/users/donateurs
- * Récupère tous les donateurs (donateur + gold + premium)
- */
 app.get('/api/users/donateurs', async (req, res) => {
     try {
         const users = await getUsersWithCalculatedStatus();
@@ -588,10 +585,6 @@ app.get('/api/users/donateurs', async (req, res) => {
     }
 });
 
-/**
- * GET /api/users/participants
- * Récupère uniquement les participants
- */
 app.get('/api/users/participants', async (req, res) => {
     try {
         const users = await getUsersWithCalculatedStatus();
@@ -603,10 +596,6 @@ app.get('/api/users/participants', async (req, res) => {
     }
 });
 
-/**
- * GET /api/users/visiteurs
- * Récupère uniquement les visiteurs
- */
 app.get('/api/users/visiteurs', async (req, res) => {
     try {
         const users = await getUsersWithCalculatedStatus();
@@ -629,7 +618,21 @@ app.get('/api/user/:email', async (req, res) => {
         if (!user) {
             return res.status(404).json({ success: false, error: 'Utilisateur non trouvé' });
         }
-        res.json({ success: true, user });
+        
+        // Ajouter les statistiques
+        const orders = await db.getOrdersByEmail(email);
+        const payments = await db.getPaymentsByEmail(email);
+        const successCount = payments.filter(p => p.status === 'success').length;
+        const pendingCount = orders.filter(o => o.status === 'pending').length;
+        
+        res.json({ 
+            success: true, 
+            user: {
+                ...user,
+                success_payments: successCount,
+                pending_orders: pendingCount
+            }
+        });
     } catch (error) {
         console.error('❌ Erreur:', error);
         res.status(500).json({ error: error.message });
@@ -643,8 +646,6 @@ app.get('/api/user/:email', async (req, res) => {
 app.get('/api/stats', async (req, res) => {
     try {
         const stats = await db.getStats();
-        
-        // Ajouter les statistiques Gold et Premium
         const users = await getUsersWithCalculatedStatus();
         const goldCount = users.filter(u => u.calculated_status === 'gold').length;
         const premiumCount = users.filter(u => u.calculated_status === 'premium').length;
@@ -706,12 +707,7 @@ app.get('/api/orders/user/:email', async (req, res) => {
     }
 
     try {
-        const result = await db.query(
-            'SELECT * FROM orders WHERE email = $1 ORDER BY created_at DESC',
-            [email]
-        );
-
-        const orders = result.rows;
+        const orders = await db.getOrdersByEmail(email);
         console.log(`✅ ${orders.length} commande(s) trouvée(s) pour ${email}`);
         res.json({ success: true, count: orders.length, orders });
     } catch (error) {
@@ -743,33 +739,36 @@ app.post('/api/admin/recreate-order', async (req, res) => {
     }
 
     try {
-        const existing = await db.query('SELECT * FROM orders WHERE reference = $1', [reference]);
-        if (existing.rows.length > 0) {
-            console.log('   ⚠️ La commande existe déjà (ID: ' + existing.rows[0].id + ')');
+        const existing = await db.getOrderByReference(reference);
+        if (existing) {
+            console.log('   ⚠️ La commande existe déjà (ID: ' + existing.id + ')');
             return res.json({
                 success: false,
                 message: 'La commande existe déjà',
-                order: existing.rows[0]
+                order: existing
             });
         }
 
         const user = await db.getUserByEmail(email);
         const userId = user?.id || null;
 
-        const result = await db.query(
-            `INSERT INTO orders (reference, user_id, email, name, amount, status, payment_link_id, created_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-             RETURNING *`,
-            [reference, userId, email, name, amount, 'pending', payment_link_id || null]
-        );
+        const order = await db.createOrder({
+            reference,
+            user_id: userId,
+            email,
+            name,
+            amount,
+            status: 'pending',
+            payment_link_id: payment_link_id || null
+        });
 
-        console.log(`   ✅ Commande recréée avec succès (ID: ${result.rows[0].id})`);
+        console.log(`   ✅ Commande recréée avec succès (ID: ${order.id})`);
         console.log('='.repeat(80) + '\n');
 
         res.json({
             success: true,
             message: 'Commande recréée avec succès',
-            order: result.rows[0]
+            order: order
         });
 
     } catch (error) {
@@ -779,21 +778,7 @@ app.post('/api/admin/recreate-order', async (req, res) => {
 });
 
 // ================================================================
-// 19. API : PENDING PAYMENTS (route de test)
-// ================================================================
-
-app.get('/api/pending-payments', async (req, res) => {
-    try {
-        const result = await db.query('SELECT * FROM pending_payments ORDER BY created_at DESC');
-        res.json({ success: true, count: result.rows.length, payments: result.rows });
-    } catch (error) {
-        console.error('❌ Erreur:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// ================================================================
-// 20. WEBHOOK JEKO
+// 19. WEBHOOK JEKO
 // ================================================================
 
 app.post('/webhook', async (req, res) => {
@@ -855,6 +840,7 @@ app.post('/webhook', async (req, res) => {
         const paymentData = {
             transaction_id: body.id,
             user_id: order.user_id,
+            email: order.email,
             amount: body.amount?.amount || order.amount,
             currency: body.amount?.currency || 'XOF',
             status: 'success',
@@ -864,8 +850,7 @@ app.post('/webhook', async (req, res) => {
             store_name: body.storeName || null,
             payment_link_id: body.transactionDetails?.paymentLinkId || null,
             reference: reference,
-            executed_at: body.executedAt || null,
-            email: order.email
+            executed_at: body.executedAt || null
         };
         const savedPayment = await db.savePayment(paymentData);
         console.log(`✅ Paiement enregistré: ${savedPayment ? 'OK' : 'Déjà existant'}`);
@@ -932,7 +917,6 @@ app.post('/webhook', async (req, res) => {
         console.log(`   📧 Email: ${emailStatus} - ${emailMessage}`);
         console.log(`   📧 Expéditeur: ${SENDER_EMAIL}`);
         console.log(`   📧 Service: SendGrid`);
-        console.log(`   🖼️ Logo: avec anneau bleu`);
         console.log('='.repeat(80) + '\n');
 
         res.sendStatus(200);
@@ -947,7 +931,7 @@ app.post('/webhook', async (req, res) => {
 });
 
 // ================================================================
-// 21. DÉMARRAGE
+// 20. DÉMARRAGE
 // ================================================================
 
 app.listen(PORT, () => {
@@ -956,16 +940,15 @@ app.listen(PORT, () => {
     console.log(`📊 Admin: /admin`);
     console.log(`📧 Email expéditeur: ${SENDER_EMAIL}`);
     console.log(`📧 Service: SendGrid`);
-    console.log(`🖼️ Logo: avec anneau bleu`);
     console.log(`\n📋 API disponibles:`);
-    console.log(`   POST /api/visiteur`);
+    console.log(`   POST /api/visiteur (avec intention)`);
     console.log(`   POST /api/create-payment`);
     console.log(`   GET  /api/paylist`);
     console.log(`   GET  /api/paylist/:reference`);
     console.log(`   GET  /api/payments`);
     console.log(`   GET  /api/payment/:id`);
     console.log(`   GET  /api/users (avec statuts calculés)`);
-    console.log(`   GET  /api/users/filter/:status (visiteur, participant, donateur, gold, premium)`);
+    console.log(`   GET  /api/users/filter/:status`);
     console.log(`   GET  /api/users/gold`);
     console.log(`   GET  /api/users/premium`);
     console.log(`   GET  /api/users/donateurs`);
