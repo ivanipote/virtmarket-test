@@ -1,7 +1,7 @@
 // ================================================================
-// FICHIER : server-test.js
+// FICHIER : server.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 4.1 - Variables d'environnement
+// VERSION : 4.2 - Email avec image et anneau bleu
 // ================================================================
 
 require('dotenv').config();
@@ -35,21 +35,20 @@ app.use(express.static('.'));
 })();
 
 // ================================================================
-// 3. CONFIGURATION SENDGRID (variables d'environnement)
+// 3. CONFIGURATION SENDGRID
 // ================================================================
 
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const SENDER_EMAIL = process.env.SENDGRID_MAIL || 'noreply@virtmak.com';
 const SENDER_NAME = 'VirtMak';
 
-// Vérification au démarrage
 if (!SENDGRID_API_KEY) {
-    console.warn('⚠️ SENDGRID_API_KEY non définie dans les variables d\'environnement');
+    console.warn('⚠️ SENDGRID_API_KEY non définie');
 } else {
     console.log('✅ SendGrid API Key configurée');
 }
 if (!SENDER_EMAIL) {
-    console.warn('⚠️ SENDGRID_MAIL non définie dans les variables d\'environnement');
+    console.warn('⚠️ SENDGRID_MAIL non définie');
 } else {
     console.log(`✅ Email expéditeur: ${SENDER_EMAIL}`);
 }
@@ -57,7 +56,7 @@ if (!SENDER_EMAIL) {
 sgMail.setApiKey(SENDGRID_API_KEY);
 
 // ================================================================
-// 4. FONCTION : ENVOI EMAIL AVEC SENDGRID
+// 4. FONCTION : ENVOI EMAIL AVEC IMAGE
 // ================================================================
 
 async function sendThankYouEmail(email, name, amount, orderId) {
@@ -71,14 +70,18 @@ async function sendThankYouEmail(email, name, amount, orderId) {
         const htmlContent = `
             <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: auto; background: #ffffff; border-radius: 24px; overflow: hidden; border: 1px solid #e6e8ef;">
                 
-                <!-- Header -->
-                <div style="border-top: 6px solid #156FE6; padding: 20px 24px; background: white;">
-                    <div style="display: flex; align-items: center;">
-                        <img src="https://virtmarket-test.onrender.com/logo.png" alt="VirtMak" style="height: 40px; width: 40px; border-radius: 50%; border: 2px solid #156FE6; padding: 4px; vertical-align: middle;" />
-                        <span style="font-size: 18px; vertical-align: middle; border-left: 2px solid #156FE6; padding-left: 12px; font-weight: 700; color: #0F1B4D;">
-                            Merci pour votre don ❤️
-                        </span>
+                <!-- Logo avec anneau bleu -->
+                <div style="text-align: center; padding: 24px 24px 8px 24px; background: white;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #156FE6; padding: 6px; margin: 0 auto; background: white; box-shadow: 0 4px 20px rgba(21,111,230,0.12);">
+                        <img src="https://virtmarket-test.onrender.com/logo.png" alt="VirtMak" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" />
                     </div>
+                </div>
+
+                <!-- Titre -->
+                <div style="text-align: center; padding: 0 24px 16px 24px;">
+                    <span style="font-size: 20px; font-weight: 700; color: #0F1B4D; border-bottom: 3px solid #156FE6; padding-bottom: 8px;">
+                        ❤️ Merci pour votre don
+                    </span>
                 </div>
 
                 <!-- Corps -->
@@ -91,6 +94,7 @@ async function sendThankYouEmail(email, name, amount, orderId) {
                         Votre don de <strong style="color: #156FE6;">${amount} FCFA</strong> nous aide à construire une plateforme ivoirienne innovante et sécurisée.
                     </p>
 
+                    <!-- Récapitulatif -->
                     <div style="text-align: left; font-size: 14px; padding-bottom: 8px; border-bottom: 2px solid #156FE6; margin-bottom: 12px;">
                         <strong style="color: #0F1B4D;">📋 Récapitulatif du don</strong>
                     </div>
@@ -118,10 +122,12 @@ async function sendThankYouEmail(email, name, amount, orderId) {
                         </tr>
                     </table>
 
+                    <!-- Séparateur -->
                     <div style="padding: 16px 0;">
                         <div style="border-top: 2px solid #f0f2f5;"></div>
                     </div>
 
+                    <!-- Signature -->
                     <div style="text-align: center; font-size: 13px; color: #6b7280;">
                         <div style="font-weight: 600; color: #0F1B4D; font-size: 15px;">Avec toute notre gratitude,</div>
                         <div style="margin-top: 2px;">L'équipe <strong style="color: #156FE6;">VirtMak</strong></div>
@@ -144,7 +150,7 @@ async function sendThankYouEmail(email, name, amount, orderId) {
         };
 
         await sgMail.send(msg);
-        console.log(`✅ Email envoyé à ${email} depuis ${SENDER_EMAIL}`);
+        console.log(`✅ Email envoyé à ${email}`);
         return { success: true, message: 'Email envoyé avec succès' };
 
     } catch (error) {
@@ -622,6 +628,7 @@ app.post('/webhook', async (req, res) => {
         console.log(`   📧 Email: ${emailStatus} - ${emailMessage}`);
         console.log(`   📧 Expéditeur: ${SENDER_EMAIL}`);
         console.log(`   📧 Service: SendGrid`);
+        console.log(`   🖼️ Image: logo.png avec anneau bleu`);
         console.log('='.repeat(80) + '\n');
 
         res.sendStatus(200);
@@ -645,6 +652,7 @@ app.listen(PORT, () => {
     console.log(`📊 Admin: /admin`);
     console.log(`📧 Email expéditeur: ${SENDER_EMAIL}`);
     console.log(`📧 Service: SendGrid`);
+    console.log(`🖼️ Logo: avec anneau bleu`);
     console.log(`\n📋 API disponibles:`);
     console.log(`   POST /api/visiteur`);
     console.log(`   POST /api/create-payment`);
