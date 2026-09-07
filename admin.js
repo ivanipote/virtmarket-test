@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 4.0 - Avec Gold et Premium
+// VERSION : 4.1 - Version simplifiée (3 statuts)
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -19,8 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const countVisiteur = document.getElementById('countVisiteur');
     const countParticipant = document.getElementById('countParticipant');
     const countDonateur = document.getElementById('countDonateur');
-    const countGold = document.getElementById('countGold');
-    const countPremium = document.getElementById('countPremium');
 
     const sidebarCount = document.getElementById('sidebarCount');
     const filterBtns = document.querySelectorAll('.filter-btn');
@@ -33,17 +31,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusColors = {
         'visiteur': '#eab308',
         'participant': '#3b82f6',
-        'donateur': '#22c55e',
-        'gold': '#a855f7',
-        'premium': '#f97316'
+        'donateur': '#22c55e'
     };
 
     const statusLabels = {
         'visiteur': { label: '🟡 Visiteur', class: 'visiteur' },
         'participant': { label: '🔵 Participant', class: 'participant' },
-        'donateur': { label: '🟢 Donateur', class: 'donateur' },
-        'gold': { label: '🟣 Gold', class: 'gold' },
-        'premium': { label: '🟠 Premium', class: 'premium' }
+        'donateur': { label: '🟢 Donateur', class: 'donateur' }
     };
 
     // ============================================================
@@ -106,16 +100,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderFilters() {
         const visiteurs = allUsers.filter(u => u.calculated_status === 'visiteur');
         const participants = allUsers.filter(u => u.calculated_status === 'participant');
-        const donateurs = allUsers.filter(u => ['donateur', 'gold', 'premium'].includes(u.calculated_status));
-        const golds = allUsers.filter(u => u.calculated_status === 'gold');
-        const premiums = allUsers.filter(u => u.calculated_status === 'premium');
+        const donateurs = allUsers.filter(u => u.calculated_status === 'donateur');
 
         countAll.textContent = allUsers.length;
         countVisiteur.textContent = visiteurs.length;
         countParticipant.textContent = participants.length;
         countDonateur.textContent = donateurs.length;
-        countGold.textContent = golds.length;
-        countPremium.textContent = premiums.length;
     }
 
     // ============================================================
@@ -294,12 +284,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 ` : ''}
             `;
-        } else if (status === 'donateur' || status === 'gold' || status === 'premium') {
-            const statusIcon = status === 'gold' ? '🟣' : status === 'premium' ? '🟠' : '🟢';
-            const statusName = status === 'gold' ? 'Gold' : status === 'premium' ? 'Premium' : 'Donateur';
+        } else if (status === 'donateur') {
             statusFooterHtml = `
                 <div class="status-item">
-                    <span class="status-label"><i class="fas fa-check-circle" style="color:${statusColors[status]};"></i> ${statusIcon} ${statusName}</span>
+                    <span class="status-label"><i class="fas fa-check-circle" style="color:#22c55e;"></i> Paiement réussi</span>
                     <span class="status-time success">
                         ${formatDate(updatedAt)}
                         <span class="badge success">✅ Succès</span>
