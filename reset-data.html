@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔄 Réinitialiser la base - VirtMak</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 32px 32px 32px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(21, 111, 230, 0.06);
+            text-align: center;
+        }
+
+        .card .icon {
+            font-size: 56px;
+            color: #dc3545;
+            margin-bottom: 12px;
+        }
+
+        .card h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0F1B4D;
+            margin-bottom: 4px;
+        }
+
+        .card .sub {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .card .warning-box {
+            background: #fff3df;
+            border-radius: 12px;
+            padding: 14px 18px;
+            border: 1px solid #f5dbaa;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .card .warning-box .warning-title {
+            font-weight: 700;
+            color: #b45309;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .card .warning-box .warning-title i {
+            margin-right: 6px;
+        }
+
+        .card .warning-box ul {
+            list-style: none;
+            padding: 0;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .card .warning-box ul li {
+            padding: 3px 0;
+        }
+
+        .card .warning-box ul li i {
+            color: #b45309;
+            margin-right: 6px;
+            font-size: 11px;
+        }
+
+        .btn-reset {
+            width: 100%;
+            padding: 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .btn-reset:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-reset:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-reset .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-home {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 10px 20px;
+            background: #f8f9fc;
+            border: 1px solid #e6e8ef;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-home:hover {
+            border-color: #156FE6;
+            color: #156FE6;
+            background: #f0f7ff;
+        }
+
+        .status-message {
+            margin-top: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status-message.success {
+            display: block;
+            background: #e6f7ee;
+            color: #0e7a49;
+            border: 1px solid #bfebd3;
+        }
+
+        .status-message.error {
+            display: block;
+            background: #fcebea;
+            color: #c0342a;
+            border: 1px solid #f3c6c2;
+        }
+
+        .status-message.info {
+            display: block;
+            background: #eaf1ff;
+            color: #156FE6;
+            border: 1px solid #c7d9fb;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        @media (max-width: 500px) {
+            .card { padding: 24px 18px 20px 18px; }
+            .card h1 { font-size: 20px; }
+            .btn-reset { font-size: 16px; padding: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="icon">
+            <i class="fas fa-database"></i>
+        </div>
+
+        <h1>🔄 Réinitialisation</h1>
+        <p class="sub">Cette action supprime toutes les données de la base</p>
+
+        <div class="warning-box">
+            <div class="warning-title">
+                <i class="fas fa-exclamation-triangle"></i> Attention
+            </div>
+            <ul>
+                <li><i class="fas fa-times"></i> Tous les utilisateurs seront supprimés</li>
+                <li><i class="fas fa-times"></i> Tous les paiements seront supprimés</li>
+                <li><i class="fas fa-times"></i> Toutes les commandes seront supprimées</li>
+                <li><i class="fas fa-times"></i> Cette action est <strong>irréversible</strong></li>
+            </ul>
+        </div>
+
+        <button class="btn-reset" id="resetBtn">
+            <i class="fas fa-trash-alt"></i> Réinitialiser la base
+        </button>
+
+        <div id="statusMessage" class="status-message"></div>
+
+        <a href="/admin" class="btn-home">
+            <i class="fas fa-arrow-left"></i> Retour à l'admin
+        </a>
+    </div>
+
+    <div class="footer">
+        <i class="fas fa-lock" style="color:#156FE6;"></i>
+        Route admin : POST /api/admin/reset-database
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            console.log('✅ reset-data.html chargé');
+
+            const resetBtn = document.getElementById('resetBtn');
+            const statusMessage = document.getElementById('statusMessage');
+
+            function showStatus(message, type = 'info') {
+                statusMessage.className = 'status-message ' + type;
+                statusMessage.textContent = message;
+            }
+
+            function hideStatus() {
+                statusMessage.className = 'status-message';
+            }
+
+            resetBtn.addEventListener('click', async function() {
+                // Confirmation
+                if (!confirm('⚠️ Êtes-vous sûr de vouloir réinitialiser la base ?\nToutes les données seront perdues définitivement.')) {
+                    return;
+                }
+
+                if (!confirm('⚠️ Confirmation finale : Cette action est irréversible !')) {
+                    return;
+                }
+
+                hideStatus();
+                resetBtn.disabled = true;
+                resetBtn.innerHTML = '<span class="spinner"></span> Réinitialisation en cours...';
+
+                try {
+                    const response = await fetch('/api/admin/reset-database', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showStatus('✅ ' + data.message, 'success');
+                        resetBtn.innerHTML = '<i class="fas fa-check"></i> Réinitialisé !';
+                        setTimeout(() => {
+                            window.location.href = '/admin';
+                        }, 2000);
+                    } else {
+                        showStatus('❌ ' + (data.error || 'Erreur inconnue'), 'error');
+                        resetBtn.disabled = false;
+                        resetBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Réinitialiser la base';
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    showStatus('❌ Erreur de connexion au serveur', 'error');
+                    resetBtn.disabled = false;
+                    resetBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Réinitialiser la base';
+                }
+            });
+
+            console.log('✅ reset-data.html initialisé');
+
+        });
+    </script>
+
+</body>
+</html>

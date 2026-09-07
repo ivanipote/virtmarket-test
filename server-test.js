@@ -596,6 +596,26 @@ app.post('/api/update-status', async (req, res) => {
 });
 
 // ================================================================
+// ROUTE ADMIN : RÉINITIALISER LA BASE
+// ================================================================
+
+app.post('/api/admin/reset-database', async (req, res) => {
+    console.log('\n' + '='.repeat(80));
+    console.log('🔄 RÉINITIALISATION DE LA BASE');
+    console.log('='.repeat(80));
+    console.log('⚠️ Toutes les données vont être supprimées !');
+
+    try {
+        await db.query('TRUNCATE TABLE payments, orders, users RESTART IDENTITY CASCADE');
+        console.log('✅ Base réinitialisée avec succès');
+        console.log('='.repeat(80) + '\n');
+        res.json({ success: true, message: 'Base réinitialisée avec succès' });
+    } catch (error) {
+        console.error('❌ Erreur réinitialisation:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+// ================================================================
 // 16. API : COMMANDES D'UN UTILISATEUR
 // ================================================================
 
