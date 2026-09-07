@@ -448,6 +448,10 @@
                 <span class="label">📧 Email</span>
                 <span class="value" id="displayEmail">-</span>
             </div>
+            <div class="recap-item">
+                <span class="label">🔗 Référence</span>
+                <span class="value" id="displayReference" style="font-size:12px;color:#6b7280;">-</span>
+            </div>
 
             <!-- Montant libre - CHAMP TOUJOURS ACTIF -->
             <div class="amount-input-wrapper">
@@ -494,6 +498,7 @@
             // ===== RÉFÉRENCES =====
             const displayName = document.getElementById('displayName');
             const displayEmail = document.getElementById('displayEmail');
+            const displayReference = document.getElementById('displayReference');
             const amountInput = document.getElementById('amountInput');
             const payBtn = document.getElementById('payBtn');
             const toast = document.getElementById('toast');
@@ -504,11 +509,19 @@
             const name = urlParams.get('name') || 'Donateur anonyme';
             const email = urlParams.get('email') || 'email@non-renseigne.com';
             const initialAmount = parseInt(urlParams.get('amount')) || 1;
+            const reference = urlParams.get('reference') || null;
 
             // ===== AFFICHER LES INFOS =====
             displayName.textContent = name;
             displayEmail.textContent = email;
+            displayReference.textContent = reference || 'Non disponible';
             amountInput.value = initialAmount;
+
+            console.log('📋 RÉCAPITULATIF:');
+            console.log(`   👤 Nom: ${name}`);
+            console.log(`   📧 Email: ${email}`);
+            console.log(`   💰 Montant: ${initialAmount} FCFA`);
+            console.log(`   🔗 Référence: ${reference || 'NON FOURNIE'}`);
 
             // ===== TOAST =====
             function showToast(message, type = 'success') {
@@ -564,6 +577,15 @@
                     return;
                 }
 
+                // ✅ Vérifier que la référence est présente
+                if (!reference) {
+                    showInfo('⚠️ Référence de commande manquante. Retour à l\'accueil.', 'warning');
+                    setTimeout(() => {
+                        window.location.href = '/virtmak.html';
+                    }, 2000);
+                    return;
+                }
+
                 // ✅ Désactiver le bouton
                 payBtn.disabled = true;
                 payBtn.innerHTML = '<span class="spinner"></span>';
@@ -572,11 +594,16 @@
                     // ✅ Mettre à jour le statut vers "participant"
                     await updateUserStatus('participant');
 
-                    // ✅ Créer le lien de paiement Jèko
+                    // ✅ Créer le lien de paiement Jèko (avec la référence)
                     const response = await fetch('/create-payment-link', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name, email, amount })
+                        body: JSON.stringify({ 
+                            name, 
+                            email, 
+                            amount,
+                            reference: reference
+                        })
                     });
 
                     const data = await response.json();
@@ -609,9 +636,6 @@
             });
 
             console.log('✅ pay.html initialisé');
-            console.log('👤 Nom:', name);
-            console.log('📧 Email:', email);
-            console.log('💰 Montant initial:', initialAmount);
 
         });
     </script>
