@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Logo VirtMak</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6f9;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0F1B4D;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e6e8ef;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card .label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-top: 12px;
+        }
+
+        /* ============================================================ */
+        /* FORMATS DU LOGO                                              */
+        /* ============================================================ */
+
+        /* ---- Carré ---- */
+        .logo-square {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+            border: 1px solid #e6e8ef;
+        }
+
+        .logo-square img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* ---- Cercle ---- */
+        .logo-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+            border: 2px solid #e6e8ef;
+        }
+
+        .logo-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* ---- Triangle (via clip-path) ---- */
+        .logo-triangle {
+            width: 100px;
+            height: 100px;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+        }
+
+        .logo-triangle img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* ---- Rond avec bordure ---- */
+        .logo-ring {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+            border: 4px solid #0F8B5D;
+            padding: 6px;
+        }
+
+        .logo-ring img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            border-radius: 50%;
+        }
+
+        /* ---- Hexagone ---- */
+        .logo-hexagon {
+            width: 100px;
+            height: 100px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+        }
+
+        .logo-hexagon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* ---- Logo plein sans bordure ---- */
+        .logo-plain {
+            width: 100px;
+            height: 100px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .logo-plain img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* ---- Logo avec ombre ---- */
+        .logo-shadow {
+            width: 100px;
+            height: 100px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 8px 30px rgba(15, 27, 77, 0.15);
+        }
+
+        .logo-shadow img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* ---- Logo dans un badge ---- */
+        .logo-badge {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #0F8B5D, #0A6B47);
+            padding: 12px;
+            border: 3px solid #0F1B4D;
+        }
+
+        .logo-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            filter: brightness(0) invert(1);
+        }
+
+        /* ---- Version minuscule (favicon) ---- */
+        .logo-favicon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+            border: 1px solid #e6e8ef;
+        }
+
+        .logo-favicon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .logo-favicon-row {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .logo-favicon-row .logo-favicon {
+            margin: 0;
+        }
+
+        /* ---- Version hero (grande) ---- */
+        .logo-hero {
+            width: 160px;
+            height: 160px;
+            border-radius: 24px;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+            border: 2px solid #e6e8ef;
+        }
+
+        .logo-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE                                                    */
+        /* ============================================================ */
+        @media (max-width: 600px) {
+            h1 { font-size: 22px; }
+            .grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+            .card { padding: 20px 14px; }
+            .logo-square, .logo-circle, .logo-triangle, .logo-ring,
+            .logo-hexagon, .logo-plain, .logo-shadow, .logo-badge,
+            .logo-hero {
+                width: 80px;
+                height: 80px;
+            }
+            .logo-hero { width: 120px; height: 120px; }
+        }
+
+        @media (max-width: 420px) {
+            .grid { gap: 12px; }
+            .card { padding: 16px 10px; }
+            .logo-square, .logo-circle, .logo-triangle, .logo-ring,
+            .logo-hexagon, .logo-plain, .logo-shadow, .logo-badge,
+            .logo-hero {
+                width: 65px;
+                height: 65px;
+            }
+            .logo-hero { width: 100px; height: 100px; }
+            .card .label { font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎨 Test Logo VirtMak</h1>
+    <p class="subtitle">Votre logo dans différents formats pour voir son rendu</p>
+
+    <div class="grid">
+
+        <!-- 1. Carré -->
+        <div class="card">
+            <div class="logo-square">
+                <img src="/logo.png" alt="Logo VirtMak" />
+            </div>
+            <div class="label">📐 Carré</div>
+        </div>
+
+        <!-- 2. Cercle -->
+        <div class="card">
+            <div class="logo-circle">
+                <img src="/logo.png" alt="Logo VirtMak" />
+            </div>
+            <div class="label">⭕ Cercle</div>
+        </div>
+
+        <!-- 3. Triangle -->
+        <div class="card">
+            <div class="logo-triangle">
+                <img src="/logo.png" alt="Logo VirtMak" />
+            </div>
+            <div class="label">🔺 Triangle</div>
+        </div>
+
+        <!-- 4. Rond avec bordure verte -->
+        <div class="card">
+            <div class="logo-ring">
+                <img src="/logo.png" alt="Logo VirtMak" />
+            </div>
+            <div class="label">💍 Anneau</div>
+        </div>
+
+        <!-- 5. Hexagone -->
+        <div class="card">
+            <div class="logo-hexagon">
+                <img src="/logo.png" alt="Logo VirtMak" />
+            </div>
+            <div class="label">⬡ Hexagone</div>
+        </div>
+
+        <!-- 6. Plein (sans bordure) -->
+        <div class="card">
+            <div class="logo-plain">
+                <img src="/logo.png" alt="Logo VirtMak" />
+            </div>
+            <div class="label">📋 Plein</div>
+        </div>
+
+        <!-- 7. Avec ombre -->
+        <div class="card">
+            <div class="logo-shadow">
+                <img src="/logo.png" alt="Logo VirtMak" />
+            </div>
+            <div class="label">🌓 Ombre</div>
+        </div>
+
+        <!-- 8. Badge (fond vert, logo blanc) -->
+        <div class="card">
+            <div class="logo-badge">
+                <img src="/logo.png" alt="Logo VirtMak" />
+            </div>
+            <div class="label">🏅 Badge</div>
+        </div>
+
+        <!-- 9. Format Hero (grand) -->
+        <div class="card" style="grid-column: span 1;">
+            <div class="logo-hero">
+                <img src="/logo.png" alt="Logo VirtMak" />
+            </div>
+            <div class="label">🖼️ Hero (grand)</div>
+        </div>
+
+        <!-- 10. Favicon (petit) -->
+        <div class="card" style="grid-column: span 1;">
+            <div class="logo-favicon-row">
+                <div class="logo-favicon">
+                    <img src="/logo.png" alt="Logo VirtMak" />
+                </div>
+                <div class="logo-favicon">
+                    <img src="/logo.png" alt="Logo VirtMak" />
+                </div>
+                <div class="logo-favicon">
+                    <img src="/logo.png" alt="Logo VirtMak" />
+                </div>
+            </div>
+            <div class="label">📌 Favicon (petit)</div>
+        </div>
+
+    </div>
+
+    <div style="text-align:center;margin-top:40px;color:#9ca3af;font-size:13px;">
+        <i class="fas fa-check-circle" style="color:#0F8B5D;"></i>
+        Logo testé dans 10 formats différents
+    </div>
+
+</body>
+</html>
