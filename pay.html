@@ -159,74 +159,12 @@
             font-weight: 800;
         }
 
-        /* ============================================================ */
-        /* CHAMP MONTANT LIBRE - TOUJOURS ACTIF                         */
-        /* ============================================================ */
-        .amount-input-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 16px 0 8px 0;
-        }
-
-        .amount-input-wrapper .input-wrapper {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            background: #f8f9fc;
-            border: 2px solid #e6e8ef;
-            border-radius: 14px;
-            transition: all 0.3s;
-        }
-
-        .amount-input-wrapper .input-wrapper:focus-within {
-            border-color: #0F1B4D;
-            box-shadow: 0 0 0 4px rgba(15, 27, 77, 0.08);
-            background: white;
-        }
-
-        .amount-input-wrapper .input-wrapper .prefix {
-            padding: 0 0 0 16px;
-            font-weight: 600;
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .amount-input-wrapper .input-wrapper input {
-            flex: 1;
-            padding: 14px 16px;
-            border: none;
-            border-radius: 14px;
-            font-size: 16px;
-            background: transparent;
-            outline: none;
-            color: #1a1a2e;
-            font-weight: 500;
-            min-width: 0;
-        }
-
-        .amount-input-wrapper .input-wrapper input::placeholder {
-            color: #b0b5c4;
-            font-weight: 400;
-        }
-
-        .amount-input-wrapper .input-wrapper .input-icon {
-            padding: 0 16px 0 4px;
-            color: #b0b5c4;
-            font-size: 18px;
-            transition: color 0.3s;
-            flex-shrink: 0;
-        }
-
-        .amount-input-wrapper .input-wrapper:focus-within .input-icon {
-            color: #0F1B4D;
-        }
-
-        .amount-hint {
+        .recap-item .value.reference {
             font-size: 12px;
-            color: #9ca3af;
-            text-align: left;
-            padding-left: 4px;
+            color: #6b7280;
+            word-break: break-all;
+            max-width: 60%;
+            text-align: right;
         }
 
         /* ============================================================ */
@@ -321,6 +259,12 @@
             border-color: #f5dbaa;
         }
 
+        .info-message.success {
+            background: #e6f7ee;
+            color: #0e7a49;
+            border-color: #bfebd3;
+        }
+
         /* ============================================================ */
         /* FOOTER SECURITE                                              */
         /* ============================================================ */
@@ -363,6 +307,10 @@
             background: #dc3545;
         }
 
+        .toast-container.success {
+            background: #0F8B5D;
+        }
+
         @keyframes slideUp {
             from { opacity: 0; transform: translateX(-50%) translateY(20px); }
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -383,7 +331,7 @@
             .btn-pay { padding: 16px 32px; font-size: 16px; max-width: 300px; }
             .btn-pay .btn-wave-icon { width: 24px; height: 24px; }
             .btn-pay .btn-text { font-size: 16px; }
-            .amount-input-wrapper .input-wrapper input { font-size: 15px; padding: 12px 14px; }
+            .recap-item .value.reference { font-size: 11px; max-width: 50%; }
         }
 
         @media (max-width: 420px) {
@@ -399,8 +347,8 @@
             .btn-pay { padding: 14px 24px; font-size: 14px; max-width: 260px; border-radius: 40px; gap: 10px; }
             .btn-pay .btn-wave-icon { width: 20px; height: 20px; }
             .btn-pay .btn-text { font-size: 14px; }
-            .amount-input-wrapper .input-wrapper input { font-size: 14px; padding: 10px 12px; }
             .toast-container { font-size: 13px; padding: 10px 16px; bottom: 16px; }
+            .recap-item .value.reference { font-size: 10px; max-width: 45%; }
         }
 
         @media (max-width: 350px) {
@@ -449,19 +397,13 @@
                 <span class="value" id="displayEmail">-</span>
             </div>
             <div class="recap-item">
+                <span class="label">💰 Montant</span>
+                <span class="value amount" id="displayAmount">-</span>
+            </div>
+            <div class="recap-item" style="border-bottom: none;">
                 <span class="label">🔗 Référence</span>
-                <span class="value" id="displayReference" style="font-size:12px;color:#6b7280;">-</span>
+                <span class="value reference" id="displayReference">-</span>
             </div>
-
-            <!-- Montant libre - CHAMP TOUJOURS ACTIF -->
-            <div class="amount-input-wrapper">
-                <div class="input-wrapper">
-                    <span class="prefix">FCFA</span>
-                    <input type="number" id="amountInput" placeholder="Montant de votre choix (min. 1 FCFA)" min="1" required />
-                    <span class="input-icon"><i class="fas fa-arrow-right"></i></span>
-                </div>
-            </div>
-            <div class="amount-hint">💡 Entrez le montant de votre choix (1 FCFA minimum)</div>
 
             <!-- Bouton Payer avec Wave -->
             <div class="btn-pay-wrapper">
@@ -493,13 +435,13 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ pay.html (montant libre) chargé');
+            console.log('✅ pay.html (récapitulatif + redirection) chargé');
 
             // ===== RÉFÉRENCES =====
             const displayName = document.getElementById('displayName');
             const displayEmail = document.getElementById('displayEmail');
+            const displayAmount = document.getElementById('displayAmount');
             const displayReference = document.getElementById('displayReference');
-            const amountInput = document.getElementById('amountInput');
             const payBtn = document.getElementById('payBtn');
             const toast = document.getElementById('toast');
             const infoMessage = document.getElementById('infoMessage');
@@ -508,25 +450,27 @@
             const urlParams = new URLSearchParams(window.location.search);
             const name = urlParams.get('name') || 'Donateur anonyme';
             const email = urlParams.get('email') || 'email@non-renseigne.com';
-            const initialAmount = parseInt(urlParams.get('amount')) || 1;
+            const amount = parseInt(urlParams.get('amount')) || 1;
             const reference = urlParams.get('reference') || null;
+            const checkoutUrl = urlParams.get('checkout_url') || null;
 
             // ===== AFFICHER LES INFOS =====
             displayName.textContent = name;
             displayEmail.textContent = email;
+            displayAmount.textContent = `${amount} FCFA`;
             displayReference.textContent = reference || 'Non disponible';
-            amountInput.value = initialAmount;
 
-            console.log('📋 RÉCAPITULATIF:');
-            console.log(`   👤 Nom: ${name}`);
-            console.log(`   📧 Email: ${email}`);
-            console.log(`   💰 Montant: ${initialAmount} FCFA`);
-            console.log(`   🔗 Référence: ${reference || 'NON FOURNIE'}`);
+            console.log('📋 RÉCAPITULATIF DE LA COMMANDE:');
+            console.log('   👤 Nom:', name);
+            console.log('   📧 Email:', email);
+            console.log('   💰 Montant:', amount, 'FCFA');
+            console.log('   🔗 Référence:', reference || 'NON FOURNIE');
+            console.log('   🔗 URL de paiement:', checkoutUrl || 'NON FOURNIE');
 
             // ===== TOAST =====
             function showToast(message, type = 'success') {
                 toast.textContent = message;
-                toast.className = 'toast-container' + (type === 'error' ? ' error' : '');
+                toast.className = 'toast-container ' + type;
                 toast.style.display = 'block';
                 setTimeout(() => {
                     toast.style.display = 'none';
@@ -536,104 +480,55 @@
             // ===== MESSAGE INFO =====
             function showInfo(message, type = 'info') {
                 infoMessage.textContent = message;
-                infoMessage.className = 'info-message show' + (type === 'warning' ? ' warning' : '');
+                infoMessage.className = 'info-message show ' + type;
                 setTimeout(() => {
                     infoMessage.className = 'info-message';
-                }, 4000);
+                }, 5000);
             }
 
-            // ===== VALIDATION DU MONTANT =====
-            function validateAmount() {
-                const amount = parseInt(amountInput.value);
-                return !isNaN(amount) && amount >= 1;
-            }
+            // ===== PAYER - REDIRECTION DIRECTE VERS CHECKOUT_URL =====
+            payBtn.addEventListener('click', function() {
+                console.log('🔄 Clic sur "Payer avec Wave"');
 
-            // ===== METTRE À JOUR LE STATUT VERS PARTICIPANT =====
-            async function updateUserStatus(status) {
-                try {
-                    const res = await fetch('/api/user/update-status', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, status })
-                    });
-                    const data = await res.json();
-                    if (res.ok) {
-                        console.log(`✅ Statut mis à jour : ${status}`);
-                    } else {
-                        console.warn('⚠️ Erreur mise à jour statut:', data);
-                    }
-                } catch (error) {
-                    console.warn('⚠️ Erreur mise à jour statut:', error);
-                }
-            }
-
-            // ===== PAYER =====
-            payBtn.addEventListener('click', async function() {
-                const amount = parseInt(amountInput.value);
-
-                if (isNaN(amount) || amount < 1) {
-                    showInfo('⚠️ Veuillez entrer un montant valide (minimum 1 FCFA).', 'warning');
-                    amountInput.focus();
-                    return;
-                }
-
-                // ✅ Vérifier que la référence est présente
-                if (!reference) {
-                    showInfo('⚠️ Référence de commande manquante. Retour à l\'accueil.', 'warning');
+                // ✅ Vérifier que l'URL de paiement est présente
+                if (!checkoutUrl) {
+                    console.error('❌ Aucune URL de paiement trouvée');
+                    showInfo('⚠️ URL de paiement manquante. Retour à l\'accueil.', 'warning');
                     setTimeout(() => {
                         window.location.href = '/virtmak.html';
                     }, 2000);
                     return;
                 }
 
+                // ✅ Vérifier que la référence est présente
+                if (!reference) {
+                    console.warn('⚠️ Référence manquante, mais on continue');
+                }
+
+                console.log('🔗 Redirection vers:', checkoutUrl);
+
                 // ✅ Désactiver le bouton
                 payBtn.disabled = true;
-                payBtn.innerHTML = '<span class="spinner"></span>';
+                payBtn.innerHTML = '<span class="spinner"></span> Redirection...';
 
-                try {
-                    // ✅ Mettre à jour le statut vers "participant"
-                    await updateUserStatus('participant');
+                // ✅ Afficher un message
+                showInfo('🔄 Redirection vers la page de paiement Jèko...', 'info');
 
-                    // ✅ Créer le lien de paiement Jèko (avec la référence)
-                    const response = await fetch('/create-payment-link', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            name, 
-                            email, 
-                            amount,
-                            reference: reference
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Erreur création paiement');
-                    }
-
-                    if (!data.checkout_url) {
-                        throw new Error('Aucune URL de paiement reçue');
-                    }
-
-                    console.log('🔗 Lien généré :', data.checkout_url);
-
-                    // ✅ Redirection vers Jèko
-                    showInfo('🔄 Redirection vers Jèko...', 'info');
-                    setTimeout(() => {
-                        window.location.href = data.checkout_url;
-                    }, 800);
-
-                } catch (error) {
-                    console.error('❌ Erreur:', error);
-                    showInfo('❌ ' + error.message, 'warning');
-                    payBtn.disabled = false;
-                    payBtn.innerHTML = `
-                        <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
-                        <span class="btn-text">Payer avec Wave</span>
-                    `;
-                }
+                // ✅ Redirection après un court délai
+                setTimeout(() => {
+                    window.location.href = checkoutUrl;
+                }, 800);
             });
+
+            // ===== VÉRIFICATION DES DONNÉES =====
+            if (!checkoutUrl) {
+                console.warn('⚠️ Aucune URL de paiement reçue');
+                showInfo('⚠️ URL de paiement manquante. Veuillez recommencer.', 'warning');
+            }
+
+            if (!reference) {
+                console.warn('⚠️ Aucune référence reçue');
+            }
 
             console.log('✅ pay.html initialisé');
 
