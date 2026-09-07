@@ -1,7 +1,7 @@
 // ================================================================
-// FICHIER : server.js
+// FICHIER : server-test.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 4.0 - Avec SendGrid
+// VERSION : 4.1 - Variables d'environnement
 // ================================================================
 
 require('dotenv').config();
@@ -35,11 +35,7 @@ app.use(express.static('.'));
 })();
 
 // ================================================================
-// 3. CONFIGURATION SENDGRID
-// ================================================================
-
-// ================================================================
-// CONFIGURATION SENDGRID
+// 3. CONFIGURATION SENDGRID (variables d'environnement)
 // ================================================================
 
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
@@ -49,10 +45,16 @@ const SENDER_NAME = 'VirtMak';
 // Vérification au démarrage
 if (!SENDGRID_API_KEY) {
     console.warn('⚠️ SENDGRID_API_KEY non définie dans les variables d\'environnement');
+} else {
+    console.log('✅ SendGrid API Key configurée');
 }
 if (!SENDER_EMAIL) {
     console.warn('⚠️ SENDGRID_MAIL non définie dans les variables d\'environnement');
+} else {
+    console.log(`✅ Email expéditeur: ${SENDER_EMAIL}`);
 }
+
+sgMail.setApiKey(SENDGRID_API_KEY);
 
 // ================================================================
 // 4. FONCTION : ENVOI EMAIL AVEC SENDGRID
@@ -66,7 +68,6 @@ async function sendThankYouEmail(email, name, amount, orderId) {
 
         console.log(`📧 Envoi email à ${email} via SendGrid...`);
 
-        // Construction du message HTML
         const htmlContent = `
             <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: auto; background: #ffffff; border-radius: 24px; overflow: hidden; border: 1px solid #e6e8ef;">
                 
@@ -142,14 +143,14 @@ async function sendThankYouEmail(email, name, amount, orderId) {
             html: htmlContent
         };
 
-        const response = await sgMail.send(msg);
+        await sgMail.send(msg);
         console.log(`✅ Email envoyé à ${email} depuis ${SENDER_EMAIL}`);
         return { success: true, message: 'Email envoyé avec succès' };
 
     } catch (error) {
         console.error(`❌ Erreur SendGrid: ${error.message}`);
         if (error.response) {
-            console.error(`   ${error.response.body}`);
+            console.error(`   ${JSON.stringify(error.response.body)}`);
         }
         return { success: false, message: error.message };
     }
@@ -184,10 +185,38 @@ app.get('/pay.html', (req, res) => res.sendFile(__dirname + '/pay.html'));
 app.get('/admin', (req, res) => res.sendFile(__dirname + '/admin.html'));
 app.get('/verify', (req, res) => res.sendFile(__dirname + '/verifypay.html'));
 app.get('/payviaapi.html', (req, res) => res.sendFile(__dirname + '/payviaapi.html'));
+app.get('/sendgrid-test.html', (req, res) => res.sendFile(__dirname + '/sendgrid-test.html'));
 app.get('/testmail.html', (req, res) => res.sendFile(__dirname + '/testmail.html'));
 
 // ================================================================
-// 7. API : VISITEUR
+// 7. ROUTE : TEST SENDGRID
+// ================================================================
+
+app.post('/api/test-email', async (req, res) => {
+    const { email, name, amount } = req.body;
+
+    console.log(`📧 Test SendGrid: ${email} (${name}, ${amount} FCFA)`);
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email requis' });
+    }
+
+    try {
+        const result = await sendThankYouEmail(email, name, amount, 'TEST-' + Date.now());
+
+        if (result.success) {
+            res.json({ success: true, message: 'Email envoyé' });
+        } else {
+            res.status(500).json({ error: result.message });
+        }
+    } catch (error) {
+        console.error('❌ Erreur test:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ================================================================
+// 8. API : VISITEUR
 // ================================================================
 
 app.post('/api/visiteur', async (req, res) => {
@@ -219,7 +248,7 @@ app.post('/api/visiteur', async (req, res) => {
 });
 
 // ================================================================
-// 8. API : CRÉER UN PAIEMENT
+// 9. API : CRÉER UN PAIEMENT
 // ================================================================
 
 app.post('/api/create-payment', async (req, res) => {
@@ -335,7 +364,7 @@ app.post('/api/create-payment', async (req, res) => {
 });
 
 // ================================================================
-// 9. API : PAYLIST
+// 10. API : PAYLIST
 // ================================================================
 
 app.get('/api/paylist', async (req, res) => {
@@ -363,7 +392,7 @@ app.get('/api/paylist/:reference', async (req, res) => {
 });
 
 // ================================================================
-// 10. API : PAIEMENTS
+// 11. API : PAIEMENTS
 // ================================================================
 
 app.get('/api/payments', async (req, res) => {
@@ -391,7 +420,7 @@ app.get('/api/payment/:id', async (req, res) => {
 });
 
 // ================================================================
-// 11. API : UTILISATEURS
+// 12. API : UTILISATEURS
 // ================================================================
 
 app.get('/api/users', async (req, res) => {
@@ -419,7 +448,7 @@ app.get('/api/user/:email', async (req, res) => {
 });
 
 // ================================================================
-// 12. API : STATISTIQUES
+// 13. API : STATISTIQUES
 // ================================================================
 
 app.get('/api/stats', async (req, res) => {
@@ -433,7 +462,7 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // ================================================================
-// 13. API : UPDATE STATUS
+// 14. API : UPDATE STATUS
 // ================================================================
 
 app.post('/api/update-status', async (req, res) => {
@@ -462,7 +491,7 @@ app.post('/api/update-status', async (req, res) => {
 });
 
 // ================================================================
-// 14. WEBHOOK JEKO AVEC ENVOI EMAIL (SendGrid)
+// 15. WEBHOOK JEKO AVEC ENVOI EMAIL (SendGrid)
 // ================================================================
 
 app.post('/webhook', async (req, res) => {
@@ -607,7 +636,7 @@ app.post('/webhook', async (req, res) => {
 });
 
 // ================================================================
-// 15. DÉMARRAGE
+// 16. DÉMARRAGE
 // ================================================================
 
 app.listen(PORT, () => {
