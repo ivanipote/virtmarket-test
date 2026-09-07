@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 4.1 - Version simplifiée (3 statuts)
+// VERSION : 4.2 - Correction du total
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -82,13 +82,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // STATS
+    // STATS - Correction du total
     // ============================================================
 
     function renderStats() {
+        // ✅ Utiliser total_amount (montant en FCFA) au lieu de success_payments (nombre)
         const totalAmount = allUsers.reduce((sum, u) => {
-            const payments = u.success_payments || 0;
-            return sum + payments;
+            return sum + (u.total_amount || 0);
         }, 0);
         statTotal.textContent = totalAmount + ' FCFA';
     }
@@ -285,6 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ` : ''}
             `;
         } else if (status === 'donateur') {
+            const totalPaye = successOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
             statusFooterHtml = `
                 <div class="status-item">
                     <span class="status-label"><i class="fas fa-check-circle" style="color:#22c55e;"></i> Paiement réussi</span>
@@ -293,11 +294,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="badge success">✅ Succès</span>
                     </span>
                 </div>
-                ${successOrders.length > 0 ? `
+                ${totalPaye > 0 ? `
                     <div class="status-item" style="border-top:1px solid #f0f2f5;padding-top:6px;margin-top:4px;">
                         <span class="status-label"><i class="fas fa-money-bill-wave" style="color:#22c55e;"></i> Total payé</span>
                         <span class="status-time" style="color:#156FE6;font-weight:700;">
-                            ${successOrders.reduce((sum, o) => sum + (o.amount || 0), 0)} FCFA
+                            ${totalPaye} FCFA
                         </span>
                     </div>
                 ` : ''}
