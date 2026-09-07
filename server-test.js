@@ -88,7 +88,6 @@ app.post('/api/user/register', async (req, res) => {
     try {
         const user = await db.getOrCreateUser(name, email);
         
-        // Mettre à jour le statut vers 'visiteur' si différent
         if (user.flex5 !== 'visiteur') {
             await db.updateUserStatus(email, 'visiteur');
         }
@@ -107,125 +106,6 @@ app.post('/api/user/register', async (req, res) => {
 
     } catch (error) {
         console.error('❌ Erreur enregistrement utilisateur:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// ============================================================
-// ROUTE : CRÉER UNE COMMANDE (avec stockage en base)
-// ============================================================
-app.post('/api/create-order', async (req, res) => {
-    const { name, email, amount } = req.body;
-
-    console.log('\n' + '='.repeat(80));
-    console.log('📝 CRÉATION D\'UNE COMMANDE');
-    console.log('='.repeat(80));
-    console.log(`   👤 Nom: ${name}`);
-    console.log(`   📧 Email: ${email}`);
-    console.log(`   💰 Montant: ${amount} FCFA`);
-
-    if (!name || !email || !amount) {
-        return res.status(400).json({ error: 'Nom, email et montant requis' });
-    }
-
-    if (amount < 1) {
-        return res.status(400).json({ error: 'Le montant minimum est de 1 FCFA' });
-    }
-
-    try {
-        // ===== 1️⃣ ENREGISTRER L'UTILISATEUR (visiteur) =====
-        const user = await db.getOrCreateUser(name, email);
-        if (user.flex5 !== 'visiteur') {
-            await db.updateUserStatus(email, 'visiteur');
-        }
-        console.log(`   ✅ Utilisateur enregistré: ${name} (${email}) - visiteur`);
-
-        // ===== 2️⃣ CRÉER LA RÉFÉRENCE UNIQUE =====
-        const reference = `VM-${email}-${Date.now()}`;
-        console.log(`   🔗 Référence générée: ${reference}`);
-
-        // ===== 3️⃣ STOCKER EN BASE (pending) =====
-        const pending = await db.createPendingPayment({
-            reference,
-            email,
-            name,
-            amount: amount,
-            status: 'pending'
-        });
-
-        if (!pending) {
-            throw new Error('Erreur lors de la création de la commande en base');
-        }
-        console.log(`   ✅ Commande enregistrée en base (ID: ${pending.id}) - statut: pending`);
-
-        // ===== 4️⃣ METTRE À JOUR LE STATUT UTILISATEUR (participant) =====
-        await db.updateUserStatus(email, 'participant');
-        console.log(`   ✅ Statut mis à jour: ${email} → participant`);
-
-        // ===== 5️⃣ CRÉER LE LIEN DE PAIEMENT JEKO =====
-        const amountInCentimes = Math.round(amount * 100);
-        console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
-
-        const response = await fetch('https://api.jeko.africa/partner_api/payment_requests', {
-            method: 'POST',
-            headers: {
-                'X-API-KEY': process.env.JEKO_API_KEY,
-                'X-API-KEY-ID': process.env.JEKO_API_KEY_ID,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                storeId: process.env.JEKO_BUSINESS_ID,
-                title: `Commande - ${name}`,
-                amountCents: amountInCentimes,
-                currency: 'XOF',
-                reference: reference,
-                email: email,
-                customerId: name,
-                description: `Commande de ${name} (${email}) - ${amount} FCFA`,
-                paymentDetails: {
-                    type: 'redirect',
-                    data: {
-                        paymentMethod: 'wave',
-                        successUrl: 'https://virtmarket-test.onrender.com/verify',
-                        errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
-                    }
-                }
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error('   ❌ Erreur Jèko:', data);
-            return res.status(response.status).json({
-                error: data.message || 'Erreur API Jèko',
-                details: data
-            });
-        }
-
-        if (!data.redirectUrl) {
-            console.error('   ❌ Aucune URL de redirection reçue');
-            return res.status(500).json({ error: 'Aucune URL de paiement reçue' });
-        }
-
-        // ===== 6️⃣ METTRE À JOUR LE PAYMENT_LINK_ID =====
-        if (data.id) {
-            await db.updatePendingPaymentLinkId(reference, data.id);
-            console.log(`   ✅ Payment Link ID: ${data.id}`);
-        }
-
-        console.log(`   ✅ URL de redirection générée: ${data.redirectUrl}`);
-        console.log('='.repeat(80) + '\n');
-
-        res.json({
-            success: true,
-            checkout_url: data.redirectUrl,
-            reference: reference,
-            payment_id: pending.id
-        });
-
-    } catch (error) {
-        console.error('❌ Erreur création commande:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -273,10 +153,10 @@ app.post('/api/user/update-status', async (req, res) => {
 });
 
 // ============================================================
-// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO - VERSION PRINCIPALE
+// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO
 // ============================================================
 app.post('/create-payment-link', async (req, res) => {
-    const { name, email, amount, reference } = req.body;
+    const { name, email, amount } = req.body;
 
     console.log('\n' + '='.repeat(80));
     console.log('💳 CRÉATION D\'UN LIEN DE PAIEMENT');
@@ -284,7 +164,6 @@ app.post('/create-payment-link', async (req, res) => {
     console.log(`   👤 Nom: ${name}`);
     console.log(`   📧 Email: ${email}`);
     console.log(`   💰 Montant: ${amount} FCFA`);
-    console.log(`   🔗 Référence reçue: ${reference || 'NON FOURNIE'}`);
 
     if (!name || !email || !amount) {
         return res.status(400).json({ error: 'Nom, email et montant requis' });
@@ -294,21 +173,39 @@ app.post('/create-payment-link', async (req, res) => {
         return res.status(400).json({ error: 'Le montant minimum est de 1 FCFA' });
     }
 
-    // ✅ Utiliser la référence reçue ou en créer une nouvelle
-    const finalReference = reference || `VM-${email}-${Date.now()}`;
-    console.log(`   🔗 Référence finale: ${finalReference}`);
-
-    const amountInCentimes = Math.round(amount * 100);
-    console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
-
     try {
-        // ✅ Construire la requête avec la référence
+        // ===== 1️⃣ GÉNÉRER LA RÉFÉRENCE =====
+        const reference = `VM-${email}-${Date.now()}`;
+        console.log(`   🔗 Référence générée: ${reference}`);
+
+        // ===== 2️⃣ ✅ ENREGISTRER EN BASE (AVANT Jèko) =====
+        const pending = await db.createPendingPayment({
+            reference,
+            email,
+            name,
+            amount: amount,
+            status: 'pending'
+        });
+
+        if (!pending) {
+            throw new Error('Erreur lors de l\'enregistrement de la commande en base');
+        }
+        console.log(`   ✅ Commande enregistrée en base (ID: ${pending.id}) - statut: pending`);
+
+        // ===== 3️⃣ METTRE À JOUR STATUT UTILISATEUR (participant) =====
+        await db.updateUserStatus(email, 'participant');
+        console.log(`   ✅ Statut mis à jour: ${email} → participant`);
+
+        // ===== 4️⃣ CRÉER LE PAIEMENT JÈKO =====
+        const amountInCentimes = Math.round(amount * 100);
+        console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
+
         const requestBody = {
             storeId: process.env.JEKO_BUSINESS_ID,
             title: `Commande - ${name}`,
             amountCents: amountInCentimes,
             currency: 'XOF',
-            reference: finalReference,
+            reference: reference,
             email: email,
             customerId: name,
             description: `Commande de ${name} (${email}) - ${amount} FCFA`,
@@ -346,9 +243,7 @@ app.post('/create-payment-link', async (req, res) => {
             });
         }
 
-        // ============================================================
-        // 📋 AFFICHER TOUTES LES INFOS RETOURNÉES PAR JÈKO
-        // ============================================================
+        // ===== 5️⃣ AFFICHER LA RÉPONSE JÈKO =====
         console.log(`\n📥 RÉPONSE COMPLÈTE DE JÈKO:`);
         console.log('-'.repeat(40));
         console.log(JSON.stringify(data, null, 2));
@@ -356,34 +251,35 @@ app.post('/create-payment-link', async (req, res) => {
         console.log(`\n📊 DÉTAILS DU PAIEMENT GÉNÉRÉ:`);
         console.log('-'.repeat(40));
         console.log(`   🆔 ID du lien: ${data.id || 'N/A'}`);
-        console.log(`   🔗 Référence: ${data.reference || 'N/A'}`);
+        console.log(`   🔗 Référence: ${data.reference || reference}`);
         console.log(`   💰 Montant: ${data.amountCents ? data.amountCents / 100 : amount} FCFA`);
         console.log(`   📊 Statut: ${data.status || 'pending'}`);
-        console.log(`   📅 Créé le: ${data.createdAt || 'N/A'}`);
         console.log(`   🔗 URL de paiement: ${data.redirectUrl || 'N/A'}`);
-        console.log(`   🏪 Store: ${data.storeName || 'N/A'}`);
-        console.log(`   📧 Email: ${data.email || 'N/A'}`);
-        console.log(`   🆔 Customer ID: ${data.customerId || 'N/A'}`);
-        console.log(`   📝 Description: ${data.description || 'N/A'}`);
 
-        // Vérifier si data.redirectUrl existe
         if (!data.redirectUrl) {
             console.error('❌ Aucune URL de redirection reçue');
             return res.status(500).json({ error: 'Aucune URL de paiement reçue' });
         }
 
+        // ===== 6️⃣ METTRE À JOUR LE PAYMENT_LINK_ID =====
+        if (data.id) {
+            await db.updatePendingPaymentLinkId(reference, data.id);
+            console.log(`   ✅ Payment Link ID mis à jour: ${data.id}`);
+        }
+
         console.log(`\n✅ URL de redirection générée: ${data.redirectUrl}`);
+        console.log(`✅ Commande en base: ID ${pending.id} - référence ${reference}`);
         console.log('='.repeat(80) + '\n');
 
-        // ✅ Retourner la réponse
+        // ===== 7️⃣ RETOURNER LA RÉPONSE =====
         res.json({ 
             checkout_url: data.redirectUrl,
-            payment_id: data.id,
-            reference: data.reference || finalReference
+            payment_id: data.id || pending.id,
+            reference: data.reference || reference
         });
 
     } catch (error) {
-        console.error('❌ Erreur:', error.message);
+        console.error('❌ Erreur création paiement:', error.message);
         res.status(500).json({ error: error.message });
     }
 });
@@ -448,7 +344,7 @@ app.get('/api/payment/status/:id', async (req, res) => {
 });
 
 // ============================================================
-// WEBHOOK JEKO - AVEC STOCKAGE EN BASE
+// WEBHOOK JEKO
 // ============================================================
 app.post('/webhook', async (req, res) => {
     console.log('\n' + '='.repeat(80));
@@ -508,7 +404,7 @@ app.post('/webhook', async (req, res) => {
             return res.sendStatus(200);
         }
 
-        // ===== 6️⃣ METTRE À JOUR LE STATUT DE LA COMMANDE =====
+        // ===== 6️⃣ METTRE À JOUR LA COMMANDE =====
         console.log('\n💾 Mise à jour de la commande...');
         const updated = await db.updatePendingPaymentStatus(
             reference,
@@ -523,7 +419,7 @@ app.post('/webhook', async (req, res) => {
             console.log(`❌ Erreur lors de la mise à jour de la commande`);
         }
 
-        // ===== 7️⃣ METTRE À JOUR LE STATUT DE L'UTILISATEUR =====
+        // ===== 7️⃣ METTRE À JOUR L'UTILISATEUR =====
         console.log('\n👤 Mise à jour du statut utilisateur...');
         
         if (pending.email) {
@@ -543,7 +439,7 @@ app.post('/webhook', async (req, res) => {
             }
         }
 
-        // ===== 8️⃣ ENREGISTRER LE PAIEMENT DANS payments_jeko =====
+        // ===== 8️⃣ ENREGISTRER LE PAIEMENT =====
         console.log('\n💾 Enregistrement du paiement dans payments_jeko...');
         body.flex1 = pending.name;
         body.flex2 = pending.email;
@@ -556,7 +452,7 @@ app.post('/webhook', async (req, res) => {
             console.log(`   ℹ️ Paiement déjà existant ou erreur`);
         }
 
-        // ===== 9️⃣ RÉSUMÉ FINAL =====
+        // ===== 9️⃣ RÉSUMÉ =====
         console.log('\n📋 RÉSUMÉ DU TRAITEMENT:');
         console.log('-'.repeat(40));
         console.log(`   ✅ Signature: OK`);
