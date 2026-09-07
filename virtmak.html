@@ -26,10 +26,10 @@
         }
 
         /* ============================================================ */
-        /* HEADER - 60px, arrondi 50px                                  */
+        /* HEADER - BLEU #156FE6                                        */
         /* ============================================================ */
         .vm-header {
-            background: #0F8B5D;
+            background: #156FE6;
             height: 60px;
             border-radius: 50px;
             margin: 12px 16px 0 16px;
@@ -37,7 +37,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
-            box-shadow: 0 4px 20px rgba(15, 139, 93, 0.15);
+            box-shadow: 0 4px 20px rgba(21, 111, 230, 0.25);
             flex-shrink: 0;
         }
 
@@ -102,7 +102,7 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             color: #1a2a6c;
-            background: linear-gradient(135deg, #1a2a6c, #2563eb, #1a2a6c);
+            background: linear-gradient(135deg, #0F1B4D, #156FE6, #0F1B4D);
             background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -120,7 +120,7 @@
         .vm-title h2 {
             font-size: 22px;
             font-weight: 700;
-            color: #0F8B5D;
+            color: #156FE6;
             letter-spacing: -0.3px;
         }
 
@@ -128,11 +128,11 @@
         /* DESCRIPTION TECH                                             */
         /* ============================================================ */
         .vm-description {
-            background: #f0faf5;
+            background: #f0f7ff;
             border-radius: 16px;
             padding: 14px 18px;
             margin-bottom: 20px;
-            border-left: 4px solid #0F8B5D;
+            border-left: 4px solid #156FE6;
             width: 100%;
         }
 
@@ -155,8 +155,8 @@
             border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
-            color: #0F8B5D;
-            border: 1px solid rgba(15, 139, 93, 0.12);
+            color: #156FE6;
+            border: 1px solid rgba(21, 111, 230, 0.12);
         }
 
         .vm-description .tech-tags span i {
@@ -173,7 +173,7 @@
             padding: 28px 24px 24px 24px;
             width: 100%;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(15, 139, 93, 0.06);
+            border: 1px solid rgba(21, 111, 230, 0.06);
             animation: fadeInUp 0.5s ease;
         }
 
@@ -198,7 +198,7 @@
         }
 
         .form-group label i {
-            color: #0F8B5D;
+            color: #156FE6;
             margin-right: 6px;
             width: 18px;
         }
@@ -213,8 +213,8 @@
         }
 
         .form-group .input-wrapper:focus-within {
-            border-color: #0F8B5D;
-            box-shadow: 0 0 0 4px rgba(15, 139, 93, 0.08);
+            border-color: #156FE6;
+            box-shadow: 0 0 0 4px rgba(21, 111, 230, 0.08);
             background: white;
         }
 
@@ -245,7 +245,7 @@
         }
 
         .form-group .input-wrapper:focus-within .input-icon {
-            color: #0F8B5D;
+            color: #156FE6;
         }
 
         .form-hint {
@@ -253,6 +253,41 @@
             color: #9ca3af;
             margin-top: 4px;
             padding-left: 4px;
+        }
+
+        /* ============================================================ */
+        /* MESSAGE CONFIRMATION EMAIL                                    */
+        /* ============================================================ */
+        .email-confirmation-info {
+            background: #f0f7ff;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 12px 0 0 0;
+            border-left: 3px solid #156FE6;
+            font-size: 12px;
+            color: #1a2a6c;
+            line-height: 1.5;
+        }
+
+        .email-confirmation-info i {
+            color: #156FE6;
+            margin-right: 6px;
+        }
+
+        .email-confirmation-info .highlight {
+            font-weight: 600;
+            color: #156FE6;
+        }
+
+        .email-confirmation-info .spam-warning {
+            display: inline-block;
+            background: #fff3df;
+            color: #b45309;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 4px;
         }
 
         /* ============================================================ */
@@ -295,22 +330,22 @@
         }
 
         .suggested-amounts .suggest-btn:hover {
-            border-color: #0F8B5D;
-            background: #e8f5ec;
-            color: #0F8B5D;
+            border-color: #156FE6;
+            background: #e8f0fe;
+            color: #156FE6;
             transform: translateY(-2px);
         }
 
         .suggested-amounts .suggest-btn.active {
-            border-color: #0F8B5D;
-            background: #0F8B5D;
+            border-color: #156FE6;
+            background: #156FE6;
             color: white;
         }
 
         .suggested-amounts .suggest-btn.default {
-            border-color: #0F8B5D;
-            background: #e6f7ee;
-            color: #0F8B5D;
+            border-color: #156FE6;
+            background: #e8f0fe;
+            color: #156FE6;
         }
 
         /* ============================================================ */
@@ -319,7 +354,7 @@
         .btn-submit {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, #0F8B5D, #0A6B47);
+            background: linear-gradient(135deg, #156FE6, #0F1B4D);
             color: white;
             border: none;
             border-radius: 16px;
@@ -336,7 +371,7 @@
 
         .btn-submit:hover:not(:disabled) {
             transform: scale(1.02);
-            box-shadow: 0 8px 35px rgba(15, 139, 93, 0.3);
+            box-shadow: 0 8px 35px rgba(21, 111, 230, 0.3);
         }
 
         .btn-submit:disabled {
@@ -359,7 +394,7 @@
             font-size: 13px;
             font-weight: 500;
             background: #eaf1ff;
-            color: #2563eb;
+            color: #156FE6;
             border: 1px solid #c7d9fb;
             display: none;
         }
@@ -386,7 +421,7 @@
         }
 
         .vm-footer-security i {
-            color: #0F8B5D;
+            color: #156FE6;
             margin-right: 4px;
         }
 
@@ -399,13 +434,13 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 999;
-            background: #0F8B5D;
+            background: #156FE6;
             color: white;
             padding: 14px 28px;
             border-radius: 14px;
             font-weight: 600;
             font-size: 15px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 30px rgba(21, 111, 230, 0.2);
             display: none;
             animation: slideUp 0.3s ease;
             max-width: 90%;
@@ -422,7 +457,7 @@
         }
 
         /* ============================================================ */
-        /* OVERLAY DOT - fond blanc, pas de flou                        */
+        /* OVERLAY DOT                                                  */
         /* ============================================================ */
         .overlay-dot {
             display: none;
@@ -453,7 +488,7 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: #0F8B5D;
+            background: #156FE6;
             animation: dotBounce 1.2s ease-in-out infinite;
         }
 
@@ -511,6 +546,7 @@
             .suggested-amounts { gap: 6px; }
             .overlay-dot .dot-loader .dot { width: 15px; height: 15px; gap: 10px; }
             .overlay-dot .overlay-text { font-size: 18px; }
+            .email-confirmation-info { font-size: 11px; padding: 10px 14px; }
         }
 
         @media (max-width: 420px) {
@@ -534,6 +570,7 @@
             .toast-container { font-size: 13px; padding: 10px 16px; bottom: 16px; }
             .overlay-dot .dot-loader .dot { width: 13px; height: 13px; gap: 8px; }
             .overlay-dot .overlay-text { font-size: 16px; }
+            .email-confirmation-info { font-size: 10px; padding: 8px 12px; }
         }
 
         @media (max-width: 350px) {
@@ -547,6 +584,7 @@
             .btn-submit { font-size: 13px; padding: 10px; }
             .overlay-dot .dot-loader .dot { width: 12px; height: 12px; gap: 6px; }
             .overlay-dot .overlay-text { font-size: 14px; }
+            .email-confirmation-info { font-size: 9px; padding: 6px 10px; }
         }
     </style>
 </head>
@@ -578,7 +616,7 @@
         <!-- Description -->
         <div class="vm-description">
             <p>
-                <i class="fas fa-bolt" style="color:#0F8B5D;margin-right:6px;"></i>
+                <i class="fas fa-bolt" style="color:#156FE6;margin-right:6px;"></i>
                 Une plateforme 100% ivoirienne, sécurisée et innovante.
                 Soutenez le développement du système avec le montant de votre choix.
             </p>
@@ -616,8 +654,19 @@
                     <div class="form-hint">Nous vous enverrons un remerciement</div>
                 </div>
 
+                <!-- ===== MESSAGE CONFIRMATION EMAIL ===== -->
+                <div class="email-confirmation-info">
+                    <i class="fas fa-info-circle"></i>
+                    Vous recevrez un email de confirmation de votre paiement.
+                    <br>
+                    <i class="fas fa-envelope"></i>
+                    Pensez à vérifier vos <span class="highlight">spams</span> si vous ne le voyez pas dans votre boîte de réception.
+                    <br>
+                    <span class="spam-warning">📂 Vérifiez vos spams</span>
+                </div>
+
                 <!-- Montant -->
-                <div class="form-group">
+                <div class="form-group" style="margin-top: 16px;">
                     <label><i class="fas fa-heart"></i> Montant (FCFA)</label>
                     <div class="amount-wrapper">
                         <div class="input-wrapper">
