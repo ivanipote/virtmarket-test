@@ -24,9 +24,6 @@
             margin: 0;
         }
 
-        /* ============================================================ */
-        /* HEADER - 60px, arrondi 50px - WAVE NAVY                      */
-        /* ============================================================ */
         .pay-header {
             background: #0F1B4D;
             height: 60px;
@@ -38,7 +35,6 @@
             padding: 0 20px;
             box-shadow: 0 4px 20px rgba(15, 27, 77, 0.25);
             flex-shrink: 0;
-            position: relative;
         }
 
         .pay-header .header-text {
@@ -54,9 +50,6 @@
             opacity: 0.5;
         }
 
-        /* ============================================================ */
-        /* MAIN                                                         */
-        /* ============================================================ */
         .pay-main {
             flex: 1;
             display: flex;
@@ -69,9 +62,6 @@
             margin: 0 auto;
         }
 
-        /* ============================================================ */
-        /* CARTE BLANCHE                                                */
-        /* ============================================================ */
         .pay-card {
             background: white;
             border-radius: 24px;
@@ -88,9 +78,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ============================================================ */
-        /* LOGO WAVE - BORDURES ARRONDIES UNIQUEMENT                    */
-        /* ============================================================ */
         .wave-logo-wrapper {
             display: flex;
             justify-content: center;
@@ -113,9 +100,6 @@
             display: block;
         }
 
-        /* ============================================================ */
-        /* TITRE                                                         */
-        /* ============================================================ */
         .pay-title {
             font-size: 22px;
             font-weight: 700;
@@ -129,9 +113,6 @@
             margin-bottom: 20px;
         }
 
-        /* ============================================================ */
-        /* RÉCAPITULATIF                                                */
-        /* ============================================================ */
         .recap-item {
             display: flex;
             justify-content: space-between;
@@ -167,9 +148,14 @@
             text-align: right;
         }
 
-        /* ============================================================ */
-        /* BOUTON PAYER AVEC WAVE - WAVE NAVY                           */
-        /* ============================================================ */
+        .recap-item .value.status-badge {
+            font-size: 12px;
+            padding: 2px 12px;
+            border-radius: 20px;
+            background: #fff3df;
+            color: #b45309;
+        }
+
         .btn-pay-wrapper {
             display: flex;
             justify-content: center;
@@ -234,9 +220,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* ============================================================ */
-        /* MESSAGE INFO                                                 */
-        /* ============================================================ */
         .info-message {
             margin-top: 14px;
             padding: 12px 16px;
@@ -265,9 +248,6 @@
             border-color: #bfebd3;
         }
 
-        /* ============================================================ */
-        /* FOOTER SECURITE                                              */
-        /* ============================================================ */
         .pay-footer-security {
             text-align: center;
             font-size: 12px;
@@ -281,9 +261,6 @@
             margin-right: 4px;
         }
 
-        /* ============================================================ */
-        /* TOAST                                                         */
-        /* ============================================================ */
         .toast-container {
             position: fixed;
             bottom: 30px;
@@ -316,9 +293,6 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        /* ============================================================ */
-        /* RESPONSIVE                                                    */
-        /* ============================================================ */
         @media (max-width: 600px) {
             .pay-header { height: 54px; border-radius: 40px; margin: 10px 12px 0 12px; }
             .pay-header .header-text { font-size: 12px; }
@@ -362,30 +336,21 @@
 </head>
 <body>
 
-    <!-- ============================================================ -->
-    <!-- HEADER - WAVE NAVY                                            -->
-    <!-- ============================================================ -->
     <header class="pay-header">
         <span class="header-text">⚡ powered by <span>megane</span></span>
     </header>
 
-    <!-- ============================================================ -->
-    <!-- CONTENU PRINCIPAL                                             -->
-    <!-- ============================================================ -->
     <main class="pay-main">
-
         <div class="pay-card">
 
-            <!-- Logo Wave arrondi -->
             <div class="wave-logo-wrapper">
                 <div class="wave-logo">
                     <img src="/wave.png" alt="Wave" />
                 </div>
             </div>
 
-            <!-- Titre -->
-            <div class="pay-title">Paiement sécurisé</div>
-            <div class="pay-subtitle">Confirmez votre paiement via Wave</div>
+            <div class="pay-title">💳 Création du paiement</div>
+            <div class="pay-subtitle">Génération du lien de paiement sécurisé</div>
 
             <!-- Récapitulatif -->
             <div class="recap-item">
@@ -400,72 +365,71 @@
                 <span class="label">💰 Montant</span>
                 <span class="value amount" id="displayAmount">-</span>
             </div>
-            <div class="recap-item" style="border-bottom: none;">
+            <div class="recap-item" id="referenceRow" style="display:none;">
                 <span class="label">🔗 Référence</span>
                 <span class="value reference" id="displayReference">-</span>
             </div>
+            <div class="recap-item" id="statusRow" style="display:none;">
+                <span class="label">📊 Statut</span>
+                <span class="value status-badge" id="displayStatus">-</span>
+            </div>
+            <div class="recap-item" id="linkRow" style="display:none;">
+                <span class="label">🔗 Lien</span>
+                <span class="value reference" id="displayLink">-</span>
+            </div>
 
-            <!-- Bouton Payer avec Wave -->
             <div class="btn-pay-wrapper">
                 <button class="btn-pay" id="payBtn">
                     <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
-                    <span class="btn-text">Payer avec Wave</span>
+                    <span class="btn-text">Générer le lien de paiement</span>
                 </button>
             </div>
 
             <div id="infoMessage" class="info-message"></div>
 
-            <!-- Sécurité -->
             <div class="pay-footer-security">
                 <i class="fas fa-lock"></i> Paiement sécurisé via Jèko
             </div>
 
         </div>
-
     </main>
 
-    <!-- ============================================================ -->
-    <!-- TOAST                                                         -->
-    <!-- ============================================================ -->
     <div class="toast-container" id="toast"></div>
 
-    <!-- ============================================================ -->
-    <!-- SCRIPTS                                                        -->
-    <!-- ============================================================ -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ pay.html (récapitulatif + redirection) chargé');
+            console.log('✅ pay.html (création paiement) chargé');
 
             // ===== RÉFÉRENCES =====
             const displayName = document.getElementById('displayName');
             const displayEmail = document.getElementById('displayEmail');
             const displayAmount = document.getElementById('displayAmount');
             const displayReference = document.getElementById('displayReference');
+            const displayStatus = document.getElementById('displayStatus');
+            const displayLink = document.getElementById('displayLink');
+            const referenceRow = document.getElementById('referenceRow');
+            const statusRow = document.getElementById('statusRow');
+            const linkRow = document.getElementById('linkRow');
             const payBtn = document.getElementById('payBtn');
             const toast = document.getElementById('toast');
             const infoMessage = document.getElementById('infoMessage');
 
-            // ===== RÉCUPÉRER LES PARAMÈTRES URL =====
+            // ===== RÉCUPÉRER LES PARAMÈTRES =====
             const urlParams = new URLSearchParams(window.location.search);
             const name = urlParams.get('name') || 'Donateur anonyme';
             const email = urlParams.get('email') || 'email@non-renseigne.com';
             const amount = parseInt(urlParams.get('amount')) || 1;
-            const reference = urlParams.get('reference') || null;
-            const checkoutUrl = urlParams.get('checkout_url') || null;
 
-            // ===== AFFICHER LES INFOS =====
+            // ===== AFFICHER LE RÉCAPITULATIF =====
             displayName.textContent = name;
             displayEmail.textContent = email;
             displayAmount.textContent = `${amount} FCFA`;
-            displayReference.textContent = reference || 'Non disponible';
 
-            console.log('📋 RÉCAPITULATIF DE LA COMMANDE:');
+            console.log('📋 RÉCAPITULATIF:');
             console.log('   👤 Nom:', name);
             console.log('   📧 Email:', email);
             console.log('   💰 Montant:', amount, 'FCFA');
-            console.log('   🔗 Référence:', reference || 'NON FOURNIE');
-            console.log('   🔗 URL de paiement:', checkoutUrl || 'NON FOURNIE');
 
             // ===== TOAST =====
             function showToast(message, type = 'success') {
@@ -483,52 +447,120 @@
                 infoMessage.className = 'info-message show ' + type;
                 setTimeout(() => {
                     infoMessage.className = 'info-message';
-                }, 5000);
+                }, 6000);
             }
 
-            // ===== PAYER - REDIRECTION DIRECTE VERS CHECKOUT_URL =====
-            payBtn.addEventListener('click', function() {
-                console.log('🔄 Clic sur "Payer avec Wave"');
+            // ===== AFFICHER LES INFOS DU PAIEMENT =====
+            function displayPaymentDetails(data) {
+                console.log('📊 DÉTAILS DU PAIEMENT GÉNÉRÉ:');
+                console.log('   🆔 ID:', data.payment_id || 'N/A');
+                console.log('   🔗 Référence:', data.reference || 'N/A');
+                console.log('   🔗 URL:', data.checkout_url || 'N/A');
 
-                // ✅ Vérifier que l'URL de paiement est présente
+                // Afficher la référence
+                if (data.reference) {
+                    displayReference.textContent = data.reference;
+                    referenceRow.style.display = 'flex';
+                }
+
+                // Afficher le statut
+                displayStatus.textContent = '🟡 En attente de paiement';
+                statusRow.style.display = 'flex';
+
+                // Afficher le lien
+                if (data.checkout_url) {
+                    displayLink.textContent = data.checkout_url;
+                    linkRow.style.display = 'flex';
+                }
+
+                // Changer le bouton
+                payBtn.innerHTML = `
+                    <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
+                    <span class="btn-text">Payer avec Wave</span>
+                `;
+                payBtn.disabled = false;
+
+                // Stocker l'URL pour la redirection
+                payBtn.dataset.checkoutUrl = data.checkout_url;
+                payBtn.dataset.reference = data.reference;
+
+                showInfo('✅ Lien de paiement généré avec succès ! Cliquez sur "Payer avec Wave" pour continuer.', 'success');
+                showToast('✅ Lien de paiement généré !', 'success');
+            }
+
+            // ===== CRÉER LE PAIEMENT =====
+            async function createPayment() {
+                console.log('🔄 Création du paiement...');
+
+                // Désactiver le bouton
+                payBtn.disabled = true;
+                payBtn.innerHTML = '<span class="spinner"></span> Génération en cours...';
+
+                try {
+                    const response = await fetch('/create-payment-link', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, amount })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Erreur création paiement');
+                    }
+
+                    if (!data.checkout_url) {
+                        throw new Error('Aucune URL de paiement reçue');
+                    }
+
+                    console.log('✅ Paiement créé avec succès');
+                    displayPaymentDetails(data);
+
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    showInfo('❌ ' + error.message, 'warning');
+                    payBtn.disabled = false;
+                    payBtn.innerHTML = `
+                        <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
+                        <span class="btn-text">Générer le lien de paiement</span>
+                    `;
+                }
+            }
+
+            // ===== PAYER - REDIRECTION VERS JÈKO =====
+            function redirectToPayment() {
+                const checkoutUrl = payBtn.dataset.checkoutUrl;
+                const reference = payBtn.dataset.reference;
+
                 if (!checkoutUrl) {
-                    console.error('❌ Aucune URL de paiement trouvée');
-                    showInfo('⚠️ URL de paiement manquante. Retour à l\'accueil.', 'warning');
-                    setTimeout(() => {
-                        window.location.href = '/virtmak.html';
-                    }, 2000);
+                    showInfo('⚠️ Aucune URL de paiement disponible. Veuillez générer le lien d\'abord.', 'warning');
                     return;
                 }
 
-                // ✅ Vérifier que la référence est présente
-                if (!reference) {
-                    console.warn('⚠️ Référence manquante, mais on continue');
-                }
+                console.log('🔗 Redirection vers Jèko:', checkoutUrl);
+                console.log('🔗 Référence:', reference);
 
-                console.log('🔗 Redirection vers:', checkoutUrl);
-
-                // ✅ Désactiver le bouton
+                // Désactiver le bouton
                 payBtn.disabled = true;
                 payBtn.innerHTML = '<span class="spinner"></span> Redirection...';
 
-                // ✅ Afficher un message
                 showInfo('🔄 Redirection vers la page de paiement Jèko...', 'info');
 
-                // ✅ Redirection après un court délai
                 setTimeout(() => {
                     window.location.href = checkoutUrl;
                 }, 800);
+            }
+
+            // ===== CLIC SUR LE BOUTON =====
+            payBtn.addEventListener('click', function() {
+                // Si on a déjà généré un lien, rediriger
+                if (this.dataset.checkoutUrl) {
+                    redirectToPayment();
+                } else {
+                    // Sinon, créer le paiement
+                    createPayment();
+                }
             });
-
-            // ===== VÉRIFICATION DES DONNÉES =====
-            if (!checkoutUrl) {
-                console.warn('⚠️ Aucune URL de paiement reçue');
-                showInfo('⚠️ URL de paiement manquante. Veuillez recommencer.', 'warning');
-            }
-
-            if (!reference) {
-                console.warn('⚠️ Aucune référence reçue');
-            }
 
             console.log('✅ pay.html initialisé');
 
