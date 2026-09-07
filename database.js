@@ -1,5 +1,15 @@
+// ================================================================
+// FICHIER : database.js
+// DESCRIPTION : Gestion de la base de données PostgreSQL
+// VERSION : 2.0 - Structure propre et organisée
+// ================================================================
+
 const { Pool } = require('pg');
 require('dotenv').config();
+
+// ================================================================
+// 1. CONNEXION À LA BASE
+// ================================================================
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -8,85 +18,57 @@ const pool = new Pool({
     idleTimeoutMillis: 30000
 });
 
+// ================================================================
+// 2. INITIALISATION DES TABLES
+// ================================================================
+
 async function initializeDatabase() {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS payments_jeko (
-                id SERIAL PRIMARY KEY,
-                transaction_id TEXT UNIQUE NOT NULL,
-                amount INTEGER NOT NULL,
-                currency TEXT DEFAULT 'XOF',
-                status TEXT DEFAULT 'pending',
-                counterpart_phone TEXT,
-                payment_method TEXT,
-                store_id TEXT,
-                store_name TEXT,
-                payment_link_id TEXT,
-                executed_at TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                flex1 TEXT DEFAULT NULL,
-                flex2 TEXT DEFAULT NULL,
-                flex3 TEXT DEFAULT NULL,
-                flex4 TEXT DEFAULT NULL,
-                flex5 TEXT DEFAULT NULL,
-                flex6 TEXT DEFAULT NULL,
-                flex7 TEXT DEFAULT NULL,
-                flex8 TEXT DEFAULT NULL
-            )
-        `);
-        console.log('✅ Table payments_jeko créée');
-
+        // ---------- 2.1 Table : users ----------
         await client.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 phone TEXT,
+                status TEXT DEFAULT 'visiteur',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                flex1 TEXT DEFAULT NULL,
-                flex2 TEXT DEFAULT NULL,
-                flex3 TEXT DEFAULT NULL,
-                flex4 TEXT DEFAULT NULL,
-                flex5 TEXT DEFAULT NULL,
-                flex6 TEXT DEFAULT NULL,
-                flex7 TEXT DEFAULT NULL,
-                flex8 TEXT DEFAULT NULL
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
         console.log('✅ Table users créée');
 
+        // ---------- 2.2 Table : payments ----------
         await client.query(`
-            CREATE TABLE IF NOT EXISTS soutiens (
+            CREATE TABLE IF NOT EXISTS payments (
                 id SERIAL PRIMARY KEY,
+                transaction_id TEXT UNIQUE NOT NULL,
                 user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-                payment_id INTEGER REFERENCES payments_jeko(id) ON DELETE SET NULL,
                 amount INTEGER NOT NULL,
-                message TEXT,
+                currency TEXT DEFAULT 'XOF',
                 status TEXT DEFAULT 'pending',
+                payment_method TEXT,
+                counterpart_phone TEXT,
+                store_id TEXT,
+                store_name TEXT,
+                payment_link_id TEXT,
+                reference TEXT,
+                executed_at TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                flex1 TEXT DEFAULT NULL,
-                flex2 TEXT DEFAULT NULL,
-                flex3 TEXT DEFAULT NULL,
-                flex4 TEXT DEFAULT NULL,
-                flex5 TEXT DEFAULT NULL,
-                flex6 TEXT DEFAULT NULL,
-                flex7 TEXT DEFAULT NULL,
-                flex8 TEXT DEFAULT NULL
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log('✅ Table soutiens créée');
+        console.log('✅ Table payments créée');
 
-        // ===== NOUVELLE TABLE : pending_payments =====
+        // ---------- 2.3 Table : orders (pending payments) ----------
         await client.query(`
-            CREATE TABLE IF NOT EXISTS pending_payments (
+            CREATE TABLE IF NOT EXISTS orders (
                 id SERIAL PRIMARY KEY,
                 reference TEXT UNIQUE NOT NULL,
+                user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
                 email TEXT NOT NULL,
                 name TEXT NOT NULL,
                 amount INTEGER NOT NULL,
@@ -97,36 +79,38 @@ async function initializeDatabase() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log('✅ Table pending_payments créée');
+        console.log('✅ Table orders créée');
 
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_transaction_id ON payments_jeko(transaction_id)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_status ON payments_jeko(status)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_created_at ON payments_jeko(created_at)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_flex1 ON payments_jeko(flex1)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_jeko_flex2 ON payments_jeko(flex2)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_soutiens_user_id ON soutiens(user_id)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_soutiens_status ON soutiens(status)`);
+        // ---------- 2.4 Index ----------
         await client.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_users_flex5 ON users(flex5)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_pending_payments_reference ON pending_payments(reference)`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_pending_payments_status ON pending_payments(status)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_users_status ON users(status)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_transaction_id ON payments(transaction_id)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_reference ON orders(reference)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`);
+        console.log('✅ Index créés');
 
         await client.query('COMMIT');
-        console.log('✅ Toutes les tables créées avec succès');
+        console.log('✅ Base de données initialisée avec succès');
 
     } catch (error) {
         await client.query('ROLLBACK');
-        console.error('❌ Erreur création tables:', error);
+        console.error('❌ Erreur initialisation:', error);
         throw error;
     } finally {
         client.release();
     }
 }
 
-// ============================================================
-// FONCTIONS UTILISATEURS
-// ============================================================
+// ================================================================
+// 3. FONCTIONS UTILISATEURS
+// ================================================================
 
+/**
+ * Récupère un utilisateur par son email, ou le crée s'il n'existe pas
+ */
 async function getOrCreateUser(name, email) {
     try {
         let user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -138,179 +122,122 @@ async function getOrCreateUser(name, email) {
             return user.rows[0];
         }
         const result = await pool.query(
-            `INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *`,
-            [name, email]
+            'INSERT INTO users (name, email, status) VALUES ($1, $2, $3) RETURNING *',
+            [name, email, 'visiteur']
         );
         return result.rows[0];
     } catch (error) {
-        console.error('❌ Erreur getOrCreateUser:', error);
+        console.error('❌ getOrCreateUser:', error);
         return null;
     }
 }
 
-async function updateUserStatus(email, userStatus) {
+/**
+ * Met à jour le statut d'un utilisateur
+ */
+async function updateUserStatus(email, status) {
     try {
         const result = await pool.query(
-            `UPDATE users SET flex5 = $1, updated_at = NOW() WHERE email = $2 RETURNING id, name, email, flex5 as user_status`,
-            [userStatus, email]
+            'UPDATE users SET status = $1, updated_at = NOW() WHERE email = $2 RETURNING *',
+            [status, email]
         );
         return result.rows[0] || null;
     } catch (error) {
-        console.error('❌ Erreur updateUserStatus:', error);
+        console.error('❌ updateUserStatus:', error);
         return null;
     }
 }
 
-// ============================================================
-// FONCTIONS PAIEMENTS JEKO
-// ============================================================
-
-async function saveJekoPayment(data) {
-    const query = `
-        INSERT INTO payments_jeko (
-            transaction_id, amount, currency, status,
-            counterpart_phone, payment_method, store_id,
-            store_name, payment_link_id, executed_at,
-            flex1, flex2, flex3, flex4, flex5
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-        ON CONFLICT (transaction_id) DO NOTHING
-        RETURNING id
-    `;
-
-    const values = [
-        data.id,
-        data.amount?.amount || 0,
-        data.amount?.currency || 'XOF',
-        data.status || 'pending',
-        data.counterpartLabel || null,
-        data.paymentMethod || null,
-        data.storeId || null,
-        data.storeName || null,
-        data.transactionDetails?.paymentLinkId || null,
-        data.executedAt ? new Date(data.executedAt) : null,
-        data.flex1 || null,
-        data.flex2 || null,
-        data.flex3 || null,
-        data.flex4 || null,
-        data.flex5 || null
-    ];
-
+/**
+ * Récupère un utilisateur par son ID
+ */
+async function getUserById(id) {
     try {
-        const result = await pool.query(query, values);
-        return result.rows[0]?.id || null;
+        const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        return result.rows[0] || null;
     } catch (error) {
-        console.error('❌ Erreur sauvegarde paiement Jèko:', error);
+        console.error('❌ getUserById:', error);
         return null;
     }
 }
 
-async function updatePaymentStatus(transactionId, status) {
+/**
+ * Récupère un utilisateur par son email
+ */
+async function getUserByEmail(email) {
     try {
-        const result = await pool.query(
-            'UPDATE payments_jeko SET status = $1, updated_at = NOW() WHERE transaction_id = $2 RETURNING id',
-            [status, transactionId]
-        );
-        return result.rows[0]?.id || null;
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        return result.rows[0] || null;
     } catch (error) {
-        console.error('❌ Erreur mise à jour statut:', error);
+        console.error('❌ getUserByEmail:', error);
         return null;
     }
 }
 
-async function getJekoPayments() {
+/**
+ * Récupère tous les utilisateurs
+ */
+async function getAllUsers() {
     try {
-        const result = await pool.query(`
-            SELECT p.*, u.name as user_name, u.email as user_email, u.flex5 as user_status
-            FROM payments_jeko p
-            LEFT JOIN users u ON u.email = p.flex2
-            ORDER BY p.created_at DESC
-        `);
+        const result = await pool.query('SELECT * FROM users ORDER BY created_at DESC');
         return result.rows;
     } catch (error) {
-        console.error('❌ Erreur récupération paiements Jèko:', error);
+        console.error('❌ getAllUsers:', error);
         return [];
     }
 }
 
-async function getPaymentById(id) {
-    try {
-        const result = await pool.query('SELECT * FROM payments_jeko WHERE id = $1 OR transaction_id = $1', [id]);
-        return result.rows[0] || null;
-    } catch (error) {
-        console.error('❌ Erreur récupération paiement:', error);
-        return null;
-    }
-}
-
-async function cleanPendingPayments() {
-    try {
-        const result = await pool.query(`
-            DELETE FROM payments_jeko
-            WHERE status = 'pending'
-            AND created_at < NOW() - INTERVAL '15 minutes'
-        `);
-        return result.rowCount;
-    } catch (error) {
-        console.error('❌ Erreur nettoyage:', error);
-        return 0;
-    }
-}
-
-// ============================================================
-// NOUVELLES FONCTIONS : PENDING PAYMENTS
-// ============================================================
+// ================================================================
+// 4. FONCTIONS COMMANDES (ORDERS)
+// ================================================================
 
 /**
- * Créer un paiement en attente (pending)
+ * Crée une nouvelle commande (ordre de paiement)
  */
-async function createPendingPayment(data) {
+async function createOrder(data) {
     const query = `
-        INSERT INTO pending_payments (
-            reference, email, name, amount, status, payment_link_id
-        ) VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO orders (reference, user_id, email, name, amount, status, payment_link_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
     `;
     const values = [
         data.reference,
+        data.user_id || null,
         data.email,
         data.name,
         data.amount,
-        'pending',
+        data.status || 'pending',
         data.payment_link_id || null
     ];
     try {
         const result = await pool.query(query, values);
         return result.rows[0];
     } catch (error) {
-        console.error('❌ Erreur createPendingPayment:', error);
+        console.error('❌ createOrder:', error);
         return null;
     }
 }
 
 /**
- * Récupérer un paiement en attente par sa référence
+ * Récupère une commande par sa référence
  */
-async function getPendingPaymentByReference(reference) {
+async function getOrderByReference(reference) {
     try {
-        const result = await pool.query(
-            'SELECT * FROM pending_payments WHERE reference = $1',
-            [reference]
-        );
+        const result = await pool.query('SELECT * FROM orders WHERE reference = $1', [reference]);
         return result.rows[0] || null;
     } catch (error) {
-        console.error('❌ Erreur getPendingPaymentByReference:', error);
+        console.error('❌ getOrderByReference:', error);
         return null;
     }
 }
 
 /**
- * Mettre à jour le statut d'un paiement en attente
+ * Met à jour le statut d'une commande
  */
-async function updatePendingPaymentStatus(reference, status, transactionId) {
+async function updateOrderStatus(reference, status, transactionId) {
     try {
         const result = await pool.query(
-            `UPDATE pending_payments 
+            `UPDATE orders 
              SET status = $1, transaction_id = $2, updated_at = NOW() 
              WHERE reference = $3 
              RETURNING *`,
@@ -318,106 +245,214 @@ async function updatePendingPaymentStatus(reference, status, transactionId) {
         );
         return result.rows[0] || null;
     } catch (error) {
-        console.error('❌ Erreur updatePendingPaymentStatus:', error);
+        console.error('❌ updateOrderStatus:', error);
         return null;
     }
 }
 
 /**
- * Mettre à jour le payment_link_id d'un paiement en attente
+ * Met à jour le payment_link_id d'une commande
  */
-async function updatePendingPaymentLinkId(reference, paymentLinkId) {
+async function updateOrderPaymentLink(reference, paymentLinkId) {
     try {
         const result = await pool.query(
-            `UPDATE pending_payments 
-             SET payment_link_id = $1, updated_at = NOW() 
-             WHERE reference = $2 
-             RETURNING *`,
+            'UPDATE orders SET payment_link_id = $1, updated_at = NOW() WHERE reference = $2 RETURNING *',
             [paymentLinkId, reference]
         );
         return result.rows[0] || null;
     } catch (error) {
-        console.error('❌ Erreur updatePendingPaymentLinkId:', error);
+        console.error('❌ updateOrderPaymentLink:', error);
         return null;
     }
 }
 
 /**
- * Récupérer tous les paiements en attente
+ * Récupère toutes les commandes
  */
-async function getPendingPayments() {
+async function getAllOrders() {
     try {
-        const result = await pool.query(
-            'SELECT * FROM pending_payments ORDER BY created_at DESC'
-        );
+        const result = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
         return result.rows;
     } catch (error) {
-        console.error('❌ Erreur getPendingPayments:', error);
+        console.error('❌ getAllOrders:', error);
         return [];
     }
 }
 
 /**
- * Récupérer un paiement en attente par ID
+ * Récupère les commandes par statut
  */
-async function getPendingPaymentById(id) {
+async function getOrdersByStatus(status) {
     try {
-        const result = await pool.query(
-            'SELECT * FROM pending_payments WHERE id = $1',
-            [id]
-        );
+        const result = await pool.query('SELECT * FROM orders WHERE status = $1 ORDER BY created_at DESC', [status]);
+        return result.rows;
+    } catch (error) {
+        console.error('❌ getOrdersByStatus:', error);
+        return [];
+    }
+}
+
+// ================================================================
+// 5. FONCTIONS PAIEMENTS
+// ================================================================
+
+/**
+ * Enregistre un paiement
+ */
+async function savePayment(data) {
+    const query = `
+        INSERT INTO payments (
+            transaction_id, user_id, amount, currency, status,
+            payment_method, counterpart_phone, store_id, store_name,
+            payment_link_id, reference, executed_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        ON CONFLICT (transaction_id) DO NOTHING
+        RETURNING *
+    `;
+    const values = [
+        data.transaction_id,
+        data.user_id || null,
+        data.amount || 0,
+        data.currency || 'XOF',
+        data.status || 'success',
+        data.payment_method || null,
+        data.counterpart_phone || null,
+        data.store_id || null,
+        data.store_name || null,
+        data.payment_link_id || null,
+        data.reference || null,
+        data.executed_at ? new Date(data.executed_at) : null
+    ];
+    try {
+        const result = await pool.query(query, values);
         return result.rows[0] || null;
     } catch (error) {
-        console.error('❌ Erreur getPendingPaymentById:', error);
+        console.error('❌ savePayment:', error);
         return null;
     }
 }
 
 /**
- * Nettoyer les paiements en attente trop anciens (15 min)
+ * Récupère un paiement par transaction_id
  */
-async function cleanPendingPaymentsOld() {
+async function getPaymentByTransactionId(transactionId) {
     try {
-        const result = await pool.query(`
-            DELETE FROM pending_payments
-            WHERE status = 'pending'
-            AND created_at < NOW() - INTERVAL '15 minutes'
-        `);
-        return result.rowCount;
+        const result = await pool.query('SELECT * FROM payments WHERE transaction_id = $1', [transactionId]);
+        return result.rows[0] || null;
     } catch (error) {
-        console.error('❌ Erreur cleanPendingPaymentsOld:', error);
-        return 0;
+        console.error('❌ getPaymentByTransactionId:', error);
+        return null;
     }
 }
 
-// ============================================================
-// EXPORT
-// ============================================================
+/**
+ * Récupère un paiement par ID
+ */
+async function getPaymentById(id) {
+    try {
+        const result = await pool.query('SELECT * FROM payments WHERE id = $1', [id]);
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('❌ getPaymentById:', error);
+        return null;
+    }
+}
+
+/**
+ * Récupère tous les paiements
+ */
+async function getAllPayments() {
+    try {
+        const result = await pool.query(`
+            SELECT p.*, u.name as user_name, u.email as user_email, u.status as user_status
+            FROM payments p
+            LEFT JOIN users u ON p.user_id = u.id
+            ORDER BY p.created_at DESC
+        `);
+        return result.rows;
+    } catch (error) {
+        console.error('❌ getAllPayments:', error);
+        return [];
+    }
+}
+
+/**
+ * Récupère les paiements par statut
+ */
+async function getPaymentsByStatus(status) {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM payments WHERE status = $1 ORDER BY created_at DESC',
+            [status]
+        );
+        return result.rows;
+    } catch (error) {
+        console.error('❌ getPaymentsByStatus:', error);
+        return [];
+    }
+}
+
+// ================================================================
+// 6. FONCTIONS STATISTIQUES
+// ================================================================
+
+/**
+ * Récupère les statistiques globales
+ */
+async function getStats() {
+    try {
+        const result = await pool.query(`
+            SELECT 
+                (SELECT COUNT(*) FROM users) as total_users,
+                (SELECT COUNT(*) FROM users WHERE status = 'visiteur') as total_visiteurs,
+                (SELECT COUNT(*) FROM users WHERE status = 'participant') as total_participants,
+                (SELECT COUNT(*) FROM users WHERE status = 'donateur') as total_donateurs,
+                (SELECT COUNT(*) FROM payments WHERE status = 'success') as total_paiements,
+                (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'success') as total_montant,
+                (SELECT COUNT(*) FROM orders WHERE status = 'pending') as total_commandes_pending,
+                (SELECT COUNT(*) FROM orders WHERE status = 'success') as total_commandes_success
+        `);
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('❌ getStats:', error);
+        return null;
+    }
+}
+
+// ================================================================
+// 7. EXPORT
+// ================================================================
 
 module.exports = {
+    // Connexion
     pool,
     query: (text, params) => pool.query(text, params),
-    get: (text, params) => pool.query(text, params).then(res => res.rows[0]),
-    all: (text, params) => pool.query(text, params).then(res => res.rows),
-    run: (text, params) => pool.query(text, params),
+    
+    // Initialisation
     initialize: initializeDatabase,
     
     // Utilisateurs
     getOrCreateUser,
     updateUserStatus,
+    getUserById,
+    getUserByEmail,
+    getAllUsers,
     
-    // Paiements Jèko
-    saveJekoPayment,
-    updatePaymentStatus,
-    getJekoPayments,
+    // Commandes (Orders)
+    createOrder,
+    getOrderByReference,
+    updateOrderStatus,
+    updateOrderPaymentLink,
+    getAllOrders,
+    getOrdersByStatus,
+    
+    // Paiements (Payments)
+    savePayment,
+    getPaymentByTransactionId,
     getPaymentById,
-    cleanPendingPayments,
-     // Pending Payments (NOUVEAU)
-    createPendingPayment,
-    getPendingPaymentByReference,
-    updatePendingPaymentStatus,
-    updatePendingPaymentLinkId,
-    getPendingPayments,
-    getPendingPaymentById,
-    cleanPendingPaymentsOld
+    getAllPayments,
+    getPaymentsByStatus,
+    
+    // Statistiques
+    getStats
 };
