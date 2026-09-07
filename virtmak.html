@@ -666,7 +666,7 @@
             amountInput.addEventListener('input', validateForm);
 
             // ============================================================
-            // SOUMISSION - ENREGISTRE UNIQUEMENT L'UTILISATEUR (VISITEUR)
+            // SOUMISSION - ENREGISTRE L'UTILISATEUR (VISITEUR)
             // ============================================================
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -705,7 +705,7 @@
 
                     console.log('✅ Utilisateur enregistré (visiteur):', registerData.user);
 
-                    // ✅ 2. Redirection vers pay.html avec les infos
+                    // ✅ 2. Redirection vers pay.html avec les infos (name, email, amount)
                     const url = `/pay.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&amount=${amount}`;
                     console.log('🔗 Redirection vers:', url);
 
