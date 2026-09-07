@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📧 Test SendGrid - VirtMak</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 32px 32px 32px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(21, 111, 230, 0.06);
+            text-align: center;
+        }
+
+        .test-card .logo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid #156FE6;
+            padding: 6px;
+            margin: 0 auto 16px auto;
+            background: white;
+            box-shadow: 0 4px 20px rgba(21, 111, 230, 0.12);
+        }
+
+        .test-card .logo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .test-card h2 {
+            font-size: 22px;
+            color: #0F1B4D;
+            margin-bottom: 4px;
+        }
+
+        .test-card .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+        }
+
+        .form-group label i {
+            color: #156FE6;
+            margin-right: 6px;
+            width: 18px;
+        }
+
+        .form-group .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #f8f9fc;
+            border: 2px solid #e6e8ef;
+            border-radius: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group .input-wrapper:focus-within {
+            border-color: #156FE6;
+            box-shadow: 0 0 0 4px rgba(21, 111, 230, 0.08);
+            background: white;
+        }
+
+        .form-group .input-wrapper input {
+            flex: 1;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            background: transparent;
+            outline: none;
+            color: #1a1a2e;
+            font-weight: 500;
+        }
+
+        .form-group .input-wrapper input::placeholder {
+            color: #b0b5c4;
+            font-weight: 400;
+        }
+
+        .form-group .input-wrapper .input-icon {
+            padding: 0 16px 0 4px;
+            color: #b0b5c4;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .form-group .input-wrapper:focus-within .input-icon {
+            color: #156FE6;
+        }
+
+        .btn-send {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #156FE6, #0F1B4D);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-send:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(21, 111, 230, 0.3);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-send .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            margin-top: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status-message.success {
+            display: block;
+            background: #e6f7ee;
+            color: #0e7a49;
+            border: 1px solid #bfebd3;
+        }
+
+        .status-message.error {
+            display: block;
+            background: #fcebea;
+            color: #c0342a;
+            border: 1px solid #f3c6c2;
+        }
+
+        .status-message.info {
+            display: block;
+            background: #eaf1ff;
+            color: #156FE6;
+            border: 1px solid #c7d9fb;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #156FE6;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-left: 6px;
+        }
+
+        .badge-success {
+            background: #0F8B5D;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row .label {
+            color: #6b7280;
+        }
+
+        .info-row .value {
+            font-weight: 600;
+            color: #0F1B4D;
+        }
+
+        .info-box {
+            margin-top: 16px;
+            background: #f8f9fc;
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1px solid #e6e8ef;
+            text-align: left;
+            display: none;
+        }
+
+        .info-box.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 500px) {
+            .test-card { padding: 24px 18px 20px 18px; }
+            .test-card h2 { font-size: 19px; }
+            .btn-send { font-size: 16px; padding: 14px; }
+            .info-row { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="test-card">
+
+        <div class="logo-preview">
+            <img src="/logo.png" alt="VirtMak" />
+        </div>
+
+        <h2>📧 Test SendGrid</h2>
+        <p class="subtitle">Envoyez un email de test via SendGrid</p>
+
+        <form id="sendgridForm">
+
+            <div class="form-group">
+                <label><i class="fas fa-envelope"></i> Email du destinataire</label>
+                <div class="input-wrapper">
+                    <span class="input-icon"><i class="fas fa-user"></i></span>
+                    <input type="email" id="recipientEmail" placeholder="email@exemple.com" required />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> Nom du destinataire</label>
+                <div class="input-wrapper">
+                    <span class="input-icon"><i class="fas fa-user"></i></span>
+                    <input type="text" id="recipientName" placeholder="Jean Dupont" value="Donateur Test" required />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-heart"></i> Montant (FCFA)</label>
+                <div class="input-wrapper">
+                    <span class="input-icon"><i class="fas fa-money-bill-wave"></i></span>
+                    <input type="number" id="amountTest" placeholder="500" value="500" required />
+                </div>
+            </div>
+
+            <button type="submit" class="btn-send" id="sendBtn">
+                <i class="fas fa-paper-plane"></i> Envoyer via SendGrid
+            </button>
+
+            <div id="statusMessage" class="status-message"></div>
+        </form>
+
+        <!-- Infos de l'email envoyé -->
+        <div class="info-box" id="infoBox">
+            <div style="font-size:13px;font-weight:700;color:#0F1B4D;margin-bottom:8px;">
+                <i class="fas fa-check-circle" style="color:#0F8B5D;"></i> Détails de l'envoi
+            </div>
+            <div class="info-row">
+                <span class="label">👤 Destinataire</span>
+                <span class="value" id="infoName">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">📧 Email</span>
+                <span class="value" id="infoEmail">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">💰 Montant</span>
+                <span class="value" id="infoAmount">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">📅 Envoyé le</span>
+                <span class="value" id="infoDate">-</span>
+            </div>
+            <div class="info-row" style="border-bottom: none;">
+                <span class="label">📧 Service</span>
+                <span class="value" style="color:#156FE6;">SendGrid</span>
+            </div>
+        </div>
+
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid #e6e8ef;font-size:12px;color:#9ca3af;">
+            <i class="fas fa-check-circle" style="color:#156FE6;"></i>
+            Service : <strong>SendGrid</strong>
+            <span class="badge">TEST</span>
+            <span class="badge badge-success">100 emails/jour</span>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            console.log('✅ sendgrid-test.html chargé');
+
+            const form = document.getElementById('sendgridForm');
+            const recipientEmail = document.getElementById('recipientEmail');
+            const recipientName = document.getElementById('recipientName');
+            const amountTest = document.getElementById('amountTest');
+            const sendBtn = document.getElementById('sendBtn');
+            const statusMessage = document.getElementById('statusMessage');
+            const infoBox = document.getElementById('infoBox');
+            const infoName = document.getElementById('infoName');
+            const infoEmail = document.getElementById('infoEmail');
+            const infoAmount = document.getElementById('infoAmount');
+            const infoDate = document.getElementById('infoDate');
+
+            function showStatus(message, type = 'info') {
+                statusMessage.className = 'status-message ' + type;
+                statusMessage.textContent = message;
+            }
+
+            function hideStatus() {
+                statusMessage.className = 'status-message';
+            }
+
+            function showInfo(name, email, amount) {
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('fr-FR') + ' ' + 
+                                now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                
+                infoName.textContent = name;
+                infoEmail.textContent = email;
+                infoAmount.textContent = amount + ' FCFA';
+                infoDate.textContent = dateStr;
+                infoBox.classList.add('show');
+            }
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                hideStatus();
+                infoBox.classList.remove('show');
+
+                const email = recipientEmail.value.trim();
+                const name = recipientName.value.trim();
+                const amount = parseInt(amountTest.value) || 500;
+
+                if (!email) {
+                    showStatus('⚠️ Veuillez entrer un email valide.', 'error');
+                    recipientEmail.focus();
+                    return;
+                }
+
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '<span class="spinner"></span> Envoi en cours...';
+
+                console.log('📧 Envoi via SendGrid...');
+                console.log('   Destinataire:', email);
+                console.log('   Nom:', name);
+                console.log('   Montant:', amount);
+
+                try {
+                    const response = await fetch('/api/test-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, name, amount })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        console.log('✅ Email envoyé avec succès !');
+                        showStatus('✅ Email envoyé avec succès à ' + email + ' !', 'success');
+                        showInfo(name, email, amount);
+                        recipientEmail.value = '';
+                    } else {
+                        console.error('❌ Erreur:', data);
+                        showStatus('❌ ' + (data.error || 'Erreur inconnue'), 'error');
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur réseau:', error);
+                    showStatus('❌ Erreur de connexion au serveur.', 'error');
+                } finally {
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer via SendGrid';
+                }
+            });
+
+            console.log('✅ sendgrid-test.html initialisé');
+
+        });
+    </script>
+
+</body>
+</html>
