@@ -10,61 +10,55 @@
 <body>
 
     <!-- ============================================================ -->
-    <!-- HEADER                                                        -->
+    <!-- HEADER - Avec logo et filtres intégrés                        -->
     <!-- ============================================================ -->
     <header class="admin-header">
+        <!-- Logo + Titre -->
         <div class="logo">
-            <i class="fas fa-chart-bar"></i>
+            <img src="/logo.png" alt="VirtMak" class="logo-img" />
             Virtual <span>Market</span>
         </div>
-        <div class="header-stats">
-            <span class="stat-item visiteur">
-                🟣 Visiteurs <span class="stat-value" id="statVisiteur">0</span>
-            </span>
-            <span class="stat-item participant">
-                🟠 Participants <span class="stat-value" id="statParticipant">0</span>
-            </span>
-            <span class="stat-item donateur">
-                🟢 Donateurs <span class="stat-value" id="statDonateur">0</span>
-            </span>
-            <span class="stat-item" id="statTotalItem">
-                💰 Total <span class="stat-value" id="statTotal">0 FCFA</span>
-            </span>
-        </div>
-        <div class="header-actions">
-            <button class="btn-refresh" id="refreshBtn">
-                <i class="fas fa-sync-alt"></i> <span>Rafraîchir</span>
+
+        <!-- Filtres dans le header -->
+        <div class="header-filters">
+            <button class="filter-btn active" data-filter="all">
+                📋 Tous <span class="badge-count" id="countAll">0</span>
             </button>
-            <a href="/virtmak.html" class="btn-home">
-                <i class="fas fa-home"></i> <span>Accueil</span>
-            </a>
+            <button class="filter-btn" data-filter="visiteur">
+                🟣 Visiteurs <span class="badge-count" id="countVisiteur">0</span>
+            </button>
+            <button class="filter-btn" data-filter="participant">
+                🟠 Participants <span class="badge-count" id="countParticipant">0</span>
+            </button>
+            <button class="filter-btn" data-filter="donateur">
+                🟢 Donateurs <span class="badge-count" id="countDonateur">0</span>
+            </button>
+        </div>
+
+        <!-- Stats + Actions -->
+        <div class="header-right">
+            <div class="header-stats">
+                <span class="stat-item" id="statTotalItem">
+                    💰 Total <span class="stat-value" id="statTotal">0 FCFA</span>
+                </span>
+            </div>
+            <div class="header-actions">
+                <button class="btn-refresh" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i> <span>Rafraîchir</span>
+                </button>
+                <a href="/pay.html" class="btn-paybeta">
+                    🔵 PayBETA
+                </a>
+            </div>
         </div>
     </header>
-
-    <!-- ============================================================ -->
-    <!-- FILTRES                                                       -->
-    <!-- ============================================================ -->
-    <div class="filter-bar" id="filterBar">
-        <button class="filter-btn active" data-filter="all">
-            📋 Tous <span class="badge-count" id="countAll">0</span>
-        </button>
-        <button class="filter-btn" data-filter="visiteur">
-            🟣 Visiteurs <span class="badge-count" id="countVisiteur">0</span>
-        </button>
-        <button class="filter-btn" data-filter="participant">
-            🟠 Participants <span class="badge-count" id="countParticipant">0</span>
-        </button>
-        <button class="filter-btn" data-filter="donateur">
-            🟢 Donateurs <span class="badge-count" id="countDonateur">0</span>
-        </button>
-    </div>
 
     <!-- ============================================================ -->
     <!-- LAYOUT                                                        -->
     <!-- ============================================================ -->
     <div class="admin-layout">
 
-        <!-- SIDEBAR -->
+        <!-- ===== SIDEBAR - Liste utilisateurs (cadre fixe) ===== -->
         <aside class="admin-sidebar">
             <div class="sidebar-header">
                 <span class="sidebar-title"><i class="fas fa-users"></i> Utilisateurs</span>
@@ -79,7 +73,7 @@
             </div>
         </aside>
 
-        <!-- CONTENU -->
+        <!-- ===== CONTENU - Détails utilisateur (cadre fixe) ===== -->
         <main class="admin-content" id="adminContent">
             <div class="empty-detail" id="emptyDetail">
                 <i class="fas fa-hand-holding-heart"></i>
