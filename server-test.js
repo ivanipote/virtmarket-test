@@ -140,9 +140,9 @@ app.post('/api/create-order', async (req, res) => {
                 title: `Commande - ${name}`,
                 amountCents: amountInCentimes,
                 currency: 'XOF',
-                reference: reference,  // ← LA RÉFÉRENCE EST ENVOYÉE
+                reference: reference,
                 email: email,
-                customerId: `user_${Date.now()}`,
+                customerId: name,  // ✅ ICI : le nom de l'utilisateur
                 description: `Commande de ${name} (${email}) - ${amount} FCFA`,
                 paymentDetails: {
                     type: 'redirect',
@@ -235,7 +235,7 @@ app.post('/api/user/update-status', async (req, res) => {
 });
 
 // ============================================================
-// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (LEGACY - à garder pour compatibilité)
+// ROUTE : CRÉER UN LIEN DE PAIEMENT JEKO (LEGACY)
 // ============================================================
 app.post('/create-payment-link', async (req, res) => {
     const { name, email, amount } = req.body;
@@ -260,7 +260,7 @@ app.post('/create-payment-link', async (req, res) => {
                 currency: 'XOF',
                 reference: `VM-${email}-${Date.now()}`,
                 email: email,
-                customerId: `user_${Date.now()}`,
+                customerId: name,  // ✅ ICI : le nom de l'utilisateur
                 description: `Commande de ${name} (${email}) - ${amount} FCFA`,
                 paymentDetails: {
                     type: 'redirect',
