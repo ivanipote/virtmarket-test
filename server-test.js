@@ -290,6 +290,16 @@ app.get('/api/pending-orders', async (req, res) => {
     res.json({ success: true, count: result.rows.length, orders: result.rows });
 });
 
+app.get('/api/pending-payments', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM pending_payments ORDER BY created_at DESC');
+        res.json({ success: true, count: result.rows.length, payments: result.rows });
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ================================================================
 // 9. API : CRÉER UN PAIEMENT
 // ================================================================
