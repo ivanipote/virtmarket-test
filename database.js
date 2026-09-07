@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : database.js
 // DESCRIPTION : Gestion de la base de données PostgreSQL
-// VERSION : 3.0 - Refonte complète avec flow utilisateur
+// VERSION : 3.1 - Correction getPaymentsByEmail
 // ================================================================
 
 const { Pool } = require('pg');
@@ -107,7 +107,6 @@ async function initializeDatabase() {
                 id SERIAL PRIMARY KEY,
                 transaction_id TEXT UNIQUE NOT NULL,
                 user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-                email TEXT,
                 amount INTEGER NOT NULL,
                 currency TEXT DEFAULT 'XOF',
                 status TEXT DEFAULT 'pending',
@@ -185,19 +184,16 @@ async function getOrCreateUser(name, email, amount) {
     try {
         let user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (user.rows.length > 0) {
-            // Mettre à jour le nom et le montant saisi (flex3)
             if (user.rows[0].name !== name) {
                 await pool.query('UPDATE users SET name = $1, updated_at = NOW() WHERE email = $2', [name, email]);
                 user.rows[0].name = name;
             }
-            // Mettre à jour le montant saisi (flex3) s'il est différent
             if (amount && user.rows[0].flex3 !== String(amount)) {
                 await pool.query('UPDATE users SET flex3 = $1, updated_at = NOW() WHERE email = $2', [String(amount), email]);
                 user.rows[0].flex3 = String(amount);
             }
             return user.rows[0];
         }
-        // Créer un nouvel utilisateur avec le montant dans flex3
         const result = await pool.query(
             `INSERT INTO users (name, email, status, flex3) 
              VALUES ($1, $2, $3, $4) RETURNING *`,
@@ -286,7 +282,7 @@ async function getAllUsers() {
 // ================================================================
 
 /**
- * Crée une nouvelle commande (ordre de paiement)
+ * Crée une nouvelle commande
  */
 async function createOrder(data) {
     const query = `
@@ -412,17 +408,16 @@ async function getOrdersByStatus(status) {
 async function savePayment(data) {
     const query = `
         INSERT INTO payments (
-            transaction_id, user_id, email, amount, currency, status,
+            transaction_id, user_id, amount, currency, status,
             payment_method, counterpart_phone, store_id, store_name,
             payment_link_id, reference, executed_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         ON CONFLICT (transaction_id) DO NOTHING
         RETURNING *
     `;
     const values = [
         data.transaction_id,
         data.user_id || null,
-        data.email || null,
         data.amount || 0,
         data.currency || 'XOF',
         data.status || 'success',
@@ -488,13 +483,19 @@ async function getAllPayments() {
 }
 
 /**
- * Récupère les paiements par email
+ * ✅ CORRIGÉ : Récupère les paiements par email via user_id
  */
 async function getPaymentsByEmail(email) {
     try {
+        // 1. Récupérer l'utilisateur
+        const user = await getUserByEmail(email);
+        if (!user) {
+            return [];
+        }
+        // 2. Chercher les paiements par user_id
         const result = await pool.query(
-            'SELECT * FROM payments WHERE email = $1 ORDER BY created_at DESC',
-            [email]
+            'SELECT * FROM payments WHERE user_id = $1 ORDER BY created_at DESC',
+            [user.id]
         );
         return result.rows;
     } catch (error) {
@@ -550,16 +551,11 @@ async function getStats() {
 // 7. FONCTIONS DE NETTOYAGE (DESACTIVÉES)
 // ================================================================
 
-/**
- * Nettoyage désactivé - on ne supprime jamais les commandes pending
- */
 async function cleanOldOrders(minutes = 15) {
-    // Désactivé : on ne supprime jamais les commandes en attente
     return 0;
 }
 
 async function cleanOldPayments(minutes = 15) {
-    // Désactivé : on ne supprime jamais les paiements
     return 0;
 }
 
@@ -568,14 +564,11 @@ async function cleanOldPayments(minutes = 15) {
 // ================================================================
 
 module.exports = {
-    // Connexion
     pool,
     query: (text, params) => pool.query(text, params),
     
-    // Initialisation
     initialize: initializeDatabase,
     
-    // Utilisateurs
     getOrCreateUser,
     updateUserStatus,
     updateUserFlex,
@@ -583,7 +576,6 @@ module.exports = {
     getUserByEmail,
     getAllUsers,
     
-    // Commandes (Orders)
     createOrder,
     getOrderByReference,
     updateOrderStatus,
@@ -592,7 +584,6 @@ module.exports = {
     getOrdersByEmail,
     getOrdersByStatus,
     
-    // Paiements (Payments)
     savePayment,
     getPaymentByTransactionId,
     getPaymentById,
@@ -600,10 +591,8 @@ module.exports = {
     getPaymentsByEmail,
     getPaymentsByStatus,
     
-    // Statistiques
     getStats,
     
-    // Nettoyage (désactivé)
     cleanOldOrders,
     cleanOldPayments
 };
