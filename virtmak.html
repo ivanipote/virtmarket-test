@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Virtual Market</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -421,6 +422,79 @@
         }
 
         /* ============================================================ */
+        /* OVERLAY DOT - fond blanc, pas de flou                        */
+        /* ============================================================ */
+        .overlay-dot {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .overlay-dot.active {
+            display: flex;
+        }
+
+        /* Dots */
+        .overlay-dot .dot-loader {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .overlay-dot .dot-loader .dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #0F8B5D;
+            animation: dotBounce 1.2s ease-in-out infinite;
+        }
+
+        .overlay-dot .dot-loader .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .overlay-dot .dot-loader .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes dotBounce {
+            0%, 100% {
+                transform: translateY(0);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-24px);
+                opacity: 1;
+            }
+        }
+
+        /* Texte stylé avec Playfair Display */
+        .overlay-dot .overlay-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 400;
+            font-style: italic;
+            color: #0F1B4D;
+            letter-spacing: 0.5px;
+            opacity: 0.8;
+            animation: textPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* ============================================================ */
         /* RESPONSIVE                                                    */
         /* ============================================================ */
         @media (max-width: 600px) {
@@ -437,6 +511,8 @@
             .btn-submit { font-size: 16px; padding: 14px; }
             .suggested-amounts .suggest-btn { font-size: 12px; padding: 6px 4px; min-width: 44px; }
             .suggested-amounts { gap: 6px; }
+            .overlay-dot .dot-loader .dot { width: 15px; height: 15px; gap: 10px; }
+            .overlay-dot .overlay-text { font-size: 18px; }
         }
 
         @media (max-width: 420px) {
@@ -458,6 +534,8 @@
             .form-hint { font-size: 11px; }
             .vm-footer-security { font-size: 11px; margin-top: 12px; }
             .toast-container { font-size: 13px; padding: 10px 16px; bottom: 16px; }
+            .overlay-dot .dot-loader .dot { width: 13px; height: 13px; gap: 8px; }
+            .overlay-dot .overlay-text { font-size: 16px; }
         }
 
         @media (max-width: 350px) {
@@ -469,6 +547,8 @@
             .vm-card { padding: 14px 10px 12px 10px; border-radius: 16px; }
             .suggested-amounts .suggest-btn { font-size: 10px; padding: 4px 2px; min-width: 32px; }
             .btn-submit { font-size: 13px; padding: 10px; }
+            .overlay-dot .dot-loader .dot { width: 12px; height: 12px; gap: 6px; }
+            .overlay-dot .overlay-text { font-size: 14px; }
         }
     </style>
 </head>
@@ -582,12 +662,24 @@
     <div class="toast-container" id="toast"></div>
 
     <!-- ============================================================ -->
+    <!-- OVERLAY DOT - fond blanc, texte stylé                         -->
+    <!-- ============================================================ -->
+    <div class="overlay-dot" id="overlayDot">
+        <div class="dot-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <div class="overlay-text">Veuillez patienter...</div>
+    </div>
+
+    <!-- ============================================================ -->
     <!-- SCRIPTS                                                        -->
     <!-- ============================================================ -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ virtmak.html (enregistrement visiteur) chargé');
+            console.log('✅ virtmak.html (overlay DOT) chargé');
 
             // ===== RÉFÉRENCES =====
             const form = document.getElementById('virtmakForm');
@@ -598,6 +690,7 @@
             const infoMessage = document.getElementById('infoMessage');
             const toast = document.getElementById('toast');
             const suggestBtns = document.querySelectorAll('.suggest-btn');
+            const overlay = document.getElementById('overlayDot');
 
             // ===== TOAST =====
             function showToast(message, type = 'success') {
@@ -666,6 +759,19 @@
             amountInput.addEventListener('input', validateForm);
 
             // ============================================================
+            // AFFICHER L'OVERLAY DOT
+            // ============================================================
+            function showOverlay() {
+                overlay.classList.add('active');
+                console.log('📱 Overlay DOT affiché');
+            }
+
+            function hideOverlay() {
+                overlay.classList.remove('active');
+                console.log('✅ Overlay DOT fermé');
+            }
+
+            // ============================================================
             // SOUMISSION - ENREGISTRE L'UTILISATEUR (VISITEUR)
             // ============================================================
             form.addEventListener('submit', async function(e) {
@@ -689,6 +795,9 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
 
+                // ✅ Afficher l'overlay DOT
+                showOverlay();
+
                 try {
                     // ✅ 1. Enregistrer l'utilisateur (statut: visiteur)
                     const registerRes = await fetch('/api/user/register', {
@@ -705,18 +814,21 @@
 
                     console.log('✅ Utilisateur enregistré (visiteur):', registerData.user);
 
-                    // ✅ 2. Redirection vers pay.html avec les infos (name, email, amount)
+                    // ✅ 2. Redirection vers pay.html avec les infos
                     const url = `/pay.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&amount=${amount}`;
                     console.log('🔗 Redirection vers:', url);
 
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirection...';
 
+                    // ✅ Petite pause pour voir l'overlay
                     setTimeout(() => {
+                        hideOverlay();
                         window.location.href = url;
-                    }, 600);
+                    }, 1000);
 
                 } catch (error) {
                     console.error('❌ Erreur:', error);
+                    hideOverlay();
                     showInfo('❌ ' + error.message, 'warning');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-rocket"></i> Soutenir le projet';
@@ -725,7 +837,7 @@
 
             // ===== INIT =====
             validateForm();
-            console.log('✅ virtmak.html (enregistrement visiteur) initialisé');
+            console.log('✅ virtmak.html (overlay DOT) initialisé');
 
         });
     </script>
