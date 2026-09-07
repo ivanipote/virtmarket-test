@@ -285,6 +285,11 @@ app.get('/api/orders/user/:email', async (req, res) => {
     }
 });
 
+app.get('/api/pending-orders', async (req, res) => {
+    const result = await db.query('SELECT * FROM orders WHERE status = $1', ['pending']);
+    res.json({ success: true, count: result.rows.length, orders: result.rows });
+});
+
 // ================================================================
 // 9. API : CRÉER UN PAIEMENT
 // ================================================================
