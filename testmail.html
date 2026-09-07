@@ -249,6 +249,11 @@
             margin: 8px 0 12px 0;
         }
 
+        .email-preview .preview-body .message .highlight {
+            color: #156FE6;
+            font-weight: 700;
+        }
+
         .email-preview .preview-body .details {
             background: white;
             border-radius: 12px;
@@ -290,6 +295,11 @@
         .email-preview .preview-footer .signature {
             font-weight: 600;
             color: #0F1B4D;
+        }
+
+        .email-preview .preview-footer .brand {
+            color: #156FE6;
+            font-weight: 600;
         }
 
         .status-message {
@@ -376,10 +386,15 @@
             <div class="preview-body">
                 <div class="greeting" id="previewGreeting">Bonjour <span id="previewName">Donateur</span>,</div>
                 <div class="message">
-                    Un immense merci pour votre don de <strong id="previewAmount">500 FCFA</strong>.
-                    Votre soutien nous aide à construire une plateforme ivoirienne innovante et sécurisée.
+                    <strong>Nous vous remercions !!!</strong>
+                    <br>
+                    Votre don de <span class="highlight" id="previewAmount">500 FCFA</span> nous aide à construire une plateforme ivoirienne innovante et sécurisée.
                 </div>
                 <div class="details">
+                    <div class="row">
+                        <span class="label">👤 Donateur</span>
+                        <span class="value" id="previewNameDetail">Donateur</span>
+                    </div>
                     <div class="row">
                         <span class="label">📧 Email</span>
                         <span class="value" id="previewEmail">email@exemple.com</span>
@@ -389,8 +404,8 @@
                         <span class="value amount" id="previewAmountDetail">500 FCFA</span>
                     </div>
                     <div class="row">
-                        <span class="label">📅 Date</span>
-                        <span class="value" id="previewDate">07/09/2026</span>
+                        <span class="label">📅 Date et heure</span>
+                        <span class="value" id="previewDate">07/09/2026 14:30</span>
                     </div>
                     <div class="row">
                         <span class="label">🔗 Référence</span>
@@ -400,8 +415,10 @@
             </div>
             <div class="preview-footer">
                 <div class="signature">Avec toute notre gratitude,</div>
-                <div>L'équipe VirtMak</div>
-                <div style="font-size:11px;margin-top:4px;color:#9ca3af;">Cet email a été envoyé automatiquement.</div>
+                <div>L'équipe <span class="brand">VirtMak</span></div>
+                <div style="font-size:11px;margin-top:4px;color:#9ca3af;">
+                    <i class="fas fa-lock" style="color:#156FE6;"></i> Cet email a été envoyé automatiquement.
+                </div>
             </div>
         </div>
 
@@ -419,6 +436,7 @@
             const statusMessage = document.getElementById('statusMessage');
             const emailPreview = document.getElementById('emailPreview');
             const previewName = document.getElementById('previewName');
+            const previewNameDetail = document.getElementById('previewNameDetail');
             const previewEmail = document.getElementById('previewEmail');
             const previewAmount = document.getElementById('previewAmount');
             const previewAmountDetail = document.getElementById('previewAmountDetail');
@@ -443,10 +461,11 @@
             // ===== METTRE À JOUR L'APERÇU =====
             function updatePreview(email, name, amount) {
                 const now = new Date();
-                const dateStr = now.toLocaleDateString('fr-FR');
+                const dateStr = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
                 const ref = 'DON-' + Date.now().toString().slice(-6);
 
                 previewName.textContent = name || 'Donateur';
+                previewNameDetail.textContent = name || 'Donateur';
                 previewEmail.textContent = email || 'email@exemple.com';
                 previewAmount.textContent = amount + ' FCFA';
                 previewAmountDetail.textContent = amount + ' FCFA';
@@ -476,6 +495,8 @@
                 // Données de test
                 const testName = 'Donateur Test';
                 const testAmount = 500;
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
                 // Mettre à jour l'aperçu
                 updatePreview(email, testName, testAmount);
@@ -496,7 +517,7 @@
                                 email: email,
                                 amount: testAmount,
                                 order_id: 'DON-' + Date.now().toString().slice(-6),
-                                date: new Date().toLocaleDateString('fr-FR')
+                                date: dateStr
                             }
                         })
                     });
