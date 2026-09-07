@@ -25,8 +25,11 @@
             margin: 0;
         }
 
+        /* ============================================================ */
+        /* HEADER - BLEU #156FE6                                        */
+        /* ============================================================ */
         .pay-header {
-            background: #0F1B4D;
+            background: #156FE6;
             height: 60px;
             border-radius: 50px;
             margin: 12px 16px 0 16px;
@@ -34,7 +37,7 @@
             align-items: center;
             justify-content: center;
             padding: 0 20px;
-            box-shadow: 0 4px 20px rgba(15, 27, 77, 0.25);
+            box-shadow: 0 4px 20px rgba(21, 111, 230, 0.25);
             flex-shrink: 0;
         }
 
@@ -51,6 +54,52 @@
             opacity: 0.5;
         }
 
+        /* ============================================================ */
+        /* MESSAGE INFO - CENTRÉ SOUS LE HEADER                         */
+        /* ============================================================ */
+        .pay-info-banner {
+            background: #f0f7ff;
+            border-radius: 16px;
+            margin: 16px 16px 0 16px;
+            padding: 14px 20px;
+            text-align: center;
+            border: 1px solid rgba(21, 111, 230, 0.12);
+            max-width: 520px;
+            width: calc(100% - 32px);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .pay-info-banner p {
+            font-size: 13px;
+            color: #1a2a6c;
+            line-height: 1.6;
+        }
+
+        .pay-info-banner i {
+            color: #156FE6;
+            margin-right: 6px;
+        }
+
+        .pay-info-banner .highlight {
+            font-weight: 600;
+            color: #156FE6;
+        }
+
+        .pay-info-banner .spam-warning {
+            display: inline-block;
+            background: #fff3df;
+            color: #b45309;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* ============================================================ */
+        /* MAIN                                                         */
+        /* ============================================================ */
         .pay-main {
             flex: 1;
             display: flex;
@@ -63,13 +112,16 @@
             margin: 0 auto;
         }
 
+        /* ============================================================ */
+        /* CARTE BLANCHE                                               */
+        /* ============================================================ */
         .pay-card {
             background: white;
             border-radius: 24px;
             padding: 32px 24px 28px 24px;
             width: 100%;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(15, 27, 77, 0.06);
+            border: 1px solid rgba(21, 111, 230, 0.06);
             animation: fadeInUp 0.5s ease;
             text-align: center;
         }
@@ -79,6 +131,9 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* ============================================================ */
+        /* LOGO WAVE                                                    */
+        /* ============================================================ */
         .wave-logo-wrapper {
             display: flex;
             justify-content: center;
@@ -90,8 +145,9 @@
             height: 100px;
             border-radius: 30px;
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(15, 27, 77, 0.12);
+            box-shadow: 0 4px 20px rgba(21, 111, 230, 0.15);
             background: transparent;
+            border: 2px solid rgba(21, 111, 230, 0.08);
         }
 
         .wave-logo img {
@@ -101,6 +157,9 @@
             display: block;
         }
 
+        /* ============================================================ */
+        /* TITRE                                                         */
+        /* ============================================================ */
         .pay-title {
             font-size: 22px;
             font-weight: 700;
@@ -114,6 +173,9 @@
             margin-bottom: 20px;
         }
 
+        /* ============================================================ */
+        /* RÉCAPITULATIF                                                */
+        /* ============================================================ */
         .recap-item {
             display: flex;
             justify-content: space-between;
@@ -136,11 +198,14 @@
         }
 
         .recap-item .value.amount {
-            color: #0F1B4D;
+            color: #156FE6;
             font-size: 20px;
             font-weight: 800;
         }
 
+        /* ============================================================ */
+        /* BOUTON PAYER                                                 */
+        /* ============================================================ */
         .btn-pay-wrapper {
             display: flex;
             justify-content: center;
@@ -148,7 +213,7 @@
         }
 
         .btn-pay {
-            background: #0F1B4D;
+            background: linear-gradient(135deg, #156FE6, #0F1B4D);
             color: white;
             border: none;
             padding: 18px 48px;
@@ -163,12 +228,12 @@
             gap: 14px;
             width: 100%;
             max-width: 350px;
-            box-shadow: 0 4px 20px rgba(15, 27, 77, 0.25);
+            box-shadow: 0 4px 20px rgba(21, 111, 230, 0.25);
         }
 
         .btn-pay:hover:not(:disabled) {
             transform: scale(1.02);
-            box-shadow: 0 8px 30px rgba(15, 27, 77, 0.35);
+            box-shadow: 0 8px 30px rgba(21, 111, 230, 0.35);
         }
 
         .btn-pay:disabled {
@@ -206,7 +271,7 @@
         }
 
         /* ============================================================ */
-        /* OVERLAY JAUGE - fond blanc, pas de flou                      */
+        /* OVERLAY JAUGE                                                */
         /* ============================================================ */
         .overlay-jauge {
             display: none;
@@ -244,7 +309,7 @@
         .overlay-jauge .jauge-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #0F8B5D, #0A6B47);
+            background: linear-gradient(90deg, #156FE6, #0F1B4D);
             border-radius: 10px;
             transition: width 0.3s ease;
             position: relative;
@@ -276,7 +341,7 @@
         }
 
         .overlay-jauge .jauge-label .percent {
-            color: #0F8B5D;
+            color: #156FE6;
         }
 
         .overlay-jauge .overlay-text {
@@ -305,13 +370,13 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 999;
-            background: #0F1B4D;
+            background: #156FE6;
             color: white;
             padding: 14px 28px;
             border-radius: 14px;
             font-weight: 600;
             font-size: 15px;
-            box-shadow: 0 8px 30px rgba(15, 27, 77, 0.2);
+            box-shadow: 0 8px 30px rgba(21, 111, 230, 0.2);
             display: none;
             animation: slideUp 0.3s ease;
             max-width: 90%;
@@ -333,6 +398,8 @@
         @media (max-width: 600px) {
             .pay-header { height: 54px; border-radius: 40px; margin: 10px 12px 0 12px; }
             .pay-header .header-text { font-size: 12px; }
+            .pay-info-banner { padding: 12px 16px; }
+            .pay-info-banner p { font-size: 12px; }
             .pay-main { padding: 16px 12px 20px 12px; }
             .pay-card { padding: 24px 18px 20px 18px; border-radius: 20px; }
             .pay-title { font-size: 19px; }
@@ -349,6 +416,8 @@
         @media (max-width: 420px) {
             .pay-header { height: 48px; border-radius: 32px; margin: 8px 8px 0 8px; }
             .pay-header .header-text { font-size: 10px; }
+            .pay-info-banner { padding: 10px 14px; margin: 10px 8px 0 8px; }
+            .pay-info-banner p { font-size: 11px; }
             .pay-main { padding: 12px 8px 16px 8px; }
             .pay-card { padding: 18px 14px 14px 14px; border-radius: 18px; }
             .pay-title { font-size: 17px; }
@@ -373,18 +442,44 @@
             .btn-pay .btn-text { font-size: 13px; }
             .overlay-jauge .jauge-wrapper { width: 150px; }
             .overlay-jauge .overlay-text { font-size: 14px; }
+            .pay-info-banner p { font-size: 10px; }
+            .pay-info-banner .spam-warning { font-size: 9px; padding: 1px 8px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- ============================================================ -->
+    <!-- HEADER                                                        -->
+    <!-- ============================================================ -->
     <header class="pay-header">
         <span class="header-text">⚡ powered by <span>megane</span></span>
     </header>
 
+    <!-- ============================================================ -->
+    <!-- BANNIÈRE INFO - CENTRÉE                                       -->
+    <!-- ============================================================ -->
+    <div class="pay-info-banner">
+        <p>
+            <i class="fas fa-info-circle"></i>
+            Vérifiez vos informations avant de valider.
+            <br>
+            <i class="fas fa-envelope"></i>
+            Après votre paiement, vous recevrez un email de confirmation.
+            Pensez à vérifier vos <span class="highlight">spams</span> si vous ne le voyez pas.
+            <br>
+            <span class="spam-warning">📂 Pensez à vérifier vos spams</span>
+        </p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- CONTENU PRINCIPAL                                             -->
+    <!-- ============================================================ -->
     <main class="pay-main">
+
         <div class="pay-card">
 
+            <!-- Logo Wave -->
             <div class="wave-logo-wrapper">
                 <div class="wave-logo">
                     <img src="/wave.png" alt="Wave" />
@@ -417,6 +512,7 @@
             </div>
 
         </div>
+
     </main>
 
     <!-- ============================================================ -->
@@ -435,6 +531,14 @@
         <div class="overlay-text">Veuillez patienter...</div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- TOAST                                                         -->
+    <!-- ============================================================ -->
+    <div class="toast-container" id="toast"></div>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPTS                                                        -->
+    <!-- ============================================================ -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
@@ -445,6 +549,7 @@
             const displayEmail = document.getElementById('displayEmail');
             const displayAmount = document.getElementById('displayAmount');
             const payBtn = document.getElementById('payBtn');
+            const toast = document.getElementById('toast');
             const overlay = document.getElementById('overlayJauge');
             const jaugeBar = document.getElementById('jaugeBar');
             const jaugePercent = document.getElementById('jaugePercent');
@@ -464,6 +569,16 @@
             console.log('   👤 Nom:', name);
             console.log('   📧 Email:', email);
             console.log('   💰 Montant:', amount, 'FCFA');
+
+            // ===== TOAST =====
+            function showToast(message, type = 'success') {
+                toast.textContent = message;
+                toast.className = 'toast-container ' + type;
+                toast.style.display = 'block';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 4000);
+            }
 
             // ===== OVERLAY JAUGE =====
             function showOverlay() {
@@ -531,7 +646,6 @@
 
                     console.log('✅ Paiement créé:', data);
 
-                    // Attendre que la jauge soit à 100% puis rediriger
                     setTimeout(function() {
                         hideOverlay();
                         window.location.href = data.checkout_url;
@@ -544,7 +658,7 @@
                         window.jaugeTimer = null;
                     }
                     hideOverlay();
-                    alert('❌ ' + error.message);
+                    showToast('❌ ' + error.message, 'error');
                     payBtn.disabled = false;
                     payBtn.innerHTML = `
                         <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
