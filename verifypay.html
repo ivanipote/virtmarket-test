@@ -3,71 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✅ Paiement réussi !</title>
+    <title>✅ Paiement réussi - VirtMak</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-            text-align: center;
-            background: #f5f5f5;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
         }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
         .success-card {
             background: white;
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 24px;
+            padding: 48px 32px 32px 32px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(21, 111, 230, 0.06);
+            text-align: center;
+            animation: fadeInUp 0.6s ease;
         }
-        .success-icon {
-            font-size: 80px;
-            margin: 16px 0;
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        h1 {
-            color: #2d7d46;
+
+        .success-card .icon-wrapper {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #156FE6, #0F1B4D);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 8px 30px rgba(21, 111, 230, 0.25);
         }
-        .product-detail {
-            background: #f8f9fc;
-            padding: 16px;
-            border-radius: 8px;
-            margin: 16px 0;
-        }
-        .product-detail p {
-            margin: 4px 0;
-        }
-        .btn-home {
-            background: #2d7d46;
+
+        .success-card .icon-wrapper i {
+            font-size: 48px;
             color: white;
-            border: none;
-            padding: 12px 32px;
-            border-radius: 30px;
+        }
+
+        .success-card h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #156FE6;
+            margin-bottom: 4px;
+        }
+
+        .success-card .subtitle {
             font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background 0.3s;
+            color: #0F1B4D;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
-        .btn-home:hover {
-            background: #1a5a33;
-        }
-        .btn-admin {
-            background: #1a2a6c;
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 30px;
+
+        .success-card .message {
             font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background 0.3s;
+            color: #1a1a2e;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .success-card .message .highlight {
+            color: #156FE6;
+            font-weight: 700;
+        }
+
+        /* ===== DÉTAILS DU PAIEMENT ===== */
+        .payment-details {
+            background: #f8f9fc;
+            border-radius: 16px;
+            padding: 16px 20px;
+            border: 1px solid #e6e8ef;
+            text-align: left;
+            margin-bottom: 16px;
+        }
+
+        .payment-details .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .payment-details .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .payment-details .detail-row .label {
+            color: #6b7280;
+        }
+
+        .payment-details .detail-row .value {
+            font-weight: 600;
+            color: #0F1B4D;
+            text-align: right;
+        }
+
+        .payment-details .detail-row .value.amount {
+            color: #156FE6;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .payment-details .detail-row .value.status {
+            color: #0F8B5D;
+        }
+
+        /* ===== BOUTONS ===== */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             margin-top: 8px;
         }
-        .btn-admin:hover {
-            background: #0d1a4a;
+
+        .btn-home {
+            background: linear-gradient(135deg, #156FE6, #0F1B4D);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
+
+        .btn-home:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(21, 111, 230, 0.3);
+        }
+
+        .btn-admin {
+            background: #f0f7ff;
+            color: #156FE6;
+            border: 2px solid #156FE6;
+            padding: 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-admin:hover {
+            background: #e8f0fe;
+            transform: scale(1.02);
+        }
+
+        /* ===== SPAM ALERT ===== */
+        .spam-alert {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: #fff3df;
+            border-radius: 12px;
+            border: 1px solid #f5dbaa;
+            font-size: 12px;
+            color: #b45309;
+            text-align: left;
+        }
+
+        .spam-alert i {
+            color: #b45309;
+            margin-right: 6px;
+        }
+
+        .spam-alert .highlight {
+            font-weight: 700;
+            color: #b45309;
+        }
+
+        /* ===== LOADING ===== */
         #loadingStatus {
             margin-top: 12px;
             padding: 10px;
@@ -76,80 +207,149 @@
             color: #856404;
             display: none;
         }
-        #paymentDetails {
-            margin-top: 12px;
-            padding: 12px;
-            border-radius: 8px;
-            background: #e8f5e9;
-            color: #155724;
-            display: none;
-            text-align: left;
-            font-size: 14px;
-        }
-        #paymentDetails strong {
-            display: inline-block;
-            width: 100px;
-        }
+
         .loader {
             display: inline-block;
             width: 20px;
             height: 20px;
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #2d7d46;
+            border-top: 3px solid #156FE6;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             vertical-align: middle;
             margin-right: 8px;
         }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* ============================================================ */
+        /* RESPONSIVE                                                    */
+        /* ============================================================ */
+        @media (max-width: 500px) {
+            .success-card { padding: 32px 20px 24px 20px; }
+            .success-card h1 { font-size: 24px; }
+            .success-card .icon-wrapper { width: 80px; height: 80px; }
+            .success-card .icon-wrapper i { font-size: 36px; }
+            .payment-details .detail-row { font-size: 12px; }
+            .payment-details .detail-row .value.amount { font-size: 16px; }
+            .btn-home { font-size: 14px; padding: 14px; }
+            .btn-admin { font-size: 13px; padding: 12px; }
+        }
+
+        @media (max-width: 400px) {
+            .success-card { padding: 24px 16px 18px 16px; }
+            .success-card h1 { font-size: 20px; }
+            .success-card .icon-wrapper { width: 64px; height: 64px; }
+            .success-card .icon-wrapper i { font-size: 28px; }
+            .payment-details { padding: 12px 14px; }
+            .payment-details .detail-row { font-size: 11px; }
+            .spam-alert { font-size: 11px; padding: 10px 14px; }
+        }
     </style>
 </head>
 <body>
-    <div class="success-card">
-        <div class="success-icon">✅</div>
-        <h1>Paiement réussi !</h1>
-        <div class="product-detail">
-            <p style="font-size: 24px; margin: 0;">👟</p>
-            <p style="font-size: 18px; font-weight: bold; margin: 4px 0;">Chaussure Nike</p>
-            <p style="color: #2d7d46; font-size: 20px; font-weight: bold; margin: 4px 0;">1 FCFA</p>
-        </div>
-        <p style="color: #555;">Votre produit est maintenant débloqué ! 🎉</p>
 
+    <div class="success-card" id="successCard">
+
+        <!-- Icône -->
+        <div class="icon-wrapper">
+            <i class="fas fa-check-circle"></i>
+        </div>
+
+        <h1>Merci ! ❤️</h1>
+        <div class="subtitle">Votre paiement a été confirmé</div>
+
+        <div class="message">
+            Nous vous remercions sincèrement pour votre don.
+            Votre soutien nous aide à construire une plateforme ivoirienne innovante et sécurisée.
+            <br><br>
+            Vous allez recevoir un <span class="highlight">email de confirmation</span> dans quelques instants.
+        </div>
+
+        <!-- Détails du paiement -->
+        <div class="payment-details" id="paymentDetails">
+            <div class="detail-row">
+                <span class="label">📧 Email</span>
+                <span class="value" id="txEmail">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">💰 Montant</span>
+                <span class="value amount" id="txAmount">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">💳 Moyen</span>
+                <span class="value" id="txMethod">Wave</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">📊 Statut</span>
+                <span class="value status" id="txStatus">✅ Confirmé</span>
+            </div>
+            <div class="detail-row" style="border-bottom: none;">
+                <span class="label">📅 Date</span>
+                <span class="value" id="txDate">-</span>
+            </div>
+        </div>
+
+        <!-- Alerte spam -->
+        <div class="spam-alert">
+            <i class="fas fa-info-circle"></i>
+            <strong>Pensez à vérifier vos spams</strong>
+            <br>
+            Si vous ne voyez pas notre email dans votre boîte de réception, n'oubliez pas de regarder dans vos <span class="highlight">spams</span> ou <span class="highlight">promotions</span>.
+            <br>
+            <span style="font-size:11px;color:#b45309;display:block;margin-top:4px;">
+                📩 Expéditeur : VirtMak (ipoteivan23@gmail.com)
+            </span>
+        </div>
+
+        <!-- Chargement -->
         <div id="loadingStatus">
             <span class="loader"></span> Vérification du paiement...
         </div>
 
-        <div id="paymentDetails">
-            <p><strong>ID Transaction:</strong> <span id="txId">-</span></p>
-            <p><strong>Montant:</strong> <span id="txAmount">-</span></p>
-            <p><strong>Moyen:</strong> <span id="txMethod">-</span></p>
-            <p><strong>Statut:</strong> <span id="txStatus" style="color:#2d7d46;">✅ Confirmé</span></p>
-            <p><strong>Date:</strong> <span id="txDate">-</span></p>
+        <!-- Boutons -->
+        <div class="btn-group">
+            <a href="/" class="btn-home">
+                <i class="fas fa-home"></i> Retour à l'accueil
+            </a>
+            
         </div>
 
-        <a href="/" class="btn-home">🏠 Retour à l'accueil</a>
-        <br>
-        <a href="/admin/payments" class="btn-admin" target="_blank">📊 Voir tous les paiements</a>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
+
+            console.log('✅ verifypay.html chargé');
+
             const loadingStatus = document.getElementById('loadingStatus');
             const paymentDetails = document.getElementById('paymentDetails');
+            const txEmail = document.getElementById('txEmail');
+            const txAmount = document.getElementById('txAmount');
+            const txMethod = document.getElementById('txMethod');
+            const txStatus = document.getElementById('txStatus');
+            const txDate = document.getElementById('txDate');
 
-            // 1️⃣ Récupérer l'ID de la transaction depuis l'URL (si présent)
+            // Récupérer les paramètres URL
             const urlParams = new URLSearchParams(window.location.search);
             const transactionId = urlParams.get('transaction_id');
+            const email = urlParams.get('email');
+            const amount = urlParams.get('amount');
 
+            // Si on a l'email et le montant dans l'URL, les afficher directement
+            if (email) txEmail.textContent = email;
+            if (amount) txAmount.textContent = amount + ' FCFA';
+            txDate.textContent = new Date().toLocaleString('fr-FR');
+
+            // Vérifier la transaction si un ID est présent
             if (transactionId) {
                 loadingStatus.style.display = 'block';
                 loadingStatus.innerHTML = '<span class="loader"></span> Vérification du paiement...';
 
                 try {
-                    // 2️⃣ Vérifier le paiement via le serveur
                     const response = await fetch(`/api/payment/status/${transactionId}`);
                     const data = await response.json();
 
@@ -157,25 +357,26 @@
 
                     if (data.success && data.payment) {
                         const p = data.payment;
-                        document.getElementById('txId').textContent = p.transaction_id || p.id || '-';
-                        document.getElementById('txAmount').textContent = (p.amount || 0) + ' FCFA';
-                        document.getElementById('txMethod').textContent = p.payment_method || p.gateway || 'Wave';
-                        document.getElementById('txStatus').textContent = p.status === 'success' ? '✅ Confirmé' : '⏳ ' + p.status;
-                        document.getElementById('txDate').textContent = p.executed_at ? new Date(p.executed_at).toLocaleString() : '-';
+                        txEmail.textContent = p.email || email || '-';
+                        txAmount.textContent = (p.amount || amount || 0) + ' FCFA';
+                        txMethod.textContent = p.payment_method || 'Wave';
+                        txStatus.textContent = p.status === 'success' ? '✅ Confirmé' : '⏳ ' + p.status;
+                        txDate.textContent = p.executed_at ? new Date(p.executed_at).toLocaleString('fr-FR') : new Date().toLocaleString('fr-FR');
                         paymentDetails.style.display = 'block';
-                    } else {
-                        // Si pas de détails, on affiche juste la page de succès
-                        console.log('ℹ️ Détails du paiement non trouvés, page de succès standard');
                     }
                 } catch (error) {
-                    console.error('❌ Erreur vérification paiement:', error);
+                    console.error('❌ Erreur vérification:', error);
                     loadingStatus.style.display = 'none';
                 }
             } else {
-                // Pas de transaction_id, on affiche juste la page de succès
-                console.log('ℹ️ Aucun ID de transaction, page de succès standard');
+                // Si pas de transaction_id, afficher les infos de l'URL
+                paymentDetails.style.display = 'block';
             }
+
+            console.log('✅ verifypay.html initialisé');
+
         });
     </script>
+
 </body>
 </html>
