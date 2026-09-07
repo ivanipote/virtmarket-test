@@ -731,12 +731,9 @@
                 btn.addEventListener('click', function() {
                     const amount = parseInt(this.dataset.amount);
                     amountInput.value = amount;
-                    // Mettre à jour l'état actif
                     suggestBtns.forEach(b => b.classList.remove('active', 'default'));
                     this.classList.add('active');
-                    // Déclencher la validation
                     validateForm();
-                    // Focus sur le champ pour confirmer
                     amountInput.focus();
                 });
             });
@@ -776,7 +773,9 @@
             emailInput.addEventListener('input', validateForm);
             amountInput.addEventListener('input', validateForm);
 
-            // ===== SOUMISSION AVEC ENREGISTREMENT VISITEUR =====
+            // ============================================================
+            // SOUMISSION - VERSION AVEC /api/create-order
+            // ============================================================
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
@@ -796,27 +795,29 @@
 
                 // ✅ Désactiver le bouton
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création de la commande...';
 
                 try {
-                    // ✅ 1. Enregistrer l'utilisateur (statut: visiteur)
-                    const registerRes = await fetch('/api/user/register', {
+                    // ✅ 1. Créer la commande (avec stockage en base)
+                    const orderRes = await fetch('/api/create-order', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name, email })
+                        body: JSON.stringify({ name, email, amount })
                     });
 
-                    const registerData = await registerRes.json();
+                    const orderData = await orderRes.json();
 
-                    if (!registerRes.ok) {
-                        throw new Error(registerData.error || 'Erreur enregistrement');
+                    if (!orderRes.ok) {
+                        throw new Error(orderData.error || 'Erreur création commande');
                     }
 
-                    console.log('✅ Utilisateur enregistré (visiteur):', registerData.user);
+                    console.log('✅ Commande créée:', orderData);
+                    console.log('   - Référence:', orderData.reference);
+                    console.log('   - ID:', orderData.payment_id);
+                    console.log('   - URL:', orderData.checkout_url);
 
-                    // ✅ 2. Redirection vers pay.html
-                    const url =
-                        `/pay.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&amount=${amount}`;
+                    // ✅ 2. Redirection vers pay.html avec la référence
+                    const url = `/pay.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&amount=${amount}&reference=${orderData.reference}`;
                     console.log('🔗 Redirection vers:', url);
 
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirection...';
