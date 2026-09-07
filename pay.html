@@ -140,22 +140,6 @@
             font-weight: 800;
         }
 
-        .recap-item .value.reference {
-            font-size: 12px;
-            color: #6b7280;
-            word-break: break-all;
-            max-width: 60%;
-            text-align: right;
-        }
-
-        .recap-item .value.status-badge {
-            font-size: 12px;
-            padding: 2px 12px;
-            border-radius: 20px;
-            background: #fff3df;
-            color: #b45309;
-        }
-
         .btn-pay-wrapper {
             display: flex;
             justify-content: center;
@@ -305,7 +289,6 @@
             .btn-pay { padding: 16px 32px; font-size: 16px; max-width: 300px; }
             .btn-pay .btn-wave-icon { width: 24px; height: 24px; }
             .btn-pay .btn-text { font-size: 16px; }
-            .recap-item .value.reference { font-size: 11px; max-width: 50%; }
         }
 
         @media (max-width: 420px) {
@@ -322,7 +305,6 @@
             .btn-pay .btn-wave-icon { width: 20px; height: 20px; }
             .btn-pay .btn-text { font-size: 14px; }
             .toast-container { font-size: 13px; padding: 10px 16px; bottom: 16px; }
-            .recap-item .value.reference { font-size: 10px; max-width: 45%; }
         }
 
         @media (max-width: 350px) {
@@ -349,8 +331,8 @@
                 </div>
             </div>
 
-            <div class="pay-title">💳 Création du paiement</div>
-            <div class="pay-subtitle">Génération du lien de paiement sécurisé</div>
+            <div class="pay-title">💳 Paiement sécurisé</div>
+            <div class="pay-subtitle">Confirmez vos informations avant le paiement</div>
 
             <!-- Récapitulatif -->
             <div class="recap-item">
@@ -365,23 +347,12 @@
                 <span class="label">💰 Montant</span>
                 <span class="value amount" id="displayAmount">-</span>
             </div>
-            <div class="recap-item" id="referenceRow" style="display:none;">
-                <span class="label">🔗 Référence</span>
-                <span class="value reference" id="displayReference">-</span>
-            </div>
-            <div class="recap-item" id="statusRow" style="display:none;">
-                <span class="label">📊 Statut</span>
-                <span class="value status-badge" id="displayStatus">-</span>
-            </div>
-            <div class="recap-item" id="linkRow" style="display:none;">
-                <span class="label">🔗 Lien</span>
-                <span class="value reference" id="displayLink">-</span>
-            </div>
 
+            <!-- Bouton unique -->
             <div class="btn-pay-wrapper">
                 <button class="btn-pay" id="payBtn">
                     <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
-                    <span class="btn-text">Générer le lien de paiement</span>
+                    <span class="btn-text">Effectuer mon paiement</span>
                 </button>
             </div>
 
@@ -399,18 +370,12 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            console.log('✅ pay.html (création paiement) chargé');
+            console.log('✅ pay.html (bouton unique) chargé');
 
             // ===== RÉFÉRENCES =====
             const displayName = document.getElementById('displayName');
             const displayEmail = document.getElementById('displayEmail');
             const displayAmount = document.getElementById('displayAmount');
-            const displayReference = document.getElementById('displayReference');
-            const displayStatus = document.getElementById('displayStatus');
-            const displayLink = document.getElementById('displayLink');
-            const referenceRow = document.getElementById('referenceRow');
-            const statusRow = document.getElementById('statusRow');
-            const linkRow = document.getElementById('linkRow');
             const payBtn = document.getElementById('payBtn');
             const toast = document.getElementById('toast');
             const infoMessage = document.getElementById('infoMessage');
@@ -450,53 +415,18 @@
                 }, 6000);
             }
 
-            // ===== AFFICHER LES INFOS DU PAIEMENT =====
-            function displayPaymentDetails(data) {
-                console.log('📊 DÉTAILS DU PAIEMENT GÉNÉRÉ:');
-                console.log('   🆔 ID:', data.payment_id || 'N/A');
-                console.log('   🔗 Référence:', data.reference || 'N/A');
-                console.log('   🔗 URL:', data.checkout_url || 'N/A');
-
-                // Afficher la référence
-                if (data.reference) {
-                    displayReference.textContent = data.reference;
-                    referenceRow.style.display = 'flex';
-                }
-
-                // Afficher le statut
-                displayStatus.textContent = '🟡 En attente de paiement';
-                statusRow.style.display = 'flex';
-
-                // Afficher le lien
-                if (data.checkout_url) {
-                    displayLink.textContent = data.checkout_url;
-                    linkRow.style.display = 'flex';
-                }
-
-                // Changer le bouton
-                payBtn.innerHTML = `
-                    <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
-                    <span class="btn-text">Payer avec Wave</span>
-                `;
-                payBtn.disabled = false;
-
-                // Stocker l'URL pour la redirection
-                payBtn.dataset.checkoutUrl = data.checkout_url;
-                payBtn.dataset.reference = data.reference;
-
-                showInfo('✅ Lien de paiement généré avec succès ! Cliquez sur "Payer avec Wave" pour continuer.', 'success');
-                showToast('✅ Lien de paiement généré !', 'success');
-            }
-
-            // ===== CRÉER LE PAIEMENT =====
-            async function createPayment() {
-                console.log('🔄 Création du paiement...');
+            // ===== PAYER - TOUT EN UN =====
+            payBtn.addEventListener('click', async function() {
+                console.log('🔄 Lancement du paiement...');
 
                 // Désactiver le bouton
                 payBtn.disabled = true;
-                payBtn.innerHTML = '<span class="spinner"></span> Génération en cours...';
+                payBtn.innerHTML = '<span class="spinner"></span> Préparation du paiement...';
+
+                showInfo('🔄 Création du lien de paiement en cours...', 'info');
 
                 try {
+                    // ✅ Appel au serveur pour créer le paiement
                     const response = await fetch('/create-payment-link', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -514,51 +444,26 @@
                     }
 
                     console.log('✅ Paiement créé avec succès');
-                    displayPaymentDetails(data);
+                    console.log('   🔗 Référence:', data.reference);
+                    console.log('   🔗 URL:', data.checkout_url);
+
+                    showInfo('✅ Paiement préparé ! Redirection vers Jèko...', 'success');
+                    showToast('✅ Redirection vers Jèko...', 'success');
+
+                    // ✅ Redirection automatique vers Jèko
+                    setTimeout(() => {
+                        window.location.href = data.checkout_url;
+                    }, 800);
 
                 } catch (error) {
                     console.error('❌ Erreur:', error);
                     showInfo('❌ ' + error.message, 'warning');
+                    showToast('❌ ' + error.message, 'error');
                     payBtn.disabled = false;
                     payBtn.innerHTML = `
                         <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
-                        <span class="btn-text">Générer le lien de paiement</span>
+                        <span class="btn-text">Effectuer mon paiement</span>
                     `;
-                }
-            }
-
-            // ===== PAYER - REDIRECTION VERS JÈKO =====
-            function redirectToPayment() {
-                const checkoutUrl = payBtn.dataset.checkoutUrl;
-                const reference = payBtn.dataset.reference;
-
-                if (!checkoutUrl) {
-                    showInfo('⚠️ Aucune URL de paiement disponible. Veuillez générer le lien d\'abord.', 'warning');
-                    return;
-                }
-
-                console.log('🔗 Redirection vers Jèko:', checkoutUrl);
-                console.log('🔗 Référence:', reference);
-
-                // Désactiver le bouton
-                payBtn.disabled = true;
-                payBtn.innerHTML = '<span class="spinner"></span> Redirection...';
-
-                showInfo('🔄 Redirection vers la page de paiement Jèko...', 'info');
-
-                setTimeout(() => {
-                    window.location.href = checkoutUrl;
-                }, 800);
-            }
-
-            // ===== CLIC SUR LE BOUTON =====
-            payBtn.addEventListener('click', function() {
-                // Si on a déjà généré un lien, rediriger
-                if (this.dataset.checkoutUrl) {
-                    redirectToPayment();
-                } else {
-                    // Sinon, créer le paiement
-                    createPayment();
                 }
             });
 
