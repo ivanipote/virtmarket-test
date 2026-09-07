@@ -1,5 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
+// VERSION : 3.0 - Finale
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -13,9 +14,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const detailContainer = document.getElementById('detailContainer');
     const refreshBtn = document.getElementById('refreshBtn');
 
-    const statVisiteur = document.getElementById('statVisiteur');
-    const statParticipant = document.getElementById('statParticipant');
-    const statDonateur = document.getElementById('statDonateur');
     const statTotal = document.getElementById('statTotal');
 
     const countAll = document.getElementById('countAll');
@@ -32,14 +30,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let allPayments = [];
 
     const statusColors = {
-        'visiteur': '#a78bfa',
-        'participant': '#fbbf24',
-        'donateur': '#34d399'
+        'visiteur': '#eab308',    // Jaune
+        'participant': '#3b82f6', // Bleu
+        'donateur': '#22c55e'     // Vert
     };
 
     const statusLabels = {
-        'visiteur': { label: '🟣 Visiteur', class: 'visiteur' },
-        'participant': { label: '🟠 Participant', class: 'participant' },
+        'visiteur': { label: '🟡 Visiteur', class: 'visiteur' },
+        'participant': { label: '🔵 Participant', class: 'participant' },
         'donateur': { label: '🟢 Donateur', class: 'donateur' }
     };
 
@@ -49,11 +47,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadData() {
         try {
-            // Charger les utilisateurs
             const usersRes = await fetch('/api/users');
             const usersData = await usersRes.json();
 
-            // Charger tous les paiements
             const paymentsRes = await fetch('/api/payments');
             const paymentsData = await paymentsRes.json();
 
@@ -91,15 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================================
 
     function renderStats() {
-        const visiteurs = allUsers.filter(u => u.status === 'visiteur');
-        const participants = allUsers.filter(u => u.status === 'participant');
-        const donateurs = allUsers.filter(u => u.status === 'donateur');
-
-        statVisiteur.textContent = visiteurs.length;
-        statParticipant.textContent = participants.length;
-        statDonateur.textContent = donateurs.length;
-
-        // ✅ CORRECTION : Diviser par 100 (centimes → FCFA)
         const totalAmount = allPayments
             .filter(p => p.status === 'success')
             .reduce((sum, p) => sum + ((p.amount || 0) / 100), 0);
@@ -154,12 +141,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             return `
                 <div class="user-item ${isActive ? 'active' : ''}" data-id="${u.id}">
-                    <div class="user-name">
-                        <span class="avatar" style="background:${statusColors[status] || '#6b7280'};">${initial}</span>
-                        <span class="user-status-dot ${status}"></span>
-                        ${name}
-                    </div>
-                    <div class="user-email-small">${u.email || ''}</div>
+                    <span class="user-avatar" style="background:${statusColors[status] || '#6b7280'};">${initial}</span>
+                    <span class="user-status-dot ${status}"></span>
+                    <span class="user-name">${name}</span>
                 </div>
             `;
         }).join('');
@@ -193,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderDetail(id) {
         const user = allUsers.find(u => u.id === id);
         if (!user) {
-            emptyDetail.style.display = 'block';
+            emptyDetail.style.display = 'flex';
             detailContainer.style.display = 'none';
             return;
         }
@@ -211,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const emailMessage = user.flex2 || '';
         const statusInfo = statusLabels[status] || statusLabels.visiteur;
 
-        // Récupérer les paiements de l'utilisateur
+        // Récupérer les paiements
         const userPayments = getPaymentsByUser(user.id);
         const paymentsByEmail = getPaymentsByEmail(email);
         const allUserPayments = [...userPayments];
@@ -221,14 +205,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Trier par date (plus récent en premier)
         allUserPayments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-        // Statistiques
         const totalPayments = allUserPayments.length;
         const successPayments = allUserPayments.filter(p => p.status === 'success');
-        
-        // ✅ CORRECTION : Diviser par 100 (centimes → FCFA)
         const totalAmount = successPayments.reduce((sum, p) => sum + ((p.amount || 0) / 100), 0);
 
         const formatDate = (date) => {
@@ -237,43 +217,38 @@ document.addEventListener('DOMContentLoaded', function() {
                    new Date(date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         };
 
-        // Construction du HTML
+        // ===== PAYMENTS HTML =====
         let paymentsHtml = '';
         if (allUserPayments.length > 0) {
             paymentsHtml = `
                 <div style="margin-top:16px;padding-top:12px;border-top:2px solid #f0f2f5;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <span style="font-weight:700;color:#0F1B4D;font-size:15px;">
-                            💳 Historique des paiements (${totalPayments})
-                        </span>
-                        <span style="font-size:13px;color:#156FE6;font-weight:600;">
-                            Total : ${totalAmount} FCFA
-                        </span>
+                    <div class="payment-history-title">
+                        <span class="title">💳 Historique des paiements (${totalPayments})</span>
+                        <span class="total">Total : ${totalAmount} FCFA</span>
                     </div>
-                    <div style="background:#f8f9fc;border-radius:12px;overflow:hidden;border:1px solid #e6e8ef;">
-                        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                    <div class="payment-table">
+                        <table>
                             <thead>
-                                <tr style="background:#f0f2f5;text-align:left;">
-                                    <th style="padding:8px 12px;font-weight:600;color:#6b7280;">#</th>
-                                    <th style="padding:8px 12px;font-weight:600;color:#6b7280;">Montant</th>
-                                    <th style="padding:8px 12px;font-weight:600;color:#6b7280;">Statut</th>
-                                    <th style="padding:8px 12px;font-weight:600;color:#6b7280;">Date</th>
-                                    <th style="padding:8px 12px;font-weight:600;color:#6b7280;">Référence</th>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Montant</th>
+                                    <th>Statut</th>
+                                    <th>Date</th>
+                                    <th>Référence</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${allUserPayments.map((p, index) => {
                                     const statusClass = p.status === 'success' ? '✅' : p.status === 'pending' ? '⏳' : '❌';
-                                    const statusColor = p.status === 'success' ? '#0e7a49' : p.status === 'pending' ? '#b45309' : '#c0342a';
-                                    // ✅ CORRECTION : Diviser par 100 pour afficher en FCFA
+                                    const statusColor = p.status === 'success' ? 'status-success' : p.status === 'pending' ? 'status-pending' : 'status-failed';
                                     const amountInFCFA = (p.amount || 0) / 100;
                                     return `
-                                        <tr style="border-bottom:1px solid #e6e8ef;">
-                                            <td style="padding:6px 12px;color:#6b7280;font-weight:600;">${index + 1}</td>
-                                            <td style="padding:6px 12px;font-weight:700;color:#156FE6;">${amountInFCFA} FCFA</td>
-                                            <td style="padding:6px 12px;font-weight:600;color:${statusColor};">${statusClass} ${p.status || 'inconnu'}</td>
-                                            <td style="padding:6px 12px;color:#6b7280;">${formatDate(p.created_at)}</td>
-                                            <td style="padding:6px 12px;font-size:11px;color:#6b7280;font-family:'Courier New',monospace;">${p.reference || p.transaction_id || '-'}</td>
+                                        <tr>
+                                            <td>${index + 1}</td>
+                                            <td class="amount-cell">${amountInFCFA} FCFA</td>
+                                            <td class="${statusColor}">${statusClass} ${p.status || 'inconnu'}</td>
+                                            <td>${formatDate(p.created_at)}</td>
+                                            <td class="ref-cell">${p.reference || p.transaction_id || '-'}</td>
                                         </tr>
                                     `;
                                 }).join('')}
@@ -291,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
 
-        // Statut email
+        // ===== EMAIL STATUS =====
         let emailStatusHtml = '';
         if (emailStatus === 'succes') {
             emailStatusHtml = `<span class="email-status succes">✅ Envoyé</span>`;
@@ -301,6 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
             emailStatusHtml = `<span class="email-status inconnu">⏳ En attente</span>`;
         }
 
+        // ===== RENDER =====
         detailContainer.innerHTML = `
             <div class="detail-card">
                 <div class="detail-header">
@@ -333,11 +309,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="value" style="font-size:12px;font-weight:400;color:#6b7280;max-width:50%;">${emailMessage || '-'}</span>
                 </div>
 
-                <!-- STATUT FOOTER -->
+                <!-- STATUS FOOTER -->
                 <div class="detail-status-footer">
                     ${status === 'visiteur' ? `
                         <div class="status-item">
-                            <span class="status-label"><i class="fas fa-clock" style="color:#a78bfa;"></i> En attente</span>
+                            <span class="status-label"><i class="fas fa-clock" style="color:#eab308;"></i> En attente</span>
                             <span class="status-time pending">
                                 ${formatDate(createdAt)}
                                 <span class="badge pending">⏳ En attente</span>
@@ -346,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ` : ''}
                     ${status === 'participant' ? `
                         <div class="status-item">
-                            <span class="status-label"><i class="fas fa-link" style="color:#fbbf24;"></i> Lien généré</span>
+                            <span class="status-label"><i class="fas fa-link" style="color:#3b82f6;"></i> Lien généré</span>
                             <span class="status-time pending">
                                 ${formatDate(updatedAt)}
                                 <span class="badge pending">⏳ En attente</span>
@@ -364,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ` : ''}
                 </div>
 
-                <!-- HISTORIQUE DES PAIEMENTS -->
+                <!-- HISTORIQUE -->
                 ${paymentsHtml}
 
                 <!-- ACTIONS -->
@@ -441,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 renderDetail(id);
             } else {
                 selectedId = null;
-                emptyDetail.style.display = 'block';
+                emptyDetail.style.display = 'flex';
                 detailContainer.style.display = 'none';
             }
         });
