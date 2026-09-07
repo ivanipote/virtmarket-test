@@ -99,10 +99,10 @@ document.addEventListener('DOMContentLoaded', function() {
         statParticipant.textContent = participants.length;
         statDonateur.textContent = donateurs.length;
 
-        // Calculer le total des paiements
+        // ✅ CORRECTION : Diviser par 100 (centimes → FCFA)
         const totalAmount = allPayments
             .filter(p => p.status === 'success')
-            .reduce((sum, p) => sum + (p.amount || 0), 0);
+            .reduce((sum, p) => sum + ((p.amount || 0) / 100), 0);
         statTotal.textContent = totalAmount + ' FCFA';
     }
 
@@ -213,9 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Récupérer les paiements de l'utilisateur
         const userPayments = getPaymentsByUser(user.id);
-        // Alternative: chercher par email si user_id n'est pas lié
         const paymentsByEmail = getPaymentsByEmail(email);
-        // Fusionner les deux (éviter les doublons par transaction_id)
         const allUserPayments = [...userPayments];
         paymentsByEmail.forEach(p => {
             if (!allUserPayments.some(up => up.transaction_id === p.transaction_id)) {
@@ -229,7 +227,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Statistiques
         const totalPayments = allUserPayments.length;
         const successPayments = allUserPayments.filter(p => p.status === 'success');
-        const totalAmount = successPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+        
+        // ✅ CORRECTION : Diviser par 100 (centimes → FCFA)
+        const totalAmount = successPayments.reduce((sum, p) => sum + ((p.amount || 0) / 100), 0);
 
         const formatDate = (date) => {
             if (!date) return '-';
@@ -265,10 +265,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ${allUserPayments.map((p, index) => {
                                     const statusClass = p.status === 'success' ? '✅' : p.status === 'pending' ? '⏳' : '❌';
                                     const statusColor = p.status === 'success' ? '#0e7a49' : p.status === 'pending' ? '#b45309' : '#c0342a';
+                                    // ✅ CORRECTION : Diviser par 100 pour afficher en FCFA
+                                    const amountInFCFA = (p.amount || 0) / 100;
                                     return `
                                         <tr style="border-bottom:1px solid #e6e8ef;">
                                             <td style="padding:6px 12px;color:#6b7280;font-weight:600;">${index + 1}</td>
-                                            <td style="padding:6px 12px;font-weight:700;color:#156FE6;">${p.amount || 0} FCFA</td>
+                                            <td style="padding:6px 12px;font-weight:700;color:#156FE6;">${amountInFCFA} FCFA</td>
                                             <td style="padding:6px 12px;font-weight:600;color:${statusColor};">${statusClass} ${p.status || 'inconnu'}</td>
                                             <td style="padding:6px 12px;color:#6b7280;">${formatDate(p.created_at)}</td>
                                             <td style="padding:6px 12px;font-size:11px;color:#6b7280;font-family:'Courier New',monospace;">${p.reference || p.transaction_id || '-'}</td>
