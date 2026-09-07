@@ -64,6 +64,10 @@ sgMail.setApiKey(SENDGRID_API_KEY);
 // FONCTION : ENVOI EMAIL AVEC IMAGE
 // ================================================================
 
+// ================================================================
+// FONCTION : ENVOI EMAIL AVEC TEMPLATE VARIANTE 4 (SOBRE)
+// ================================================================
+
 async function sendThankYouEmail(email, name, amount, orderId) {
     try {
         const now = new Date();
@@ -73,69 +77,58 @@ async function sendThankYouEmail(email, name, amount, orderId) {
         console.log(`📧 Envoi email à ${email} via SendGrid...`);
 
         const htmlContent = `
-            <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: auto; background: #ffffff; border-radius: 24px; overflow: hidden; border: 1px solid #e6e8ef;">
+            <div style="font-family: 'Segoe UI', system-ui, sans-serif; max-width: 600px; margin: auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e6e8ef; padding: 0;">
                 
-                <!-- Logo avec anneau bleu -->
-                <div style="text-align: center; padding: 24px 24px 8px 24px; background: white;">
-                    <div style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #156FE6; padding: 6px; margin: 0 auto; background: white; box-shadow: 0 4px 20px rgba(21,111,230,0.12);">
-                        <img src="https://virtmarket-test.onrender.com/logo.png" alt="VirtMak" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" />
-                    </div>
-                    <div style="margin-top: 8px; font-size: 18px; font-weight: 700; color: #0F1B4D;">
-                        <span style="border-bottom: 3px solid #156FE6; padding-bottom: 4px;">❤️ Merci pour votre don</span>
+                <!-- Header avec icône -->
+                <div style="text-align: center; padding: 24px 20px 8px 20px; background: white;">
+                    <div style="font-size: 32px; margin-bottom: 4px;">🙏</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #0F1B4D; border-bottom: 2px solid #156FE6; padding-bottom: 12px;">
+                        Merci pour votre don
                     </div>
                 </div>
 
                 <!-- Corps -->
                 <div style="padding: 0 24px 24px 24px;">
-                    <p style="font-size: 16px; font-weight: 600; color: #0F1B4D; margin-bottom: 4px;">
+                    <p style="font-size: 15px; font-weight: 600; color: #0F1B4D; margin-bottom: 4px;">
                         Bonjour <span style="color: #156FE6;">${name}</span>,
                     </p>
-                    <p style="font-size: 14px; color: #1a1a2e; line-height: 1.6; margin-bottom: 16px;">
+                    <p style="font-size: 13px; color: #1a1a2e; line-height: 1.6; margin: 6px 0 14px 0;">
                         <strong>Nous vous remercions !!!</strong><br>
                         Votre don de <strong style="color: #156FE6;">${amount} FCFA</strong> nous aide à construire une plateforme ivoirienne innovante et sécurisée.
                     </p>
 
                     <!-- Récapitulatif -->
-                    <div style="text-align: left; font-size: 14px; padding-bottom: 8px; border-bottom: 2px solid #156FE6; margin-bottom: 12px;">
-                        <strong style="color: #0F1B4D;">📋 Récapitulatif du don</strong>
-                    </div>
-
-                    <table style="border-collapse: collapse; width: 100%;">
-                        <tr>
-                            <td style="padding: 8px 0; font-size: 13px; color: #6b7280; width: 40%;">👤 Donateur</td>
-                            <td style="padding: 8px 0; font-size: 13px; font-weight: 600; color: #0F1B4D; text-align: right;">${name}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0; font-size: 13px; color: #6b7280; width: 40%;">📧 Email</td>
-                            <td style="padding: 8px 0; font-size: 13px; font-weight: 600; color: #0F1B4D; text-align: right;">${email}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0; font-size: 13px; color: #6b7280; width: 40%;">💰 Montant</td>
-                            <td style="padding: 8px 0; font-size: 18px; font-weight: 800; color: #156FE6; text-align: right;">${amount} FCFA</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0; font-size: 13px; color: #6b7280; width: 40%;">📅 Date et heure</td>
-                            <td style="padding: 8px 0; font-size: 13px; font-weight: 600; color: #0F1B4D; text-align: right;">${dateStr}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0; font-size: 13px; color: #6b7280; width: 40%;">🔗 Référence</td>
-                            <td style="padding: 8px 0; font-size: 13px; font-weight: 600; color: #0F1B4D; text-align: right;">${orderId}</td>
-                        </tr>
-                    </table>
-
-                    <!-- Séparateur -->
-                    <div style="padding: 16px 0;">
-                        <div style="border-top: 2px solid #f0f2f5;"></div>
-                    </div>
-
-                    <!-- Signature avec logo mini -->
-                    <div style="text-align: center; font-size: 13px; color: #6b7280;">
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 4px;">
-                            <img src="https://virtmarket-test.onrender.com/logo.png" alt="VirtMak" style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid #156FE6; padding: 2px;" />
-                            <span style="font-weight: 600; color: #0F1B4D; font-size: 15px;">Avec toute notre gratitude,</span>
+                    <div style="background: #f8f9fc; border-radius: 12px; padding: 12px 16px; border: 1px solid #e6e8ef; margin: 8px 0 14px 0;">
+                        <div style="font-size: 12px; font-weight: 700; color: #0F1B4D; border-bottom: 1px solid #e6e8ef; padding-bottom: 6px; margin-bottom: 6px;">
+                            📋 Récapitulatif du don
                         </div>
+                        <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px;">
+                            <span style="color: #6b7280;">👤 Donateur</span>
+                            <span style="font-weight: 600; color: #0F1B4D;">${name}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px;">
+                            <span style="color: #6b7280;">📧 Email</span>
+                            <span style="font-weight: 600; color: #0F1B4D;">${email}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px;">
+                            <span style="color: #6b7280;">💰 Montant</span>
+                            <span style="font-weight: 800; color: #156FE6; font-size: 15px;">${amount} FCFA</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px;">
+                            <span style="color: #6b7280;">📅 Date et heure</span>
+                            <span style="font-weight: 600; color: #0F1B4D;">${dateStr}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; border-bottom: none;">
+                            <span style="color: #6b7280;">🔗 Référence</span>
+                            <span style="font-weight: 600; color: #0F1B4D;">${orderId}</span>
+                        </div>
+                    </div>
+
+                    <!-- Signature -->
+                    <div style="text-align: center; padding-top: 12px; border-top: 2px solid #f0f2f5; font-size: 12px; color: #6b7280;">
+                        <div style="font-weight: 600; color: #0F1B4D;">Avec toute notre gratitude,</div>
                         <div>L'équipe <strong style="color: #156FE6;">VirtMak</strong></div>
-                        <div style="font-size: 11px; color: #9ca3af; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f2f5;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">
                             🔒 Cet email a été envoyé automatiquement.
                         </div>
                     </div>
@@ -149,12 +142,12 @@ async function sendThankYouEmail(email, name, amount, orderId) {
                 email: SENDER_EMAIL,
                 name: SENDER_NAME
             },
-            subject: `❤️ Merci pour votre don de ${amount} FCFA - VirtMak`,
+            subject: `🙏 Merci pour votre don de ${amount} FCFA - VirtMak`,
             html: htmlContent
         };
 
         await sgMail.send(msg);
-        console.log(`✅ Email envoyé à ${email}`);
+        console.log(`✅ Email envoyé à ${email} (template sobre)`);
         return { success: true, message: 'Email envoyé avec succès' };
 
     } catch (error) {
@@ -165,7 +158,6 @@ async function sendThankYouEmail(email, name, amount, orderId) {
         return { success: false, message: error.message };
     }
 }
-
 // ================================================================
 // 5. NETTOYAGE AUTO
 // ================================================================
