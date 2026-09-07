@@ -520,6 +520,23 @@ async function cleanOldPayments(minutes = 15) {
     }
 }
 
+// Marquer l'email comme envoyé
+async function markEmailSent(email) {
+    await pool.query(
+        'UPDATE users SET flex1 = $1, flex2 = NOW() WHERE email = $2',
+        ['sent', email]
+    );
+}
+
+// Vérifier si l'email a déjà été envoyé
+async function isEmailSent(email) {
+    const result = await pool.query(
+        'SELECT flex1 FROM users WHERE email = $1',
+        [email]
+    );
+    return result.rows[0]?.flex1 === 'sent';
+}
+
 // ================================================================
 // 8. EXPORT
 // ================================================================
