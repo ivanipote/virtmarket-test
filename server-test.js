@@ -250,6 +250,42 @@ app.post('/api/visiteur', async (req, res) => {
 });
 
 // ================================================================
+// ROUTE : RÉCUPÉRER LES COMMANDES D'UN UTILISATEUR PAR EMAIL
+// ================================================================
+
+app.get('/api/orders/user/:email', async (req, res) => {
+    const { email } = req.params;
+
+    console.log(`📝 Récupération des commandes pour: ${email}`);
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email requis' });
+    }
+
+    try {
+        // Récupérer les commandes par email
+        const result = await db.query(
+            'SELECT * FROM orders WHERE email = $1 ORDER BY created_at DESC',
+            [email]
+        );
+
+        const orders = result.rows;
+
+        console.log(`✅ ${orders.length} commande(s) trouvée(s) pour ${email}`);
+
+        res.json({
+            success: true,
+            count: orders.length,
+            orders: orders
+        });
+
+    } catch (error) {
+        console.error('❌ Erreur récupération commandes:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ================================================================
 // 9. API : CRÉER UN PAIEMENT
 // ================================================================
 
