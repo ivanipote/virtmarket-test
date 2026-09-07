@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 3.0 - Finale
+// VERSION : 3.1 - Avec commandes en attente pour participants
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedId = null;
     let currentFilter = 'all';
     let allPayments = [];
+    let allOrders = [];
 
     const statusColors = {
         'visiteur': '#eab308',    // Jaune
@@ -53,12 +54,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const paymentsRes = await fetch('/api/payments');
             const paymentsData = await paymentsRes.json();
 
+            const ordersRes = await fetch('/api/paylist');
+            const ordersData = await ordersRes.json();
+
             if (usersData.success && usersData.users) {
                 allUsers = usersData.users;
             }
 
             if (paymentsData.success && paymentsData.payments) {
                 allPayments = paymentsData.payments;
+            }
+
+            if (ordersData.success && ordersData.orders) {
+                allOrders = ordersData.orders;
             }
 
             renderStats();
@@ -171,6 +179,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
+    // RÉCUPÉRER LES COMMANDES D'UN UTILISATEUR
+    // ============================================================
+
+    function getOrdersByEmail(email) {
+        return allOrders.filter(o => o.email === email);
+    }
+
+    // ============================================================
     // AFFICHER LE DÉTAIL D'UN UTILISATEUR
     // ============================================================
 
@@ -195,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const emailMessage = user.flex2 || '';
         const statusInfo = statusLabels[status] || statusLabels.visiteur;
 
-        // Récupérer les paiements
+        // ===== RÉCUPÉRER LES PAIEMENTS =====
         const userPayments = getPaymentsByUser(user.id);
         const paymentsByEmail = getPaymentsByEmail(email);
         const allUserPayments = [...userPayments];
@@ -211,13 +227,61 @@ document.addEventListener('DOMContentLoaded', function() {
         const successPayments = allUserPayments.filter(p => p.status === 'success');
         const totalAmount = successPayments.reduce((sum, p) => sum + ((p.amount || 0) / 100), 0);
 
+        // ===== RÉCUPÉRER LES COMMANDES EN ATTENTE (participant) =====
+        const userOrders = getOrdersByEmail(email);
+        const pendingOrders = userOrders.filter(o => o.status === 'pending');
+
         const formatDate = (date) => {
             if (!date) return '-';
             return new Date(date).toLocaleDateString('fr-FR') + ' ' + 
                    new Date(date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         };
 
-        // ===== PAYMENTS HTML =====
+        // ===== HTML COMMANDES EN ATTENTE (pour participants) =====
+        let ordersHtml = '';
+        if (status === 'participant' && pendingOrders.length > 0) {
+            ordersHtml = `
+                <div style="margin-top:16px;padding-top:12px;border-top:2px solid #f0f2f5;">
+                    <div class="payment-history-title">
+                        <span class="title">📦 Commandes en attente (${pendingOrders.length})</span>
+                        <span class="total">Total : ${pendingOrders.reduce((sum, o) => sum + (o.amount || 0), 0)} FCFA</span>
+                    </div>
+                    <div class="payment-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Montant</th>
+                                    <th>Statut</th>
+                                    <th>Date</th>
+                                    <th>Référence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${pendingOrders.map((o, index) => `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td class="amount-cell">${o.amount || 0} FCFA</td>
+                                        <td class="status-pending">⏳ ${o.status || 'pending'}</td>
+                                        <td>${formatDate(o.created_at)}</td>
+                                        <td class="ref-cell">${o.reference || '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        } else if (status === 'participant' && pendingOrders.length === 0) {
+            ordersHtml = `
+                <div style="margin-top:16px;padding-top:12px;border-top:2px solid #f0f2f5;text-align:center;color:#9ca3af;font-size:14px;">
+                    <i class="fas fa-hourglass-half" style="display:block;font-size:32px;color:#d8dbe4;margin-bottom:8px;"></i>
+                    Aucune commande en attente pour ce participant.
+                </div>
+            `;
+        }
+
+        // ===== HTML PAIEMENTS =====
         let paymentsHtml = '';
         if (allUserPayments.length > 0) {
             paymentsHtml = `
@@ -257,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             `;
-        } else {
+        } else if (status === 'donateur' && allUserPayments.length === 0) {
             paymentsHtml = `
                 <div style="margin-top:16px;padding-top:12px;border-top:2px solid #f0f2f5;text-align:center;color:#9ca3af;font-size:14px;">
                     <i class="fas fa-credit-card" style="display:block;font-size:32px;color:#d8dbe4;margin-bottom:8px;"></i>
@@ -340,7 +404,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     ` : ''}
                 </div>
 
-                <!-- HISTORIQUE -->
+                <!-- COMMANDES EN ATTENTE (pour participants) -->
+                ${ordersHtml}
+
+                <!-- HISTORIQUE DES PAIEMENTS (pour donateurs) -->
                 ${paymentsHtml}
 
                 <!-- ACTIONS -->
