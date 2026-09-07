@@ -74,6 +74,44 @@ app.get('/testmail.html', (req, res) => {
 });
 
 // ============================================================
+// ROUTE : ENREGISTRER UN UTILISATEUR (visiteur)
+// ============================================================
+app.post('/api/user/register', async (req, res) => {
+    const { name, email } = req.body;
+
+    console.log(`📝 Enregistrement utilisateur : ${name} (${email})`);
+
+    if (!name || !email) {
+        return res.status(400).json({ error: 'Nom et email requis' });
+    }
+
+    try {
+        const user = await db.getOrCreateUser(name, email);
+        
+        // Mettre à jour le statut vers 'visiteur' si différent
+        if (user.flex5 !== 'visiteur') {
+            await db.updateUserStatus(email, 'visiteur');
+        }
+
+        console.log(`✅ Utilisateur enregistré : ${name} (${email}) - statut: visiteur`);
+
+        res.json({ 
+            success: true, 
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                user_status: 'visiteur'
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Erreur enregistrement utilisateur:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============================================================
 // ROUTE : CRÉER UNE COMMANDE (avec stockage en base)
 // ============================================================
 app.post('/api/create-order', async (req, res) => {
