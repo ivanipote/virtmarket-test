@@ -1,13 +1,14 @@
 // ================================================================
 // FICHIER : server.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 3.3 - Email fonctionnel intégré
+// VERSION : 4.0 - Avec SendGrid
 // ================================================================
 
 require('dotenv').config();
 const express = require('express');
 const crypto = require('crypto');
 const db = require('./database');
+const sgMail = require('@sendgrid/mail');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,7 +35,118 @@ app.use(express.static('.'));
 })();
 
 // ================================================================
-// 3. NETTOYAGE AUTO
+// 3. CONFIGURATION SENDGRID
+// ================================================================
+
+const SENDGRID_API_KEY = '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';
+const SENDER_EMAIL = 'thanksvirtmak@gmail.com';
+const SENDER_NAME = 'VirtMak';
+
+sgMail.setApiKey(SENDGRID_API_KEY);
+
+// ================================================================
+// 4. FONCTION : ENVOI EMAIL AVEC SENDGRID
+// ================================================================
+
+async function sendThankYouEmail(email, name, amount, orderId) {
+    try {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('fr-FR') + ' ' + 
+                        now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+        console.log(`📧 Envoi email à ${email} via SendGrid...`);
+
+        // Construction du message HTML
+        const htmlContent = `
+            <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: auto; background: #ffffff; border-radius: 24px; overflow: hidden; border: 1px solid #e6e8ef;">
+                
+                <!-- Header -->
+                <div style="border-top: 6px solid #156FE6; padding: 20px 24px; background: white;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="https://virtmarket-test.onrender.com/logo.png" alt="VirtMak" style="height: 40px; width: 40px; border-radius: 50%; border: 2px solid #156FE6; padding: 4px; vertical-align: middle;" />
+                        <span style="font-size: 18px; vertical-align: middle; border-left: 2px solid #156FE6; padding-left: 12px; font-weight: 700; color: #0F1B4D;">
+                            Merci pour votre don ❤️
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Corps -->
+                <div style="padding: 0 24px 24px 24px;">
+                    <p style="font-size: 16px; font-weight: 600; color: #0F1B4D; margin-bottom: 4px;">
+                        Bonjour <span style="color: #156FE6;">${name}</span>,
+                    </p>
+                    <p style="font-size: 14px; color: #1a1a2e; line-height: 1.6; margin-bottom: 16px;">
+                        <strong>Nous vous remercions !!!</strong><br>
+                        Votre don de <strong style="color: #156FE6;">${amount} FCFA</strong> nous aide à construire une plateforme ivoirienne innovante et sécurisée.
+                    </p>
+
+                    <div style="text-align: left; font-size: 14px; padding-bottom: 8px; border-bottom: 2px solid #156FE6; margin-bottom: 12px;">
+                        <strong style="color: #0F1B4D;">📋 Récapitulatif du don</strong>
+                    </div>
+
+                    <table style="border-collapse: collapse; width: 100%;">
+                        <tr>
+                            <td style="padding: 8px 0; font-size: 13px; color: #6b7280; width: 40%;">👤 Donateur</td>
+                            <td style="padding: 8px 0; font-size: 13px; font-weight: 600; color: #0F1B4D; text-align: right;">${name}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; font-size: 13px; color: #6b7280; width: 40%;">📧 Email</td>
+                            <td style="padding: 8px 0; font-size: 13px; font-weight: 600; color: #0F1B4D; text-align: right;">${email}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; font-size: 13px; color: #6b7280; width: 40%;">💰 Montant</td>
+                            <td style="padding: 8px 0; font-size: 18px; font-weight: 800; color: #156FE6; text-align: right;">${amount} FCFA</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; font-size: 13px; color: #6b7280; width: 40%;">📅 Date et heure</td>
+                            <td style="padding: 8px 0; font-size: 13px; font-weight: 600; color: #0F1B4D; text-align: right;">${dateStr}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; font-size: 13px; color: #6b7280; width: 40%;">🔗 Référence</td>
+                            <td style="padding: 8px 0; font-size: 13px; font-weight: 600; color: #0F1B4D; text-align: right;">${orderId}</td>
+                        </tr>
+                    </table>
+
+                    <div style="padding: 16px 0;">
+                        <div style="border-top: 2px solid #f0f2f5;"></div>
+                    </div>
+
+                    <div style="text-align: center; font-size: 13px; color: #6b7280;">
+                        <div style="font-weight: 600; color: #0F1B4D; font-size: 15px;">Avec toute notre gratitude,</div>
+                        <div style="margin-top: 2px;">L'équipe <strong style="color: #156FE6;">VirtMak</strong></div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f2f5;">
+                            🔒 Cet email a été envoyé automatiquement.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const msg = {
+            to: email,
+            from: {
+                email: SENDER_EMAIL,
+                name: SENDER_NAME
+            },
+            subject: `❤️ Merci pour votre don de ${amount} FCFA - VirtMak`,
+            html: htmlContent
+        };
+
+        const response = await sgMail.send(msg);
+        console.log(`✅ Email envoyé à ${email} depuis ${SENDER_EMAIL}`);
+        return { success: true, message: 'Email envoyé avec succès' };
+
+    } catch (error) {
+        console.error(`❌ Erreur SendGrid: ${error.message}`);
+        if (error.response) {
+            console.error(`   ${error.response.body}`);
+        }
+        return { success: false, message: error.message };
+    }
+}
+
+// ================================================================
+// 5. NETTOYAGE AUTO
 // ================================================================
 
 async function autoClean() {
@@ -53,58 +165,7 @@ setInterval(autoClean, 5 * 60 * 1000);
 autoClean();
 
 // ================================================================
-// 4. FONCTION : ENVOI EMAIL DE REMERCIEMENT
-// ================================================================
-
-const EMAILJS_SERVICE_ID = 'service_2hkqcdm';
-const EMAILJS_TEMPLATE_ID = 'template_ndwcdwn';
-const EMAILJS_PUBLIC_KEY = '4TkvKRRbn9qDSIjG3';
-const SENDER_EMAIL = 'thanksvirtmak@gmail.com';
-const SENDER_NAME = 'VirtMak';
-
-async function sendThankYouEmail(email, name, amount, orderId) {
-    try {
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('fr-FR') + ' ' + 
-                        now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-
-        console.log(`📧 Envoi email à ${email} depuis ${SENDER_EMAIL}...`);
-
-        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                service_id: EMAILJS_SERVICE_ID,
-                template_id: EMAILJS_TEMPLATE_ID,
-                user_id: EMAILJS_PUBLIC_KEY,
-                template_params: {
-                    name: name,
-                    email: email,
-                    amount: amount,
-                    order_id: orderId || 'DON-' + Date.now().toString().slice(-6),
-                    date: dateStr,
-                    sender_email: SENDER_EMAIL,
-                    sender_name: SENDER_NAME
-                }
-            })
-        });
-
-        if (response.ok) {
-            console.log(`✅ Email envoyé à ${email} depuis ${SENDER_EMAIL}`);
-            return { success: true, message: 'Email envoyé avec succès' };
-        } else {
-            const errorText = await response.text();
-            console.error(`❌ Erreur EmailJS: ${errorText}`);
-            return { success: false, message: errorText };
-        }
-    } catch (error) {
-        console.error(`❌ Erreur envoi email: ${error.message}`);
-        return { success: false, message: error.message };
-    }
-}
-
-// ================================================================
-// 5. ROUTES PAGES STATIQUES
+// 6. ROUTES PAGES STATIQUES
 // ================================================================
 
 app.get('/', (req, res) => res.sendFile(__dirname + '/virtmak.html'));
@@ -116,7 +177,7 @@ app.get('/payviaapi.html', (req, res) => res.sendFile(__dirname + '/payviaapi.ht
 app.get('/testmail.html', (req, res) => res.sendFile(__dirname + '/testmail.html'));
 
 // ================================================================
-// 6. API : VISITEUR
+// 7. API : VISITEUR
 // ================================================================
 
 app.post('/api/visiteur', async (req, res) => {
@@ -148,7 +209,7 @@ app.post('/api/visiteur', async (req, res) => {
 });
 
 // ================================================================
-// 7. API : CRÉER UN PAIEMENT
+// 8. API : CRÉER UN PAIEMENT
 // ================================================================
 
 app.post('/api/create-payment', async (req, res) => {
@@ -264,7 +325,7 @@ app.post('/api/create-payment', async (req, res) => {
 });
 
 // ================================================================
-// 8. API : PAYLIST
+// 9. API : PAYLIST
 // ================================================================
 
 app.get('/api/paylist', async (req, res) => {
@@ -292,7 +353,7 @@ app.get('/api/paylist/:reference', async (req, res) => {
 });
 
 // ================================================================
-// 9. API : PAIEMENTS
+// 10. API : PAIEMENTS
 // ================================================================
 
 app.get('/api/payments', async (req, res) => {
@@ -320,7 +381,7 @@ app.get('/api/payment/:id', async (req, res) => {
 });
 
 // ================================================================
-// 10. API : UTILISATEURS
+// 11. API : UTILISATEURS
 // ================================================================
 
 app.get('/api/users', async (req, res) => {
@@ -348,7 +409,7 @@ app.get('/api/user/:email', async (req, res) => {
 });
 
 // ================================================================
-// 11. API : STATISTIQUES
+// 12. API : STATISTIQUES
 // ================================================================
 
 app.get('/api/stats', async (req, res) => {
@@ -362,7 +423,7 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // ================================================================
-// 12. API : UPDATE STATUS
+// 13. API : UPDATE STATUS
 // ================================================================
 
 app.post('/api/update-status', async (req, res) => {
@@ -391,7 +452,7 @@ app.post('/api/update-status', async (req, res) => {
 });
 
 // ================================================================
-// 13. WEBHOOK JEKO AVEC ENVOI EMAIL
+// 14. WEBHOOK JEKO AVEC ENVOI EMAIL (SendGrid)
 // ================================================================
 
 app.post('/webhook', async (req, res) => {
@@ -468,7 +529,7 @@ app.post('/webhook', async (req, res) => {
         console.log(`✅ Paiement enregistré: ${savedPayment ? 'OK' : 'Déjà existant'}`);
 
         // ============================================================
-        // 🔥 ENVOI DE L'EMAIL DE REMERCIEMENT
+        // 🔥 ENVOI DE L'EMAIL DE REMERCIEMENT AVEC SENDGRID
         // ============================================================
         console.log('\n📧 ENVOI DE L\'EMAIL DE REMERCIEMENT');
         console.log('-'.repeat(40));
@@ -487,7 +548,7 @@ app.post('/webhook', async (req, res) => {
             if (emailResult.success) {
                 emailStatus = 'succes';
                 emailMessage = 'Email envoyé avec succès';
-                console.log(`✅ ${emailMessage} depuis ${SENDER_EMAIL}`);
+                console.log(`✅ ${emailMessage} via SendGrid`);
             } else {
                 emailStatus = 'echec';
                 emailMessage = emailResult.message;
@@ -521,6 +582,7 @@ app.post('/webhook', async (req, res) => {
         console.log(`   ✅ Paiement: ${savedPayment ? 'OK' : 'Déjà existant'}`);
         console.log(`   📧 Email: ${emailStatus} - ${emailMessage}`);
         console.log(`   📧 Expéditeur: ${SENDER_EMAIL}`);
+        console.log(`   📧 Service: SendGrid`);
         console.log('='.repeat(80) + '\n');
 
         res.sendStatus(200);
@@ -535,7 +597,7 @@ app.post('/webhook', async (req, res) => {
 });
 
 // ================================================================
-// 14. DÉMARRAGE
+// 15. DÉMARRAGE
 // ================================================================
 
 app.listen(PORT, () => {
@@ -543,6 +605,7 @@ app.listen(PORT, () => {
     console.log(`🌐 https://virtmarket-test.onrender.com`);
     console.log(`📊 Admin: /admin`);
     console.log(`📧 Email expéditeur: ${SENDER_EMAIL}`);
+    console.log(`📧 Service: SendGrid`);
     console.log(`\n📋 API disponibles:`);
     console.log(`   POST /api/visiteur`);
     console.log(`   POST /api/create-payment`);
