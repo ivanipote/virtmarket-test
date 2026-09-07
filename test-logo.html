@@ -61,11 +61,56 @@
             margin-top: 12px;
         }
 
+        .card .label .badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 10px;
+            border-radius: 12px;
+            margin-left: 4px;
+        }
+
+        .badge-blue {
+            background: #156FE6;
+            color: white;
+        }
+
+        .badge-green {
+            background: #0F8B5D;
+            color: white;
+        }
+
+        .badge-ring {
+            background: #0F1B4D;
+            color: white;
+        }
+
         /* ============================================================ */
-        /* FORMATS DU LOGO                                              */
+        /* FORMATS DU LOGO - NOUVELLE CHARTE BLEUE                     */
         /* ============================================================ */
 
-        /* ---- Carré ---- */
+        /* ---- Anneau (favori) ---- */
+        .logo-ring {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+            border: 5px solid #156FE6;
+            padding: 8px;
+            box-shadow: 0 0 0 2px rgba(21, 111, 230, 0.1);
+        }
+
+        .logo-ring img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            border-radius: 50%;
+        }
+
+        /* ---- Carré avec bordure bleue ---- */
         .logo-square {
             width: 100px;
             height: 100px;
@@ -73,7 +118,7 @@
             overflow: hidden;
             margin: 0 auto;
             background: white;
-            border: 1px solid #e6e8ef;
+            border: 3px solid #156FE6;
         }
 
         .logo-square img {
@@ -83,15 +128,15 @@
             display: block;
         }
 
-        /* ---- Cercle ---- */
+        /* ---- Cercle avec fond bleu ---- */
         .logo-circle {
             width: 100px;
             height: 100px;
             border-radius: 50%;
             overflow: hidden;
             margin: 0 auto;
-            background: white;
-            border: 2px solid #e6e8ef;
+            background: #156FE6;
+            padding: 10px;
         }
 
         .logo-circle img {
@@ -99,9 +144,10 @@
             height: 100%;
             object-fit: contain;
             display: block;
+            filter: brightness(0) invert(1);
         }
 
-        /* ---- Triangle (via clip-path) ---- */
+        /* ---- Triangle ---- */
         .logo-triangle {
             width: 100px;
             height: 100px;
@@ -116,26 +162,6 @@
             height: 100%;
             object-fit: contain;
             display: block;
-        }
-
-        /* ---- Rond avec bordure ---- */
-        .logo-ring {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin: 0 auto;
-            background: white;
-            border: 4px solid #0F8B5D;
-            padding: 6px;
-        }
-
-        .logo-ring img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-            border-radius: 50%;
         }
 
         /* ---- Hexagone ---- */
@@ -155,7 +181,97 @@
             display: block;
         }
 
-        /* ---- Logo plein sans bordure ---- */
+        /* ---- Rond avec ombre bleue ---- */
+        .logo-shadow {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 8px 30px rgba(21, 111, 230, 0.25);
+            border: 2px solid rgba(21, 111, 230, 0.1);
+        }
+
+        .logo-shadow img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* ---- Badge bleu (fond bleu, logo blanc) ---- */
+        .logo-badge {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #156FE6, #0F1B4D);
+            padding: 14px;
+            border: 3px solid #156FE6;
+        }
+
+        .logo-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            filter: brightness(0) invert(1);
+        }
+
+        /* ---- Format Hero ---- */
+        .logo-hero {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto;
+            background: white;
+            border: 6px solid #156FE6;
+            padding: 12px;
+            box-shadow: 0 8px 40px rgba(21, 111, 230, 0.15);
+        }
+
+        .logo-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            border-radius: 50%;
+        }
+
+        /* ---- Favicon ---- */
+        .logo-favicon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 0 auto;
+            background: #156FE6;
+            padding: 4px;
+        }
+
+        .logo-favicon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            filter: brightness(0) invert(1);
+        }
+
+        .logo-favicon-row {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .logo-favicon-row .logo-favicon {
+            margin: 0;
+        }
+
+        /* ---- Plein (sans bordure) ---- */
         .logo-plain {
             width: 100px;
             height: 100px;
@@ -170,89 +286,26 @@
             display: block;
         }
 
-        /* ---- Logo avec ombre ---- */
-        .logo-shadow {
-            width: 100px;
-            height: 100px;
-            border-radius: 16px;
-            overflow: hidden;
-            margin: 0 auto;
-            background: white;
-            box-shadow: 0 8px 30px rgba(15, 27, 77, 0.15);
-        }
-
-        .logo-shadow img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-
-        /* ---- Logo dans un badge ---- */
-        .logo-badge {
+        /* ---- Anneau avec fond bleu (version alternative) ---- */
+        .logo-ring-alt {
             width: 100px;
             height: 100px;
             border-radius: 50%;
             overflow: hidden;
             margin: 0 auto;
-            background: linear-gradient(135deg, #0F8B5D, #0A6B47);
-            padding: 12px;
-            border: 3px solid #0F1B4D;
+            background: #156FE6;
+            border: 4px solid white;
+            padding: 8px;
+            box-shadow: 0 0 0 3px #156FE6;
         }
 
-        .logo-badge img {
+        .logo-ring-alt img {
             width: 100%;
             height: 100%;
             object-fit: contain;
             display: block;
+            border-radius: 50%;
             filter: brightness(0) invert(1);
-        }
-
-        /* ---- Version minuscule (favicon) ---- */
-        .logo-favicon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 0 auto;
-            background: white;
-            border: 1px solid #e6e8ef;
-        }
-
-        .logo-favicon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-
-        .logo-favicon-row {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 12px;
-        }
-
-        .logo-favicon-row .logo-favicon {
-            margin: 0;
-        }
-
-        /* ---- Version hero (grande) ---- */
-        .logo-hero {
-            width: 160px;
-            height: 160px;
-            border-radius: 24px;
-            overflow: hidden;
-            margin: 0 auto;
-            background: white;
-            border: 2px solid #e6e8ef;
-        }
-
-        .logo-hero img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
         }
 
         /* ============================================================ */
@@ -264,7 +317,7 @@
             .card { padding: 20px 14px; }
             .logo-square, .logo-circle, .logo-triangle, .logo-ring,
             .logo-hexagon, .logo-plain, .logo-shadow, .logo-badge,
-            .logo-hero {
+            .logo-ring-alt {
                 width: 80px;
                 height: 80px;
             }
@@ -276,7 +329,7 @@
             .card { padding: 16px 10px; }
             .logo-square, .logo-circle, .logo-triangle, .logo-ring,
             .logo-hexagon, .logo-plain, .logo-shadow, .logo-badge,
-            .logo-hero {
+            .logo-ring-alt {
                 width: 65px;
                 height: 65px;
             }
@@ -288,11 +341,25 @@
 <body>
 
     <h1>🎨 Test Logo VirtMak</h1>
-    <p class="subtitle">Votre logo dans différents formats pour voir son rendu</p>
+    <p class="subtitle">
+        Nouvelle charte <strong style="color:#156FE6;">Bleu roi #156FE6</strong> —
+        <span style="background:#156FE6;color:white;padding:2px 12px;border-radius:12px;font-size:12px;">Préférence : Anneau</span>
+    </p>
 
     <div class="grid">
 
-        <!-- 1. Carré -->
+        <!-- 1. Anneau (⭐ FAVORI) -->
+        <div class="card" style="border:2px solid #156FE6;background:#f0f7ff;">
+            <div class="logo-ring">
+                <img src="/logo.png" alt="Logo VirtMak" />
+            </div>
+            <div class="label">
+                ⭐ Anneau
+                <span class="badge badge-blue">FAVORI</span>
+            </div>
+        </div>
+
+        <!-- 2. Carré -->
         <div class="card">
             <div class="logo-square">
                 <img src="/logo.png" alt="Logo VirtMak" />
@@ -300,28 +367,20 @@
             <div class="label">📐 Carré</div>
         </div>
 
-        <!-- 2. Cercle -->
+        <!-- 3. Cercle (fond bleu) -->
         <div class="card">
             <div class="logo-circle">
                 <img src="/logo.png" alt="Logo VirtMak" />
             </div>
-            <div class="label">⭕ Cercle</div>
+            <div class="label">⭕ Cercle bleu</div>
         </div>
 
-        <!-- 3. Triangle -->
+        <!-- 4. Triangle -->
         <div class="card">
             <div class="logo-triangle">
                 <img src="/logo.png" alt="Logo VirtMak" />
             </div>
             <div class="label">🔺 Triangle</div>
-        </div>
-
-        <!-- 4. Rond avec bordure verte -->
-        <div class="card">
-            <div class="logo-ring">
-                <img src="/logo.png" alt="Logo VirtMak" />
-            </div>
-            <div class="label">💍 Anneau</div>
         </div>
 
         <!-- 5. Hexagone -->
@@ -332,23 +391,15 @@
             <div class="label">⬡ Hexagone</div>
         </div>
 
-        <!-- 6. Plein (sans bordure) -->
-        <div class="card">
-            <div class="logo-plain">
-                <img src="/logo.png" alt="Logo VirtMak" />
-            </div>
-            <div class="label">📋 Plein</div>
-        </div>
-
-        <!-- 7. Avec ombre -->
+        <!-- 6. Ombre bleue -->
         <div class="card">
             <div class="logo-shadow">
                 <img src="/logo.png" alt="Logo VirtMak" />
             </div>
-            <div class="label">🌓 Ombre</div>
+            <div class="label">🌓 Ombre bleue</div>
         </div>
 
-        <!-- 8. Badge (fond vert, logo blanc) -->
+        <!-- 7. Badge (bleu → marine) -->
         <div class="card">
             <div class="logo-badge">
                 <img src="/logo.png" alt="Logo VirtMak" />
@@ -356,15 +407,23 @@
             <div class="label">🏅 Badge</div>
         </div>
 
-        <!-- 9. Format Hero (grand) -->
+        <!-- 8. Anneau alternatif -->
+        <div class="card">
+            <div class="logo-ring-alt">
+                <img src="/logo.png" alt="Logo VirtMak" />
+            </div>
+            <div class="label">💍 Anneau inversé</div>
+        </div>
+
+        <!-- 9. Hero -->
         <div class="card" style="grid-column: span 1;">
             <div class="logo-hero">
                 <img src="/logo.png" alt="Logo VirtMak" />
             </div>
-            <div class="label">🖼️ Hero (grand)</div>
+            <div class="label">🖼️ Hero</div>
         </div>
 
-        <!-- 10. Favicon (petit) -->
+        <!-- 10. Favicon -->
         <div class="card" style="grid-column: span 1;">
             <div class="logo-favicon-row">
                 <div class="logo-favicon">
@@ -377,15 +436,16 @@
                     <img src="/logo.png" alt="Logo VirtMak" />
                 </div>
             </div>
-            <div class="label">📌 Favicon (petit)</div>
+            <div class="label">📌 Favicon</div>
         </div>
 
     </div>
 
     <div style="text-align:center;margin-top:40px;color:#9ca3af;font-size:13px;">
-        <i class="fas fa-check-circle" style="color:#0F8B5D;"></i>
-        Logo testé dans 10 formats différents
+        <i class="fas fa-check-circle" style="color:#156FE6;"></i>
+        Logo testé avec la nouvelle charte <strong style="color:#156FE6;">Bleu roi #156FE6</strong>
+        —
+        <span style="background:#156FE6;color:white;padding:1px 10px;border-radius:12px;font-size:11px;">Anneau ⭐</span>
     </div>
 
 </body>
-</html>
