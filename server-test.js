@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : server-test.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 6.4 - Correction amountInCentimes
+// VERSION : 6.3 - Conservation du nom par email
 // ================================================================
 
 require('dotenv').config();
@@ -224,7 +224,7 @@ app.post('/api/test-email', async (req, res) => {
 });
 
 // ================================================================
-// 8. API : VISITEUR
+// 8. API : VISITEUR (avec conservation du nom par email)
 // ================================================================
 
 app.post('/api/visiteur', async (req, res) => {
@@ -245,13 +245,16 @@ app.post('/api/visiteur', async (req, res) => {
     }
 
     try {
+        // ✅ Vérifier si l'utilisateur existe déjà
         const existingUser = await db.getUserByEmail(email);
 
         let user;
         if (existingUser) {
+            // ✅ L'utilisateur existe : on garde son nom original, on met à jour le montant
             console.log(`   ℹ️ Utilisateur existant: ${existingUser.name} (email: ${email})`);
             console.log(`   ℹ️ Nom original conservé: ${existingUser.name}`);
             
+            // Mettre à jour le montant intention
             if (amount) {
                 await db.query(
                     'UPDATE users SET flex3 = $1, updated_at = NOW() WHERE email = $2',
@@ -261,11 +264,13 @@ app.post('/api/visiteur', async (req, res) => {
             }
             user = existingUser;
             
+            // S'assurer que le statut est 'visiteur'
             if (user.status !== 'visiteur') {
                 await db.updateUserStatus(email, 'visiteur');
                 user.status = 'visiteur';
             }
         } else {
+            // ✅ Nouvel utilisateur : on l'enregistre avec le nom fourni
             user = await db.getOrCreateUser(name, email, amount);
             console.log(`   ✅ Nouvel utilisateur créé: ${name}`);
         }
@@ -293,10 +298,7 @@ app.post('/api/visiteur', async (req, res) => {
 });
 
 // ================================================================
-// 9. API : CRÉER UN PAIEMENT (avec correction amountInCentimes)
-// ================================================================
-// ================================================================
-// 9. API : CRÉER UN PAIEMENT (avec /payment_links)
+// 9. API : CRÉER UN PAIEMENT
 // ================================================================
 
 app.post('/api/create-payment', async (req, res) => {
@@ -318,12 +320,13 @@ app.post('/api/create-payment', async (req, res) => {
     }
 
     try {
-        // ✅ Récupérer l'utilisateur
+        // ✅ Récupérer l'utilisateur (existe déjà via /api/visiteur)
         const user = await db.getUserByEmail(email);
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé. Veuillez d\'abord vous inscrire.' });
         }
         
+        // ✅ Utiliser le nom original de l'utilisateur
         const originalName = user.name;
         console.log(`   ✅ Utilisateur: ${originalName} (${user.status})`);
         console.log(`   ℹ️ Nom original conservé: ${originalName}`);
@@ -332,11 +335,12 @@ app.post('/api/create-payment', async (req, res) => {
         const reference = `VM-${email}-${Date.now()}`;
         console.log(`   🔗 Référence: ${reference}`);
 
+        // ✅ Créer la commande avec le nom original
         const order = await db.createOrder({
             reference,
             user_id: user.id,
             email,
-            name: originalName,
+            name: originalName, // ← Utiliser le nom original
             amount,
             status: 'pending'
         });
@@ -349,28 +353,29 @@ app.post('/api/create-payment', async (req, res) => {
         await db.updateUserStatus(email, 'participant');
         console.log(`   ✅ Statut mis à jour: participant`);
 
-        // ✅ Montant en centimes
         const amountInCentimes = Math.round(amount * 100);
         console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
 
-        // ✅ Requête Jèko avec /payment_links (sans paymentMethod)
         const requestBody = {
             storeId: process.env.JEKO_BUSINESS_ID,
             title: `Donation - ${originalName}`,
             amountCents: amountInCentimes,
             currency: 'XOF',
+            reference: reference,
             email: email,
-            username: originalName,
-            phone: '+2250503588336',
+            customerId: originalName,
             description: `Donation de ${originalName} (${email}) - ${amount} FCFA`,
-            allowMultiplePayments: false
+            paymentDetails: {
+                type: 'redirect',
+                data: {
+                    paymentMethod: 'wave',
+                    successUrl: 'https://virtmarket-test.onrender.com/verify',
+                    errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
+                }
+            }
         };
 
-        console.log(`\n📤 REQUÊTE JÈKO:`);
-        console.log('-'.repeat(40));
-        console.log(JSON.stringify(requestBody, null, 2));
-
-        const response = await fetch('https://api.jeko.africa/partner_api/payment_links', {
+        const response = await fetch('https://api.jeko.africa/partner_api/payment_requests', {
             method: 'POST',
             headers: {
                 'X-API-KEY': process.env.JEKO_API_KEY,
@@ -390,26 +395,21 @@ app.post('/api/create-payment', async (req, res) => {
             });
         }
 
-        // ✅ Récupérer l'URL de paiement (champ "link")
-        const checkout_url = data.link || null;
-
-        if (!checkout_url) {
-            console.error('   ❌ Aucune URL de paiement reçue');
-            return res.status(500).json({ error: 'Aucune URL de paiement reçue' });
+        if (!data.redirectUrl) {
+            throw new Error('Aucune URL de paiement reçue');
         }
 
-        // ✅ Mettre à jour le payment_link_id
         if (data.id) {
             await db.updateOrderPaymentLink(reference, data.id);
             console.log(`   ✅ Payment Link ID: ${data.id}`);
         }
 
-        console.log(`   ✅ URL: ${checkout_url}`);
+        console.log(`   ✅ URL: ${data.redirectUrl}`);
         console.log('='.repeat(80) + '\n');
 
         res.json({
             success: true,
-            checkout_url: checkout_url,
+            checkout_url: data.redirectUrl,
             reference: reference,
             order_id: order.id
         });
@@ -848,7 +848,7 @@ app.listen(PORT, () => {
     console.log(`📧 Service: SendGrid`);
     console.log(`\n📋 API disponibles:`);
     console.log(`   POST /api/visiteur (avec conservation du nom)`);
-    console.log(`   POST /api/create-payment (corrigé)`);
+    console.log(`   POST /api/create-payment`);
     console.log(`   GET  /api/paylist`);
     console.log(`   GET  /api/paylist/:reference`);
     console.log(`   GET  /api/payments`);
