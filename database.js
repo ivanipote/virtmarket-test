@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : database.js
 // DESCRIPTION : Gestion de la base de données PostgreSQL
-// VERSION : 3.2 - Ajout flex4 pour méthode de paiement
+// VERSION : 3.3 - Ajout migration flex4
 // ================================================================
 
 const { Pool } = require('pg');
@@ -85,6 +85,18 @@ async function initializeDatabase() {
             )
         `);
         console.log('✅ Table orders créée/vérifiée');
+
+        // ✅ Migration : ajouter la colonne flex4 si elle n'existe pas
+        await client.query(`
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                               WHERE table_name='orders' AND column_name='flex4') THEN
+                    ALTER TABLE orders ADD COLUMN flex4 TEXT DEFAULT NULL;
+                END IF;
+            END $$;
+        `);
+        console.log('✅ Colonne flex4 ajoutée à orders');
 
         // Migration : migrer les données depuis pending_payments si elle existe
         await client.query(`
@@ -232,7 +244,7 @@ async function updateUserStatus(email, status) {
 }
 
 /**
- * Met à jour les flex (Gold/Premium)
+ * Met à jour les flex
  */
 async function updateUserFlex(email, flex1, flex2) {
     try {
@@ -310,7 +322,7 @@ async function createOrder(data) {
         data.status || 'pending',
         data.payment_link_id || null,
         data.transaction_id || null,
-        data.flex4 || null  // ✅ Méthode de paiement (wave, orange_money, mtn_momo, moov_money)
+        data.flex4 || null
     ];
     try {
         const result = await pool.query(query, values);
