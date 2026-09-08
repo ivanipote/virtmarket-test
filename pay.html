@@ -25,9 +25,6 @@
             margin: 0;
         }
 
-        /* ============================================================ */
-        /* HEADER - BLEU #156FE6                                        */
-        /* ============================================================ */
         .pay-header {
             background: #156FE6;
             height: 60px;
@@ -54,9 +51,6 @@
             opacity: 0.5;
         }
 
-        /* ============================================================ */
-        /* MESSAGE INFO - CENTRÉ SOUS LE HEADER                         */
-        /* ============================================================ */
         .pay-info-banner {
             background: #f0f7ff;
             border-radius: 16px;
@@ -97,9 +91,6 @@
             margin-top: 4px;
         }
 
-        /* ============================================================ */
-        /* MAIN                                                         */
-        /* ============================================================ */
         .pay-main {
             flex: 1;
             display: flex;
@@ -112,9 +103,6 @@
             margin: 0 auto;
         }
 
-        /* ============================================================ */
-        /* CARTE BLANCHE                                               */
-        /* ============================================================ */
         .pay-card {
             background: white;
             border-radius: 24px;
@@ -131,9 +119,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ============================================================ */
-        /* LOGO WAVE                                                    */
-        /* ============================================================ */
         .wave-logo-wrapper {
             display: flex;
             justify-content: center;
@@ -157,9 +142,6 @@
             display: block;
         }
 
-        /* ============================================================ */
-        /* TITRE                                                         */
-        /* ============================================================ */
         .pay-title {
             font-size: 22px;
             font-weight: 700;
@@ -173,9 +155,6 @@
             margin-bottom: 20px;
         }
 
-        /* ============================================================ */
-        /* RÉCAPITULATIF                                                */
-        /* ============================================================ */
         .recap-item {
             display: flex;
             justify-content: space-between;
@@ -204,12 +183,72 @@
         }
 
         /* ============================================================ */
+        /* SÉLECTEUR DE MÉTHODE DE PAIEMENT                              */
+        /* ============================================================ */
+        .payment-methods {
+            margin: 16px 0 8px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .payment-methods .method-btn {
+            padding: 12px 8px;
+            border: 2px solid #e6e8ef;
+            border-radius: 14px;
+            background: #f8f9fc;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .payment-methods .method-btn i {
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+
+        .payment-methods .method-btn:hover {
+            border-color: #156FE6;
+            background: #f0f7ff;
+            color: #156FE6;
+            transform: translateY(-2px);
+        }
+
+        .payment-methods .method-btn.active {
+            border-color: #156FE6;
+            background: #eaf1ff;
+            color: #156FE6;
+            box-shadow: 0 2px 12px rgba(21, 111, 230, 0.08);
+        }
+
+        .payment-methods .method-btn .method-icon {
+            font-size: 28px;
+        }
+
+        .payment-methods .method-btn .method-name {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .payment-methods .method-btn .method-sub {
+            font-size: 10px;
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        /* ============================================================ */
         /* BOUTON PAYER                                                 */
         /* ============================================================ */
         .btn-pay-wrapper {
             display: flex;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 16px;
         }
 
         .btn-pay {
@@ -411,6 +450,9 @@
             .btn-pay .btn-text { font-size: 16px; }
             .overlay-jauge .jauge-wrapper { width: 220px; }
             .overlay-jauge .overlay-text { font-size: 18px; }
+            .payment-methods { grid-template-columns: 1fr 1fr; gap: 6px; }
+            .payment-methods .method-btn { padding: 10px 6px; font-size: 12px; }
+            .payment-methods .method-btn .method-icon { font-size: 22px; }
         }
 
         @media (max-width: 420px) {
@@ -432,6 +474,9 @@
             .overlay-jauge .jauge-wrapper { width: 180px; }
             .overlay-jauge .overlay-text { font-size: 16px; }
             .overlay-jauge .jauge-label { font-size: 11px; }
+            .payment-methods { grid-template-columns: 1fr 1fr; gap: 4px; }
+            .payment-methods .method-btn { padding: 8px 4px; font-size: 11px; }
+            .payment-methods .method-btn .method-icon { font-size: 18px; }
         }
 
         @media (max-width: 350px) {
@@ -444,6 +489,9 @@
             .overlay-jauge .overlay-text { font-size: 14px; }
             .pay-info-banner p { font-size: 10px; }
             .pay-info-banner .spam-warning { font-size: 9px; padding: 1px 8px; }
+            .payment-methods { grid-template-columns: 1fr 1fr; gap: 3px; }
+            .payment-methods .method-btn { padding: 6px 3px; font-size: 10px; }
+            .payment-methods .method-btn .method-icon { font-size: 16px; }
         }
     </style>
 </head>
@@ -457,7 +505,7 @@
     </header>
 
     <!-- ============================================================ -->
-    <!-- BANNIÈRE INFO - CENTRÉE                                       -->
+    <!-- BANNIÈRE INFO                                                 -->
     <!-- ============================================================ -->
     <div class="pay-info-banner">
         <p>
@@ -501,6 +549,37 @@
             <div class="recap-item">
                 <span class="label">💰 Montant</span>
                 <span class="value amount" id="displayAmount">-</span>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- SÉLECTEUR DES MÉTHODES DE PAIEMENT                            -->
+            <!-- ============================================================ -->
+            <div style="margin-top:16px;text-align:left;">
+                <label style="font-size:14px;font-weight:600;color:#1a1a2e;display:block;margin-bottom:8px;">
+                    <i class="fas fa-credit-card" style="color:#156FE6;"></i> Choisissez votre méthode
+                </label>
+                <div class="payment-methods" id="paymentMethods">
+                    <button class="method-btn active" data-method="wave">
+                        <span class="method-icon">🌊</span>
+                        <span class="method-name">Wave</span>
+                        <span class="method-sub">Recommandé</span>
+                    </button>
+                    <button class="method-btn" data-method="orange_money">
+                        <span class="method-icon">🟠</span>
+                        <span class="method-name">Orange Money</span>
+                        <span class="method-sub">Mobile</span>
+                    </button>
+                    <button class="method-btn" data-method="mtn_momo">
+                        <span class="method-icon">💛</span>
+                        <span class="method-name">MTN MoMo</span>
+                        <span class="method-sub">Mobile</span>
+                    </button>
+                    <button class="method-btn" data-method="moov_money">
+                        <span class="method-icon">🔵</span>
+                        <span class="method-name">Moov Money</span>
+                        <span class="method-sub">Mobile</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Bouton unique -->
@@ -553,6 +632,7 @@
             const overlay = document.getElementById('overlayJauge');
             const jaugeBar = document.getElementById('jaugeBar');
             const jaugePercent = document.getElementById('jaugePercent');
+            const methodBtns = document.querySelectorAll('.method-btn');
 
             // ===== RÉCUPÉRER LES PARAMÈTRES =====
             const urlParams = new URLSearchParams(window.location.search);
@@ -569,6 +649,42 @@
             console.log('   👤 Nom:', name);
             console.log('   📧 Email:', email);
             console.log('   💰 Montant:', amount, 'FCFA');
+
+            // ===== SÉLECTION DE LA MÉTHODE DE PAIEMENT =====
+            let selectedMethod = 'wave';
+
+            methodBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    methodBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedMethod = this.dataset.method;
+                    console.log('💳 Méthode sélectionnée:', selectedMethod);
+
+                    // Changer l'icône du bouton
+                    const methodIcons = {
+                        'wave': '🌊',
+                        'orange_money': '🟠',
+                        'mtn_momo': '💛',
+                        'moov_money': '🔵'
+                    };
+                    const icon = methodIcons[selectedMethod] || '💳';
+                    const btnWaveIcon = payBtn.querySelector('.btn-wave-icon');
+                    if (btnWaveIcon) {
+                        btnWaveIcon.src = selectedMethod === 'wave' ? '/wave.png' : '/wave.png';
+                    }
+                    // On garde l'image Wave pour tous, mais on change l'icône
+                    const btnText = payBtn.querySelector('.btn-text');
+                    if (btnText) {
+                        const methodNames = {
+                            'wave': 'Payer avec Wave',
+                            'orange_money': 'Payer avec Orange Money',
+                            'mtn_momo': 'Payer avec MTN MoMo',
+                            'moov_money': 'Payer avec Moov Money'
+                        };
+                        btnText.textContent = methodNames[selectedMethod] || 'Payer avec Wave';
+                    }
+                });
+            });
 
             // ===== TOAST =====
             function showToast(message, type = 'success') {
@@ -622,6 +738,7 @@
             // ===== PAYER - APPEL /api/create-payment =====
             payBtn.addEventListener('click', async function() {
                 console.log('🔄 Lancement du paiement...');
+                console.log('💳 Méthode:', selectedMethod);
 
                 payBtn.disabled = true;
                 payBtn.innerHTML = '<span class="spinner"></span> Préparation...';
@@ -631,7 +748,12 @@
                     const response = await fetch('/api/create-payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name, email, amount })
+                        body: JSON.stringify({
+                            name,
+                            email,
+                            amount,
+                            paymentMethod: selectedMethod
+                        })
                     });
 
                     const data = await response.json();
