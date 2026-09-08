@@ -353,27 +353,26 @@ app.post('/api/create-payment', async (req, res) => {
         await db.updateUserStatus(email, 'participant');
         console.log(`   ✅ Statut mis à jour: participant`);
 
-        const amountInCentimes = Math.round(amount * 100);
-        console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
+        // Ajouter paymentMethod dans la requête
+const paymentMethod = req.body.paymentMethod || 'wave';
 
-        const requestBody = {
-            storeId: process.env.JEKO_BUSINESS_ID,
-            title: `Donation - ${originalName}`,
-            amountCents: amountInCentimes,
-            currency: 'XOF',
-            reference: reference,
-            email: email,
-            customerId: originalName,
-            description: `Donation de ${originalName} (${email}) - ${amount} FCFA`,
-            paymentDetails: {
-                type: 'redirect',
-                data: {
-                    paymentMethod: 'wave',
-                    successUrl: 'https://virtmarket-test.onrender.com/verify',
-                    errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
-                }
-            }
-        };
+const requestBody = {
+    storeId: process.env.JEKO_BUSINESS_ID,
+    title: `Donation - ${name}`,
+    amountCents: amountInCentimes,
+    currency: 'XOF',
+    reference: reference,
+    email: email,
+    customerId: name,
+    paymentDetails: {
+        type: 'redirect',
+        data: {
+            paymentMethod: paymentMethod,  // ← MODIFICATION
+            successUrl: 'https://virtmarket-test.onrender.com/verify',
+            errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
+        }
+    }
+};
 
         const response = await fetch('https://api.jeko.africa/partner_api/payment_requests', {
             method: 'POST',
