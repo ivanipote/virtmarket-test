@@ -160,27 +160,59 @@
         }
 
         /* ============================================================ */
-        /* MESSAGE MÉTHODES DE PAIEMENT                                  */
+        /* MÉTHODES DE PAIEMENT - CONTENEURS COLORÉS                    */
         /* ============================================================ */
         .payment-info {
             margin-top: 16px;
-            padding: 12px 16px;
+            padding: 14px 16px;
             background: #f8f9fc;
             border-radius: 12px;
             border: 1px solid #e6e8ef;
-            font-size: 13px;
-            color: #6b7280;
             text-align: center;
         }
 
-        .payment-info i {
+        .payment-info .payment-label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .payment-info .payment-label i {
             color: #156FE6;
             margin-right: 6px;
         }
 
-        .payment-info .methods {
+        .payment-methods-list {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .payment-method-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
             font-weight: 600;
-            color: #0F1B4D;
+            color: white;
+            letter-spacing: 0.3px;
+        }
+
+        .payment-method-badge.wave {
+            background: #156FE6;
+        }
+
+        .payment-method-badge.orange {
+            background: #FF6600;
+        }
+
+        .payment-method-badge.mtn {
+            background: #FFCC00;
+            color: #1a1a2e;
+        }
+
+        .payment-method-badge.moov {
+            background: #0066CC;
         }
 
         /* ============================================================ */
@@ -381,7 +413,8 @@
             .btn-pay .btn-text { font-size: 16px; }
             .overlay-jauge .jauge-wrapper { width: 220px; }
             .overlay-jauge .overlay-text { font-size: 18px; }
-            .payment-info { font-size: 12px; padding: 10px 14px; }
+            .payment-methods-list { gap: 6px; }
+            .payment-method-badge { font-size: 11px; padding: 4px 12px; }
         }
 
         @media (max-width: 420px) {
@@ -401,7 +434,8 @@
             .overlay-jauge .jauge-wrapper { width: 180px; }
             .overlay-jauge .overlay-text { font-size: 16px; }
             .overlay-jauge .jauge-label { font-size: 11px; }
-            .payment-info { font-size: 11px; padding: 8px 12px; }
+            .payment-methods-list { gap: 4px; }
+            .payment-method-badge { font-size: 10px; padding: 3px 10px; }
         }
 
         @media (max-width: 350px) {
@@ -412,7 +446,7 @@
             .overlay-jauge .overlay-text { font-size: 14px; }
             .pay-info-banner p { font-size: 10px; }
             .pay-info-banner .spam-warning { font-size: 9px; padding: 1px 8px; }
-            .payment-info { font-size: 10px; padding: 6px 10px; }
+            .payment-method-badge { font-size: 9px; padding: 2px 8px; }
         }
     </style>
 </head>
@@ -466,13 +500,18 @@
             </div>
 
             <!-- ============================================================ -->
-            <!-- MESSAGE MÉTHODES DE PAIEMENT                                   -->
+            <!-- MÉTHODES DE PAIEMENT - CONTENEURS COLORÉS                    -->
             <!-- ============================================================ -->
             <div class="payment-info">
-                <i class="fas fa-credit-card"></i>
-                Vous serez redirigé vers la page de paiement sécurisé.
-                <br>
-                <span class="methods">🌊 Wave · 🟠 Orange Money · 💛 MTN MoMo · 🔵 Moov Money</span>
+                <div class="payment-label">
+                    <i class="fas fa-credit-card"></i> Méthodes de paiement disponibles
+                </div>
+                <div class="payment-methods-list">
+                    <span class="payment-method-badge wave">Wave</span>
+                    <span class="payment-method-badge orange">Orange Money</span>
+                    <span class="payment-method-badge mtn">MTN MoMo</span>
+                    <span class="payment-method-badge moov">Moov Money</span>
+                </div>
             </div>
 
             <!-- Bouton unique -->
