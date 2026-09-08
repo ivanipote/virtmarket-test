@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : server-test.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 6.2 - Version finale avec total_amount
+// VERSION : 6.3 - Conservation du nom par email
 // ================================================================
 
 require('dotenv').config();
@@ -157,28 +157,23 @@ async function getUsersWithStatus() {
         const successCount = payments.filter(p => p.status === 'success').length;
         const pendingCount = orders.filter(o => o.status === 'pending').length;
 
-        // ✅ Calcul du total en FCFA (centimes → FCFA)
         const totalAmount = payments
             .filter(p => p.status === 'success')
             .reduce((sum, p) => sum + (p.amount / 100), 0);
 
         let status = 'visiteur';
 
-        // Donateur : 1+ paiement success
         if (successCount >= 1) {
             status = 'donateur';
-        }
-        // Participant : 1+ commande pending (mais pas encore donateur)
-        else if (pendingCount >= 1) {
+        } else if (pendingCount >= 1) {
             status = 'participant';
         }
-        // Visiteur : par défaut
 
         result.push({
             ...user,
             calculated_status: status,
             success_payments: successCount,
-            total_amount: totalAmount,  // ✅ AJOUTÉ
+            total_amount: totalAmount,
             pending_orders: pendingCount,
             total_orders: orders.length
         });
@@ -199,6 +194,7 @@ app.get('/verify', (req, res) => res.sendFile(__dirname + '/verifypay.html'));
 app.get('/payviaapi.html', (req, res) => res.sendFile(__dirname + '/payviaapi.html'));
 app.get('/sendgrid-test.html', (req, res) => res.sendFile(__dirname + '/sendgrid-test.html'));
 app.get('/testmail.html', (req, res) => res.sendFile(__dirname + '/testmail.html'));
+app.get('/reset-data.html', (req, res) => res.sendFile(__dirname + '/reset-data.html'));
 
 // ================================================================
 // 7. ROUTE : TEST SENDGRID
@@ -228,7 +224,7 @@ app.post('/api/test-email', async (req, res) => {
 });
 
 // ================================================================
-// 8. API : VISITEUR
+// 8. API : VISITEUR (avec conservation du nom par email)
 // ================================================================
 
 app.post('/api/visiteur', async (req, res) => {
@@ -249,14 +245,39 @@ app.post('/api/visiteur', async (req, res) => {
     }
 
     try {
-        const user = await db.getOrCreateUser(name, email, amount);
-        
-        if (user.status !== 'visiteur') {
-            await db.updateUserStatus(email, 'visiteur');
+        // ✅ Vérifier si l'utilisateur existe déjà
+        const existingUser = await db.getUserByEmail(email);
+
+        let user;
+        if (existingUser) {
+            // ✅ L'utilisateur existe : on garde son nom original, on met à jour le montant
+            console.log(`   ℹ️ Utilisateur existant: ${existingUser.name} (email: ${email})`);
+            console.log(`   ℹ️ Nom original conservé: ${existingUser.name}`);
+            
+            // Mettre à jour le montant intention
+            if (amount) {
+                await db.query(
+                    'UPDATE users SET flex3 = $1, updated_at = NOW() WHERE email = $2',
+                    [String(amount), email]
+                );
+                existingUser.flex3 = String(amount);
+            }
+            user = existingUser;
+            
+            // S'assurer que le statut est 'visiteur'
+            if (user.status !== 'visiteur') {
+                await db.updateUserStatus(email, 'visiteur');
+                user.status = 'visiteur';
+            }
+        } else {
+            // ✅ Nouvel utilisateur : on l'enregistre avec le nom fourni
+            user = await db.getOrCreateUser(name, email, amount);
+            console.log(`   ✅ Nouvel utilisateur créé: ${name}`);
         }
 
         console.log(`✅ Visiteur enregistré: ${email}`);
-        console.log(`   💰 Intention: ${amount} FCFA (flex3)`);
+        console.log(`   👤 Nom conservé: ${user.name}`);
+        console.log(`   💰 Intention: ${user.flex3 || amount} FCFA`);
         console.log('='.repeat(40) + '\n');
 
         res.json({
@@ -265,7 +286,7 @@ app.post('/api/visiteur', async (req, res) => {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                status: 'visiteur',
+                status: user.status || 'visiteur',
                 intention: user.flex3 || amount
             }
         });
@@ -299,21 +320,27 @@ app.post('/api/create-payment', async (req, res) => {
     }
 
     try {
+        // ✅ Récupérer l'utilisateur (existe déjà via /api/visiteur)
         const user = await db.getUserByEmail(email);
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé. Veuillez d\'abord vous inscrire.' });
         }
-        console.log(`   ✅ Utilisateur: ${user.name} (${user.status})`);
+        
+        // ✅ Utiliser le nom original de l'utilisateur
+        const originalName = user.name;
+        console.log(`   ✅ Utilisateur: ${originalName} (${user.status})`);
+        console.log(`   ℹ️ Nom original conservé: ${originalName}`);
         console.log(`   💰 Intention initiale: ${user.flex3 || 'Non renseignée'} FCFA`);
 
         const reference = `VM-${email}-${Date.now()}`;
         console.log(`   🔗 Référence: ${reference}`);
 
+        // ✅ Créer la commande avec le nom original
         const order = await db.createOrder({
             reference,
             user_id: user.id,
             email,
-            name,
+            name: originalName, // ← Utiliser le nom original
             amount,
             status: 'pending'
         });
@@ -331,13 +358,13 @@ app.post('/api/create-payment', async (req, res) => {
 
         const requestBody = {
             storeId: process.env.JEKO_BUSINESS_ID,
-            title: `Donation - ${name}`,
+            title: `Donation - ${originalName}`,
             amountCents: amountInCentimes,
             currency: 'XOF',
             reference: reference,
             email: email,
-            customerId: name,
-            description: `Donation de ${name} (${email}) - ${amount} FCFA`,
+            customerId: originalName,
+            description: `Donation de ${originalName} (${email}) - ${amount} FCFA`,
             paymentDetails: {
                 type: 'redirect',
                 data: {
@@ -596,28 +623,30 @@ app.post('/api/update-status', async (req, res) => {
 });
 
 // ================================================================
-// ROUTE ADMIN : RÉINITIALISER LA BASE
+// 16. API : COMMANDES D'UN UTILISATEUR
 // ================================================================
 
-app.post('/api/admin/reset-database', async (req, res) => {
-    console.log('\n' + '='.repeat(80));
-    console.log('🔄 RÉINITIALISATION DE LA BASE');
-    console.log('='.repeat(80));
-    console.log('⚠️ Toutes les données vont être supprimées !');
+app.get('/api/orders/user/:email', async (req, res) => {
+    const { email } = req.params;
+
+    console.log(`📝 Récupération des commandes pour: ${email}`);
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email requis' });
+    }
 
     try {
-        await db.query('TRUNCATE TABLE payments, orders, users RESTART IDENTITY CASCADE');
-        console.log('✅ Base réinitialisée avec succès');
-        console.log('='.repeat(80) + '\n');
-        res.json({ success: true, message: 'Base réinitialisée avec succès' });
+        const orders = await db.getOrdersByEmail(email);
+        console.log(`✅ ${orders.length} commande(s) trouvée(s) pour ${email}`);
+        res.json({ success: true, count: orders.length, orders });
     } catch (error) {
-        console.error('❌ Erreur réinitialisation:', error);
-        res.status(500).json({ success: false, error: error.message });
+        console.error('❌ Erreur récupération commandes:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
 // ================================================================
-// ROUTE ADMIN : VÉRIFIER LES IDENTIFIANTS
+// 17. ROUTE ADMIN : VÉRIFIER LES IDENTIFIANTS
 // ================================================================
 
 app.post('/api/admin/verify', async (req, res) => {
@@ -634,7 +663,7 @@ app.post('/api/admin/verify', async (req, res) => {
 });
 
 // ================================================================
-// ROUTE ADMIN : RÉINITIALISER LA BASE
+// 18. ROUTE ADMIN : RÉINITIALISER LA BASE
 // ================================================================
 
 app.post('/api/admin/reset-database', async (req, res) => {
@@ -661,31 +690,9 @@ app.post('/api/admin/reset-database', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
-// ================================================================
-// 16. API : COMMANDES D'UN UTILISATEUR
-// ================================================================
-
-app.get('/api/orders/user/:email', async (req, res) => {
-    const { email } = req.params;
-
-    console.log(`📝 Récupération des commandes pour: ${email}`);
-
-    if (!email) {
-        return res.status(400).json({ error: 'Email requis' });
-    }
-
-    try {
-        const orders = await db.getOrdersByEmail(email);
-        console.log(`✅ ${orders.length} commande(s) trouvée(s) pour ${email}`);
-        res.json({ success: true, count: orders.length, orders });
-    } catch (error) {
-        console.error('❌ Erreur récupération commandes:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
 
 // ================================================================
-// 17. WEBHOOK JEKO
+// 19. WEBHOOK JEKO
 // ================================================================
 
 app.post('/webhook', async (req, res) => {
@@ -830,7 +837,7 @@ app.post('/webhook', async (req, res) => {
 });
 
 // ================================================================
-// 18. DÉMARRAGE
+// 20. DÉMARRAGE
 // ================================================================
 
 app.listen(PORT, () => {
@@ -840,7 +847,7 @@ app.listen(PORT, () => {
     console.log(`📧 Email expéditeur: ${SENDER_EMAIL}`);
     console.log(`📧 Service: SendGrid`);
     console.log(`\n📋 API disponibles:`);
-    console.log(`   POST /api/visiteur (avec intention)`);
+    console.log(`   POST /api/visiteur (avec conservation du nom)`);
     console.log(`   POST /api/create-payment`);
     console.log(`   GET  /api/paylist`);
     console.log(`   GET  /api/paylist/:reference`);
