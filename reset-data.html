@@ -191,16 +191,406 @@
             color: #9ca3af;
         }
 
+        /* ============================================================ */
+        /* OVERLAY DE CONNEXION                                         */
+        /* ============================================================ */
+        .login-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .login-overlay.active {
+            display: flex;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 32px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-box .login-icon {
+            font-size: 48px;
+            color: #156FE6;
+            margin-bottom: 12px;
+        }
+
+        .login-box h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0F1B4D;
+            margin-bottom: 4px;
+        }
+
+        .login-box .login-sub {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .login-box .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .login-box .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+        }
+
+        .login-box .form-group .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #f8f9fc;
+            border: 2px solid #e6e8ef;
+            border-radius: 14px;
+            transition: all 0.3s;
+        }
+
+        .login-box .form-group .input-wrapper:focus-within {
+            border-color: #156FE6;
+            box-shadow: 0 0 0 4px rgba(21, 111, 230, 0.08);
+            background: white;
+        }
+
+        .login-box .form-group .input-wrapper input {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            background: transparent;
+            outline: none;
+            color: #1a1a2e;
+            font-weight: 500;
+        }
+
+        .login-box .form-group .input-wrapper .input-icon {
+            padding: 0 16px 0 4px;
+            color: #b0b5c4;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .login-box .form-group .input-wrapper:focus-within .input-icon {
+            color: #156FE6;
+        }
+
+        .login-box .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #156FE6, #0F1B4D);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .login-box .btn-login:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(21, 111, 230, 0.3);
+        }
+
+        .login-box .btn-login:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-box .btn-login .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .login-box .login-error {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #fcebea;
+            color: #c0342a;
+            border: 1px solid #f3c6c2;
+            display: none;
+        }
+
+        .login-box .login-error.show {
+            display: block;
+        }
+
+        .login-box .login-footer {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* ============================================================ */
+        /* OVERLAY DE MOT DE PASSE                                      */
+        /* ============================================================ */
+        .password-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .password-overlay.active {
+            display: flex;
+        }
+
+        .password-box {
+            background: white;
+            border-radius: 24px;
+            padding: 32px 28px;
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        .password-box .pass-icon {
+            font-size: 40px;
+            color: #dc3545;
+            margin-bottom: 8px;
+        }
+
+        .password-box h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0F1B4D;
+            margin-bottom: 4px;
+        }
+
+        .password-box .pass-sub {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .password-box .form-group {
+            margin-bottom: 14px;
+            text-align: left;
+        }
+
+        .password-box .form-group .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #f8f9fc;
+            border: 2px solid #e6e8ef;
+            border-radius: 14px;
+            transition: all 0.3s;
+        }
+
+        .password-box .form-group .input-wrapper:focus-within {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.08);
+            background: white;
+        }
+
+        .password-box .form-group .input-wrapper input {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            background: transparent;
+            outline: none;
+            color: #1a1a2e;
+            font-weight: 500;
+        }
+
+        .password-box .form-group .input-wrapper .input-icon {
+            padding: 0 16px 0 4px;
+            color: #b0b5c4;
+            font-size: 18px;
+        }
+
+        .password-box .form-group .input-wrapper:focus-within .input-icon {
+            color: #dc3545;
+        }
+
+        .password-box .btn-confirm {
+            width: 100%;
+            padding: 14px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .password-box .btn-confirm:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(220, 53, 69, 0.3);
+        }
+
+        .password-box .btn-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .password-box .btn-confirm .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .password-box .pass-error {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #fcebea;
+            color: #c0342a;
+            border: 1px solid #f3c6c2;
+            display: none;
+        }
+
+        .password-box .pass-error.show {
+            display: block;
+        }
+
         @media (max-width: 500px) {
             .card { padding: 24px 18px 20px 18px; }
             .card h1 { font-size: 20px; }
             .btn-reset { font-size: 16px; padding: 14px; }
+            .login-box { padding: 24px 18px; }
+            .password-box { padding: 24px 18px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
+    <!-- ============================================================ -->
+    <!-- OVERLAY DE CONNEXION                                          -->
+    <!-- ============================================================ -->
+    <div class="login-overlay active" id="loginOverlay">
+        <div class="login-box">
+            <div class="login-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h2>🔐 Accès admin</h2>
+            <p class="login-sub">Identifiez-vous pour accéder à cette page</p>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label><i class="fas fa-user" style="color:#156FE6;"></i> Nom d'utilisateur</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fas fa-user"></i></span>
+                        <input type="text" id="loginUser" placeholder="virtmakadmin" value="virtmakadmin" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-lock" style="color:#156FE6;"></i> Mot de passe</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        <input type="password" id="loginPass" placeholder="Mot de passe" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Se connecter
+                </button>
+
+                <div id="loginError" class="login-error"></div>
+            </form>
+
+            <div class="login-footer">
+                <i class="fas fa-lock" style="color:#156FE6;"></i> Accès restreint
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OVERLAY DE MOT DE PASSE (pour la réinitialisation)            -->
+    <!-- ============================================================ -->
+    <div class="password-overlay" id="passwordOverlay">
+        <div class="password-box">
+            <div class="pass-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>⚠️ Confirmation</h3>
+            <p class="pass-sub">Entrez votre mot de passe pour confirmer la réinitialisation</p>
+
+            <form id="passwordForm">
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        <input type="password" id="confirmPassword" placeholder="Mot de passe" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-confirm" id="confirmBtn">
+                    <i class="fas fa-trash-alt"></i> Confirmer la réinitialisation
+                </button>
+
+                <div id="passError" class="pass-error"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- CONTENU PRINCIPAL                                             -->
+    <!-- ============================================================ -->
+    <div class="card" id="mainCard">
         <div class="icon">
             <i class="fas fa-database"></i>
         </div>
@@ -241,9 +631,28 @@
 
             console.log('✅ reset-data.html chargé');
 
+            // ===== RÉFÉRENCES =====
+            const loginOverlay = document.getElementById('loginOverlay');
+            const passwordOverlay = document.getElementById('passwordOverlay');
+            const mainCard = document.getElementById('mainCard');
+
+            const loginForm = document.getElementById('loginForm');
+            const loginUser = document.getElementById('loginUser');
+            const loginPass = document.getElementById('loginPass');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginError = document.getElementById('loginError');
+
+            const passwordForm = document.getElementById('passwordForm');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const passError = document.getElementById('passError');
+
             const resetBtn = document.getElementById('resetBtn');
             const statusMessage = document.getElementById('statusMessage');
 
+            let isAuthenticated = false;
+
+            // ===== FUNCTIONS =====
             function showStatus(message, type = 'info') {
                 statusMessage.className = 'status-message ' + type;
                 statusMessage.textContent = message;
@@ -253,44 +662,144 @@
                 statusMessage.className = 'status-message';
             }
 
-            resetBtn.addEventListener('click', async function() {
-                // Confirmation
-                if (!confirm('⚠️ Êtes-vous sûr de vouloir réinitialiser la base ?\nToutes les données seront perdues définitivement.')) {
+            function showLoginError(message) {
+                loginError.textContent = message;
+                loginError.className = 'login-error show';
+            }
+
+            function hideLoginError() {
+                loginError.className = 'login-error';
+            }
+
+            function showPassError(message) {
+                passError.textContent = message;
+                passError.className = 'pass-error show';
+            }
+
+            function hidePassError() {
+                passError.className = 'pass-error';
+            }
+
+            // ===== LOGIN =====
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                hideLoginError();
+
+                const username = loginUser.value.trim();
+                const password = loginPass.value.trim();
+
+                if (!username || !password) {
+                    showLoginError('Veuillez remplir tous les champs.');
                     return;
                 }
 
-                if (!confirm('⚠️ Confirmation finale : Cette action est irréversible !')) {
-                    return;
-                }
-
-                hideStatus();
-                resetBtn.disabled = true;
-                resetBtn.innerHTML = '<span class="spinner"></span> Réinitialisation en cours...';
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<span class="spinner"></span> Vérification...';
 
                 try {
-                    const response = await fetch('/api/admin/reset-database', {
+                    const response = await fetch('/api/admin/verify', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
                     });
 
                     const data = await response.json();
 
                     if (response.ok) {
-                        showStatus('✅ ' + data.message, 'success');
-                        resetBtn.innerHTML = '<i class="fas fa-check"></i> Réinitialisé !';
+                        isAuthenticated = true;
+                        loginOverlay.classList.remove('active');
+                        console.log('✅ Authentification réussie');
+                    } else {
+                        showLoginError('❌ ' + (data.error || 'Identifiants incorrects'));
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    showLoginError('❌ Erreur de connexion au serveur');
+                } finally {
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se connecter';
+                }
+            });
+
+            // ===== RESET BUTTON =====
+            resetBtn.addEventListener('click', function() {
+                if (!isAuthenticated) {
+                    loginOverlay.classList.add('active');
+                    return;
+                }
+                passwordOverlay.classList.add('active');
+                confirmPassword.value = '';
+                hidePassError();
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Confirmer la réinitialisation';
+            });
+
+            // ===== CONFIRM PASSWORD =====
+            passwordForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                hidePassError();
+
+                const password = confirmPassword.value.trim();
+
+                if (!password) {
+                    showPassError('Veuillez entrer votre mot de passe.');
+                    return;
+                }
+
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<span class="spinner"></span> Vérification...';
+
+                try {
+                    // Vérifier le mot de passe
+                    const verifyRes = await fetch('/api/admin/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: 'virtmakadmin', password })
+                    });
+
+                    const verifyData = await verifyRes.json();
+
+                    if (!verifyRes.ok) {
+                        showPassError('❌ Mot de passe incorrect');
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Confirmer la réinitialisation';
+                        return;
+                    }
+
+                    // ✅ Réinitialiser la base
+                    const resetRes = await fetch('/api/admin/reset-database', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password })
+                    });
+
+                    const resetData = await resetRes.json();
+
+                    if (resetRes.ok) {
+                        passwordOverlay.classList.remove('active');
+                        showStatus('✅ ' + resetData.message, 'success');
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerHTML = '<i class="fas fa-check"></i> Réinitialisé !';
                         setTimeout(() => {
                             window.location.href = '/admin';
                         }, 2000);
                     } else {
-                        showStatus('❌ ' + (data.error || 'Erreur inconnue'), 'error');
-                        resetBtn.disabled = false;
-                        resetBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Réinitialiser la base';
+                        showPassError('❌ ' + (resetData.error || 'Erreur lors de la réinitialisation'));
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Confirmer la réinitialisation';
                     }
                 } catch (error) {
                     console.error('❌ Erreur:', error);
-                    showStatus('❌ Erreur de connexion au serveur', 'error');
-                    resetBtn.disabled = false;
-                    resetBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Réinitialiser la base';
+                    showPassError('❌ Erreur de connexion au serveur');
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Confirmer la réinitialisation';
+                }
+            });
+
+            // ===== FERMER OVERLAY MOT DE PASSE (clique en dehors) =====
+            passwordOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
                 }
             });
 
