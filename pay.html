@@ -25,9 +25,6 @@
             margin: 0;
         }
 
-        /* ============================================================ */
-        /* HEADER - BLEU #156FE6                                        */
-        /* ============================================================ */
         .pay-header {
             background: #156FE6;
             height: 60px;
@@ -54,9 +51,6 @@
             opacity: 0.5;
         }
 
-        /* ============================================================ */
-        /* MESSAGE INFO - CENTRÉ SOUS LE HEADER                         */
-        /* ============================================================ */
         .pay-info-banner {
             background: #f0f7ff;
             border-radius: 16px;
@@ -97,9 +91,6 @@
             margin-top: 4px;
         }
 
-        /* ============================================================ */
-        /* MAIN                                                         */
-        /* ============================================================ */
         .pay-main {
             flex: 1;
             display: flex;
@@ -112,9 +103,6 @@
             margin: 0 auto;
         }
 
-        /* ============================================================ */
-        /* CARTE BLANCHE                                               */
-        /* ============================================================ */
         .pay-card {
             background: white;
             border-radius: 24px;
@@ -131,35 +119,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ============================================================ */
-        /* LOGO WAVE                                                    */
-        /* ============================================================ */
-        .wave-logo-wrapper {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 16px;
-        }
-
-        .wave-logo {
-            width: 100px;
-            height: 100px;
-            border-radius: 30px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(21, 111, 230, 0.15);
-            background: transparent;
-            border: 2px solid rgba(21, 111, 230, 0.08);
-        }
-
-        .wave-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        /* ============================================================ */
-        /* TITRE                                                         */
-        /* ============================================================ */
         .pay-title {
             font-size: 22px;
             font-weight: 700;
@@ -174,14 +133,145 @@
         }
 
         /* ============================================================ */
-        /* RÉCAPITULATIF                                                */
+        /* MÉTHODES DE PAIEMENT (avec toggles)                           */
+        /* ============================================================ */
+        .methods-title {
+            text-align: left;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0F1B4D;
+            margin-bottom: 12px;
+        }
+
+        .methods-title i {
+            color: #156FE6;
+            margin-right: 6px;
+        }
+
+        .methods-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .method-card {
+            padding: 14px 12px;
+            border: 2px solid #e6e8ef;
+            border-radius: 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fc;
+            position: relative;
+        }
+
+        .method-card:hover {
+            border-color: #156FE6;
+            background: #f0f7ff;
+        }
+
+        .method-card.selected {
+            border-color: #156FE6;
+            background: #eaf1ff;
+            box-shadow: 0 2px 12px rgba(21, 111, 230, 0.08);
+        }
+
+        .method-card .toggle-wrapper {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+        }
+
+        .method-card .toggle {
+            width: 28px;
+            height: 16px;
+            background: #d1d5db;
+            border-radius: 20px;
+            position: relative;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+
+        .method-card .toggle .toggle-knob {
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .method-card.selected .toggle {
+            background: #156FE6;
+        }
+
+        .method-card.selected .toggle .toggle-knob {
+            left: 14px;
+        }
+
+        .method-card .logo-img {
+            height: 30px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 4px auto;
+        }
+
+        .method-card .method-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .method-card.wave { border-color: #156FE6; }
+        .method-card.wave.selected { border-color: #156FE6; background: #eaf1ff; }
+
+        .method-card.orange { border-color: #FF6600; }
+        .method-card.orange.selected { border-color: #FF6600; background: #fff0e6; }
+
+        .method-card.mtn { border-color: #FFCC00; }
+        .method-card.mtn.selected { border-color: #FFCC00; background: #fffce6; }
+
+        .method-card.moov { border-color: #0066CC; }
+        .method-card.moov.selected { border-color: #0066CC; background: #e6f0ff; }
+
+        /* ============================================================ */
+        /* MÉTHODE CHOISIE                                               */
+        /* ============================================================ */
+        .selected-method-display {
+            background: #f0f7ff;
+            border-radius: 12px;
+            padding: 10px 16px;
+            border: 1px solid rgba(21, 111, 230, 0.12);
+            text-align: center;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #0F1B4D;
+        }
+
+        .selected-method-display .method-name {
+            font-weight: 700;
+            color: #156FE6;
+        }
+
+        .selected-method-display .check {
+            color: #22c55e;
+        }
+
+        /* ============================================================ */
+        /* RÉCAPITULATIF                                                 */
         /* ============================================================ */
         .recap-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #f0f2f5;
-            font-size: 15px;
+            font-size: 14px;
+            text-align: left;
         }
 
         .recap-item:last-child {
@@ -190,6 +280,7 @@
 
         .recap-item .label {
             color: #6b7280;
+            font-weight: 500;
         }
 
         .recap-item .value {
@@ -199,7 +290,7 @@
 
         .recap-item .value.amount {
             color: #156FE6;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 800;
         }
 
@@ -216,16 +307,12 @@
             background: linear-gradient(135deg, #156FE6, #0F1B4D);
             color: white;
             border: none;
-            padding: 18px 48px;
+            padding: 16px 48px;
             border-radius: 50px;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
             width: 100%;
             max-width: 350px;
             box-shadow: 0 4px 20px rgba(21, 111, 230, 0.25);
@@ -242,24 +329,10 @@
             transform: none;
         }
 
-        .btn-pay .btn-wave-icon {
-            width: 28px;
-            height: 28px;
-            object-fit: contain;
-            filter: brightness(0) invert(1);
-            flex-shrink: 0;
-        }
-
-        .btn-pay .btn-text {
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
         .btn-pay .spinner {
             display: inline-block;
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border: 3px solid rgba(255, 255, 255, 0.2);
             border-top-color: white;
             border-radius: 50%;
@@ -403,12 +476,14 @@
             .pay-main { padding: 16px 12px 20px 12px; }
             .pay-card { padding: 24px 18px 20px 18px; border-radius: 20px; }
             .pay-title { font-size: 19px; }
-            .wave-logo { width: 80px; height: 80px; border-radius: 24px; }
-            .recap-item { font-size: 14px; padding: 8px 0; }
-            .recap-item .value.amount { font-size: 18px; }
-            .btn-pay { padding: 16px 32px; font-size: 16px; max-width: 300px; }
-            .btn-pay .btn-wave-icon { width: 24px; height: 24px; }
-            .btn-pay .btn-text { font-size: 16px; }
+            .methods-grid { gap: 8px; }
+            .method-card { padding: 12px 8px; }
+            .method-card .logo-img { height: 24px; }
+            .method-card .method-name { font-size: 11px; }
+            .selected-method-display { font-size: 13px; padding: 8px 12px; }
+            .recap-item { font-size: 13px; }
+            .recap-item .value.amount { font-size: 16px; }
+            .btn-pay { font-size: 15px; padding: 14px 32px; }
             .overlay-jauge .jauge-wrapper { width: 220px; }
             .overlay-jauge .overlay-text { font-size: 18px; }
         }
@@ -422,12 +497,17 @@
             .pay-card { padding: 18px 14px 14px 14px; border-radius: 18px; }
             .pay-title { font-size: 17px; }
             .pay-subtitle { font-size: 13px; }
-            .wave-logo { width: 70px; height: 70px; border-radius: 20px; }
-            .recap-item { font-size: 13px; padding: 6px 0; }
-            .recap-item .value.amount { font-size: 16px; }
-            .btn-pay { padding: 14px 24px; font-size: 14px; max-width: 260px; border-radius: 40px; gap: 10px; }
-            .btn-pay .btn-wave-icon { width: 20px; height: 20px; }
-            .btn-pay .btn-text { font-size: 14px; }
+            .methods-grid { gap: 6px; }
+            .method-card { padding: 10px 6px; }
+            .method-card .logo-img { height: 20px; }
+            .method-card .method-name { font-size: 10px; }
+            .method-card .toggle { width: 22px; height: 14px; }
+            .method-card .toggle .toggle-knob { width: 10px; height: 10px; top: 2px; left: 2px; }
+            .method-card.selected .toggle .toggle-knob { left: 10px; }
+            .selected-method-display { font-size: 12px; padding: 6px 10px; }
+            .recap-item { font-size: 12px; padding: 6px 0; }
+            .recap-item .value.amount { font-size: 15px; }
+            .btn-pay { font-size: 14px; padding: 12px 24px; }
             .toast-container { font-size: 13px; padding: 10px 16px; bottom: 16px; }
             .overlay-jauge .jauge-wrapper { width: 180px; }
             .overlay-jauge .overlay-text { font-size: 16px; }
@@ -436,10 +516,7 @@
 
         @media (max-width: 350px) {
             .pay-card { padding: 14px 10px 12px 10px; border-radius: 16px; }
-            .wave-logo { width: 60px; height: 60px; border-radius: 16px; }
             .btn-pay { padding: 12px 20px; font-size: 13px; max-width: 220px; }
-            .btn-pay .btn-wave-icon { width: 18px; height: 18px; }
-            .btn-pay .btn-text { font-size: 13px; }
             .overlay-jauge .jauge-wrapper { width: 150px; }
             .overlay-jauge .overlay-text { font-size: 14px; }
             .pay-info-banner p { font-size: 10px; }
@@ -457,7 +534,7 @@
     </header>
 
     <!-- ============================================================ -->
-    <!-- BANNIÈRE INFO - CENTRÉE                                       -->
+    <!-- BANNIÈRE INFO                                                -->
     <!-- ============================================================ -->
     <div class="pay-info-banner">
         <p>
@@ -479,17 +556,73 @@
 
         <div class="pay-card">
 
-            <!-- Logo Wave -->
-            <div class="wave-logo-wrapper">
-                <div class="wave-logo">
-                    <img src="/wave.png" alt="Wave" />
-                </div>
-            </div>
-
             <div class="pay-title">💳 Paiement sécurisé</div>
             <div class="pay-subtitle">Confirmez vos informations avant le paiement</div>
 
-            <!-- Récapitulatif -->
+            <!-- ============================================================ -->
+            <!-- 1. MÉTHODES DE PAIEMENT                                       -->
+            <!-- ============================================================ -->
+            <div class="methods-title">
+                <i class="fas fa-credit-card"></i> Méthode de paiement
+            </div>
+
+            <div class="methods-grid" id="methodsGrid">
+                <!-- Wave -->
+                <div class="method-card wave selected" data-method="wave">
+                    <div class="toggle-wrapper">
+                        <div class="toggle" id="toggle-wave">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </div>
+                    <img src="/wave.png" alt="Wave" class="logo-img" />
+                    <div class="method-name">Wave</div>
+                </div>
+
+                <!-- Orange Money -->
+                <div class="method-card orange" data-method="orange_money">
+                    <div class="toggle-wrapper">
+                        <div class="toggle" id="toggle-orange">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </div>
+                    <img src="/om.png" alt="Orange Money" class="logo-img" />
+                    <div class="method-name">Orange Money</div>
+                </div>
+
+                <!-- MTN MoMo -->
+                <div class="method-card mtn" data-method="mtn_momo">
+                    <div class="toggle-wrapper">
+                        <div class="toggle" id="toggle-mtn">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </div>
+                    <img src="/mtn.png" alt="MTN MoMo" class="logo-img" />
+                    <div class="method-name">MTN MoMo</div>
+                </div>
+
+                <!-- Moov Money -->
+                <div class="method-card moov" data-method="moov_money">
+                    <div class="toggle-wrapper">
+                        <div class="toggle" id="toggle-moov">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </div>
+                    <img src="/moov.png" alt="Moov Money" class="logo-img" />
+                    <div class="method-name">Moov Money</div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- 2. MÉTHODE CHOISIE                                            -->
+            <!-- ============================================================ -->
+            <div class="selected-method-display" id="selectedMethodDisplay">
+                <span class="check">✅</span>
+                Méthode choisie : <span class="method-name" id="selectedMethodName">Wave</span>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- 3. RÉCAPITULATIF                                              -->
+            <!-- ============================================================ -->
             <div class="recap-item">
                 <span class="label">👤 Donateur</span>
                 <span class="value" id="displayName">-</span>
@@ -503,11 +636,12 @@
                 <span class="value amount" id="displayAmount">-</span>
             </div>
 
-            <!-- Bouton unique -->
+            <!-- ============================================================ -->
+            <!-- 4. BOUTON PAYER                                               -->
+            <!-- ============================================================ -->
             <div class="btn-pay-wrapper">
                 <button class="btn-pay" id="payBtn">
-                    <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
-                    <span class="btn-text">Effectuer mon paiement</span>
+                    Effectuer mon paiement
                 </button>
             </div>
 
@@ -554,6 +688,9 @@
             const jaugeBar = document.getElementById('jaugeBar');
             const jaugePercent = document.getElementById('jaugePercent');
 
+            const cards = document.querySelectorAll('.method-card');
+            const selectedMethodName = document.getElementById('selectedMethodName');
+
             // ===== RÉCUPÉRER LES PARAMÈTRES =====
             const urlParams = new URLSearchParams(window.location.search);
             const name = urlParams.get('name') || 'Donateur anonyme';
@@ -569,6 +706,42 @@
             console.log('   👤 Nom:', name);
             console.log('   📧 Email:', email);
             console.log('   💰 Montant:', amount, 'FCFA');
+
+            // ===== MÉTHODE DE PAIEMENT =====
+            let selectedMethod = 'wave';
+
+            const methodNames = {
+                'wave': 'Wave',
+                'orange_money': 'Orange Money',
+                'mtn_momo': 'MTN MoMo',
+                'moov_money': 'Moov Money'
+            };
+
+            // Sélection
+            cards.forEach(card => {
+                const toggle = card.querySelector('.toggle');
+
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest('.toggle')) return;
+                    selectMethod(this);
+                });
+
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    selectMethod(card);
+                });
+            });
+
+            function selectMethod(card) {
+                cards.forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                selectedMethod = card.dataset.method;
+
+                const name = methodNames[selectedMethod] || selectedMethod;
+                selectedMethodName.textContent = name;
+
+                console.log('✅ Méthode sélectionnée:', selectedMethod);
+            }
 
             // ===== TOAST =====
             function showToast(message, type = 'success') {
@@ -619,9 +792,10 @@
                 }, interval);
             }
 
-            // ===== PAYER - APPEL /api/create-payment =====
+            // ===== PAYER =====
             payBtn.addEventListener('click', async function() {
                 console.log('🔄 Lancement du paiement...');
+                console.log('💳 Méthode:', selectedMethod);
 
                 payBtn.disabled = true;
                 payBtn.innerHTML = '<span class="spinner"></span> Préparation...';
@@ -631,7 +805,12 @@
                     const response = await fetch('/api/create-payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name, email, amount })
+                        body: JSON.stringify({
+                            name,
+                            email,
+                            amount,
+                            paymentMethod: selectedMethod
+                        })
                     });
 
                     const data = await response.json();
@@ -660,10 +839,7 @@
                     hideOverlay();
                     showToast('❌ ' + error.message, 'error');
                     payBtn.disabled = false;
-                    payBtn.innerHTML = `
-                        <img src="/wave.png" alt="Wave" class="btn-wave-icon" />
-                        <span class="btn-text">Effectuer mon paiement</span>
-                    `;
+                    payBtn.innerHTML = 'Effectuer mon paiement';
                 }
             });
 
