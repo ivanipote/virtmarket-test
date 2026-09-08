@@ -354,8 +354,7 @@ app.post('/api/create-payment', async (req, res) => {
         console.log(`   ✅ Statut mis à jour: participant`);
 
         // Ajouter paymentMethod dans la requête
-const paymentMethod = req.body.paymentMethod || 'wave';
-
+// ❌ On supprime paymentMethod
 const requestBody = {
     storeId: process.env.JEKO_BUSINESS_ID,
     title: `Donation - ${name}`,
@@ -364,15 +363,16 @@ const requestBody = {
     reference: reference,
     email: email,
     customerId: name,
+    description: `Donation de ${name} (${email}) - ${amount} FCFA`,
     paymentDetails: {
         type: 'redirect',
         data: {
-            paymentMethod: paymentMethod,  // ← MODIFICATION
             successUrl: 'https://virtmarket-test.onrender.com/verify',
             errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
         }
     }
 };
+// ✅ Jèko affiche toutes les méthodes disponibles
 
         const response = await fetch('https://api.jeko.africa/partner_api/payment_requests', {
             method: 'POST',
