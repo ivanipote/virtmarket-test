@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : server-test.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 6.3 - Conservation du nom par email
+// VERSION : 6.5 - Enregistrement de la méthode de paiement
 // ================================================================
 
 require('dotenv').config();
@@ -224,7 +224,7 @@ app.post('/api/test-email', async (req, res) => {
 });
 
 // ================================================================
-// 8. API : VISITEUR (avec conservation du nom par email)
+// 8. API : VISITEUR
 // ================================================================
 
 app.post('/api/visiteur', async (req, res) => {
@@ -245,16 +245,13 @@ app.post('/api/visiteur', async (req, res) => {
     }
 
     try {
-        // ✅ Vérifier si l'utilisateur existe déjà
         const existingUser = await db.getUserByEmail(email);
 
         let user;
         if (existingUser) {
-            // ✅ L'utilisateur existe : on garde son nom original, on met à jour le montant
             console.log(`   ℹ️ Utilisateur existant: ${existingUser.name} (email: ${email})`);
             console.log(`   ℹ️ Nom original conservé: ${existingUser.name}`);
             
-            // Mettre à jour le montant intention
             if (amount) {
                 await db.query(
                     'UPDATE users SET flex3 = $1, updated_at = NOW() WHERE email = $2',
@@ -264,13 +261,11 @@ app.post('/api/visiteur', async (req, res) => {
             }
             user = existingUser;
             
-            // S'assurer que le statut est 'visiteur'
             if (user.status !== 'visiteur') {
                 await db.updateUserStatus(email, 'visiteur');
                 user.status = 'visiteur';
             }
         } else {
-            // ✅ Nouvel utilisateur : on l'enregistre avec le nom fourni
             user = await db.getOrCreateUser(name, email, amount);
             console.log(`   ✅ Nouvel utilisateur créé: ${name}`);
         }
@@ -298,11 +293,11 @@ app.post('/api/visiteur', async (req, res) => {
 });
 
 // ================================================================
-// 9. API : CRÉER UN PAIEMENT
+// 9. API : CRÉER UN PAIEMENT (avec enregistrement de la méthode)
 // ================================================================
 
 app.post('/api/create-payment', async (req, res) => {
-    const { name, email, amount } = req.body;
+    const { name, email, amount, paymentMethod } = req.body;
 
     console.log('\n' + '='.repeat(80));
     console.log('💳 CRÉATION D\'UN PAIEMENT');
@@ -310,6 +305,7 @@ app.post('/api/create-payment', async (req, res) => {
     console.log(`   👤 Nom: ${name}`);
     console.log(`   📧 Email: ${email}`);
     console.log(`   💰 Montant: ${amount} FCFA`);
+    console.log(`   💳 Méthode: ${paymentMethod || 'wave'}`);
 
     if (!name || !email || !amount) {
         return res.status(400).json({ error: 'Nom, email et montant requis' });
@@ -320,13 +316,12 @@ app.post('/api/create-payment', async (req, res) => {
     }
 
     try {
-        // ✅ Récupérer l'utilisateur (existe déjà via /api/visiteur)
+        // ✅ Récupérer l'utilisateur
         const user = await db.getUserByEmail(email);
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé. Veuillez d\'abord vous inscrire.' });
         }
         
-        // ✅ Utiliser le nom original de l'utilisateur
         const originalName = user.name;
         console.log(`   ✅ Utilisateur: ${originalName} (${user.status})`);
         console.log(`   ℹ️ Nom original conservé: ${originalName}`);
@@ -335,20 +330,23 @@ app.post('/api/create-payment', async (req, res) => {
         const reference = `VM-${email}-${Date.now()}`;
         console.log(`   🔗 Référence: ${reference}`);
 
-        // ✅ Créer la commande avec le nom original
+        // ✅ Créer la commande avec la méthode de paiement dans flex4
+        const paymentMethodValue = paymentMethod || 'wave';
         const order = await db.createOrder({
             reference,
             user_id: user.id,
             email,
-            name: originalName, // ← Utiliser le nom original
+            name: originalName,
             amount,
-            status: 'pending'
+            status: 'pending',
+            flex4: paymentMethodValue  // ✅ Enregistrer la méthode de paiement
         });
 
         if (!order) {
             throw new Error('Erreur création commande');
         }
         console.log(`   ✅ Commande créée (ID: ${order.id})`);
+        console.log(`   💳 Méthode enregistrée: ${paymentMethodValue}`);
 
         await db.updateUserStatus(email, 'participant');
         console.log(`   ✅ Statut mis à jour: participant`);
@@ -356,6 +354,7 @@ app.post('/api/create-payment', async (req, res) => {
         const amountInCentimes = Math.round(amount * 100);
         console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
 
+        // ✅ Requête Jèko avec la méthode choisie
         const requestBody = {
             storeId: process.env.JEKO_BUSINESS_ID,
             title: `Donation - ${originalName}`,
@@ -368,12 +367,16 @@ app.post('/api/create-payment', async (req, res) => {
             paymentDetails: {
                 type: 'redirect',
                 data: {
-                    paymentMethod: 'mtn',
+                    paymentMethod: paymentMethodValue,  // ✅ Méthode choisie
                     successUrl: 'https://virtmarket-test.onrender.com/verify',
                     errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
                 }
             }
         };
+
+        console.log(`\n📤 REQUÊTE JÈKO:`);
+        console.log('-'.repeat(40));
+        console.log(JSON.stringify(requestBody, null, 2));
 
         const response = await fetch('https://api.jeko.africa/partner_api/payment_requests', {
             method: 'POST',
@@ -411,7 +414,8 @@ app.post('/api/create-payment', async (req, res) => {
             success: true,
             checkout_url: data.redirectUrl,
             reference: reference,
-            order_id: order.id
+            order_id: order.id,
+            payment_method: paymentMethodValue
         });
 
     } catch (error) {
@@ -734,6 +738,7 @@ app.post('/webhook', async (req, res) => {
         }
 
         console.log(`✅ Commande trouvée: ID ${order.id}, statut: ${order.status}`);
+        console.log(`   💳 Méthode enregistrée: ${order.flex4 || 'Non renseignée'}`);
 
         if (order.status === 'success') {
             console.log('ℹ️ Déjà traité, ignoré');
@@ -757,7 +762,7 @@ app.post('/webhook', async (req, res) => {
             amount: body.amount?.amount || order.amount,
             currency: body.amount?.currency || 'XOF',
             status: 'success',
-            payment_method: body.paymentMethod || 'wave',
+            payment_method: order.flex4 || body.paymentMethod || 'wave',
             counterpart_phone: body.counterpartLabel || null,
             store_id: body.storeId || null,
             store_name: body.storeName || null,
@@ -767,6 +772,7 @@ app.post('/webhook', async (req, res) => {
         };
         const savedPayment = await db.savePayment(paymentData);
         console.log(`✅ Paiement enregistré: ${savedPayment ? 'OK' : 'Déjà existant'}`);
+        console.log(`   💳 Méthode: ${paymentData.payment_method}`);
 
         // ============================================================
         // 🔥 ENVOI DE L'EMAIL DE REMERCIEMENT
@@ -820,6 +826,7 @@ app.post('/webhook', async (req, res) => {
         console.log(`   ✅ Commande: pending → success`);
         console.log(`   ✅ Utilisateur: ${order.email} → donateur`);
         console.log(`   ✅ Paiement: ${savedPayment ? 'OK' : 'Déjà existant'}`);
+        console.log(`   💳 Méthode: ${order.flex4 || 'wave'}`);
         console.log(`   📧 Email: ${emailStatus} - ${emailMessage}`);
         console.log(`   📧 Expéditeur: ${SENDER_EMAIL}`);
         console.log(`   📧 Service: SendGrid`);
@@ -848,7 +855,7 @@ app.listen(PORT, () => {
     console.log(`📧 Service: SendGrid`);
     console.log(`\n📋 API disponibles:`);
     console.log(`   POST /api/visiteur (avec conservation du nom)`);
-    console.log(`   POST /api/create-payment`);
+    console.log(`   POST /api/create-payment (avec méthode de paiement)`);
     console.log(`   GET  /api/paylist`);
     console.log(`   GET  /api/paylist/:reference`);
     console.log(`   GET  /api/payments`);

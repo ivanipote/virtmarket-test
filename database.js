@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : database.js
 // DESCRIPTION : Gestion de la base de données PostgreSQL
-// VERSION : 3.1 - Correction getPaymentsByEmail
+// VERSION : 3.2 - Ajout flex4 pour méthode de paiement
 // ================================================================
 
 const { Pool } = require('pg');
@@ -73,7 +73,15 @@ async function initializeDatabase() {
                 payment_link_id TEXT,
                 transaction_id TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                flex1 TEXT DEFAULT NULL,
+                flex2 TEXT DEFAULT NULL,
+                flex3 TEXT DEFAULT NULL,
+                flex4 TEXT DEFAULT NULL,
+                flex5 TEXT DEFAULT NULL,
+                flex6 TEXT DEFAULT NULL,
+                flex7 TEXT DEFAULT NULL,
+                flex8 TEXT DEFAULT NULL
             )
         `);
         console.log('✅ Table orders créée/vérifiée');
@@ -156,6 +164,7 @@ async function initializeDatabase() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_reference ON orders(reference)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_flex4 ON orders(flex4)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_transaction_id ON payments(transaction_id)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id)`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status)`);
@@ -282,12 +291,14 @@ async function getAllUsers() {
 // ================================================================
 
 /**
- * Crée une nouvelle commande
+ * Crée une nouvelle commande avec flex4 pour la méthode de paiement
  */
 async function createOrder(data) {
     const query = `
-        INSERT INTO orders (reference, user_id, email, name, amount, status, payment_link_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO orders (
+            reference, user_id, email, name, amount, status, 
+            payment_link_id, transaction_id, flex4
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *
     `;
     const values = [
@@ -297,7 +308,9 @@ async function createOrder(data) {
         data.name,
         data.amount,
         data.status || 'pending',
-        data.payment_link_id || null
+        data.payment_link_id || null,
+        data.transaction_id || null,
+        data.flex4 || null  // ✅ Méthode de paiement (wave, orange_money, mtn_momo, moov_money)
     ];
     try {
         const result = await pool.query(query, values);
@@ -483,16 +496,14 @@ async function getAllPayments() {
 }
 
 /**
- * ✅ CORRIGÉ : Récupère les paiements par email via user_id
+ * Récupère les paiements par email via user_id
  */
 async function getPaymentsByEmail(email) {
     try {
-        // 1. Récupérer l'utilisateur
         const user = await getUserByEmail(email);
         if (!user) {
             return [];
         }
-        // 2. Chercher les paiements par user_id
         const result = await pool.query(
             'SELECT * FROM payments WHERE user_id = $1 ORDER BY created_at DESC',
             [user.id]
