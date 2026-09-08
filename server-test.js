@@ -368,7 +368,7 @@ app.post('/api/create-payment', async (req, res) => {
             paymentDetails: {
                 type: 'redirect',
                 data: {
-                    
+                    paymentMethod: 'mtm',
                     successUrl: 'https://virtmarket-test.onrender.com/verify',
                     errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
                 }
