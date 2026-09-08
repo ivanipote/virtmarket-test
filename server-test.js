@@ -295,6 +295,9 @@ app.post('/api/visiteur', async (req, res) => {
 // ================================================================
 // 9. API : CRÉER UN PAIEMENT (avec correction amountInCentimes)
 // ================================================================
+// ================================================================
+// 9. API : CRÉER UN PAIEMENT (avec /payment_links)
+// ================================================================
 
 app.post('/api/create-payment', async (req, res) => {
     const { name, email, amount } = req.body;
@@ -346,29 +349,28 @@ app.post('/api/create-payment', async (req, res) => {
         await db.updateUserStatus(email, 'participant');
         console.log(`   ✅ Statut mis à jour: participant`);
 
-        // ✅ CORRECTION : Définir amountInCentimes ICI
+        // ✅ Montant en centimes
         const amountInCentimes = Math.round(amount * 100);
         console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
 
+        // ✅ Requête Jèko avec /payment_links (sans paymentMethod)
         const requestBody = {
             storeId: process.env.JEKO_BUSINESS_ID,
             title: `Donation - ${originalName}`,
             amountCents: amountInCentimes,
             currency: 'XOF',
-            reference: reference,
             email: email,
-            customerId: originalName,
+            username: originalName,
+            phone: '+2250503588336',
             description: `Donation de ${originalName} (${email}) - ${amount} FCFA`,
-            paymentDetails: {
-                type: 'redirect',
-                data: {
-                    successUrl: 'https://virtmarket-test.onrender.com/verify',
-                    errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
-                }
-            }
+            allowMultiplePayments: false
         };
 
-        const response = await fetch('https://api.jeko.africa/partner_api/payment_requests', {
+        console.log(`\n📤 REQUÊTE JÈKO:`);
+        console.log('-'.repeat(40));
+        console.log(JSON.stringify(requestBody, null, 2));
+
+        const response = await fetch('https://api.jeko.africa/partner_api/payment_links', {
             method: 'POST',
             headers: {
                 'X-API-KEY': process.env.JEKO_API_KEY,
@@ -388,21 +390,26 @@ app.post('/api/create-payment', async (req, res) => {
             });
         }
 
-        if (!data.redirectUrl) {
-            throw new Error('Aucune URL de paiement reçue');
+        // ✅ Récupérer l'URL de paiement (champ "link")
+        const checkout_url = data.link || null;
+
+        if (!checkout_url) {
+            console.error('   ❌ Aucune URL de paiement reçue');
+            return res.status(500).json({ error: 'Aucune URL de paiement reçue' });
         }
 
+        // ✅ Mettre à jour le payment_link_id
         if (data.id) {
             await db.updateOrderPaymentLink(reference, data.id);
             console.log(`   ✅ Payment Link ID: ${data.id}`);
         }
 
-        console.log(`   ✅ URL: ${data.redirectUrl}`);
+        console.log(`   ✅ URL: ${checkout_url}`);
         console.log('='.repeat(80) + '\n');
 
         res.json({
             success: true,
-            checkout_url: data.redirectUrl,
+            checkout_url: checkout_url,
             reference: reference,
             order_id: order.id
         });
