@@ -362,7 +362,6 @@ app.post('/api/create-payment', async (req, res) => {
             paymentDetails: {
                 type: 'redirect',
                 data: {
-                    paymentMethod: 'wave',
                     successUrl: 'https://virtmarket-test.onrender.com/verify',
                     errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
                 }
