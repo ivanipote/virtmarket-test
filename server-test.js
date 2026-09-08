@@ -615,6 +615,52 @@ app.post('/api/admin/reset-database', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+// ================================================================
+// ROUTE ADMIN : VÉRIFIER LES IDENTIFIANTS
+// ================================================================
+
+app.post('/api/admin/verify', async (req, res) => {
+    const { username, password } = req.body;
+
+    const ADMIN_USER = process.env.ADMIN_USER || 'virtmakadmin';
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ipote233@database';
+
+    if (username === ADMIN_USER && password === ADMIN_PASSWORD) {
+        res.json({ success: true, message: 'Authentification réussie' });
+    } else {
+        res.status(401).json({ success: false, error: 'Identifiants incorrects' });
+    }
+});
+
+// ================================================================
+// ROUTE ADMIN : RÉINITIALISER LA BASE
+// ================================================================
+
+app.post('/api/admin/reset-database', async (req, res) => {
+    const { password } = req.body;
+
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ipote233@database';
+
+    if (password !== ADMIN_PASSWORD) {
+        return res.status(401).json({ success: false, error: 'Mot de passe incorrect' });
+    }
+
+    console.log('\n' + '='.repeat(80));
+    console.log('🔄 RÉINITIALISATION DE LA BASE');
+    console.log('='.repeat(80));
+    console.log('⚠️ Toutes les données vont être supprimées !');
+
+    try {
+        await db.query('TRUNCATE TABLE payments, orders, users RESTART IDENTITY CASCADE');
+        console.log('✅ Base réinitialisée avec succès');
+        console.log('='.repeat(80) + '\n');
+        res.json({ success: true, message: 'Base réinitialisée avec succès' });
+    } catch (error) {
+        console.error('❌ Erreur réinitialisation:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 // ================================================================
 // 16. API : COMMANDES D'UN UTILISATEUR
 // ================================================================
