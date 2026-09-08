@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : server-test.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 6.5 - Enregistrement de la méthode de paiement
+// VERSION : 6.6 - Correction des méthodes de paiement Jèko
 // ================================================================
 
 require('dotenv').config();
@@ -293,11 +293,20 @@ app.post('/api/visiteur', async (req, res) => {
 });
 
 // ================================================================
-// 9. API : CRÉER UN PAIEMENT (avec enregistrement de la méthode)
+// 9. API : CRÉER UN PAIEMENT (avec mapping Jèko)
 // ================================================================
 
 app.post('/api/create-payment', async (req, res) => {
     const { name, email, amount, paymentMethod } = req.body;
+
+    // ✅ Mapping des méthodes pour Jèko
+    const methodMapping = {
+        'wave': 'wave',
+        'orange_money': 'orange',
+        'mtn_momo': 'mtn',
+        'moov_money': 'moov'
+    };
+    const jekoMethod = methodMapping[paymentMethod] || 'wave';
 
     console.log('\n' + '='.repeat(80));
     console.log('💳 CRÉATION D\'UN PAIEMENT');
@@ -305,7 +314,8 @@ app.post('/api/create-payment', async (req, res) => {
     console.log(`   👤 Nom: ${name}`);
     console.log(`   📧 Email: ${email}`);
     console.log(`   💰 Montant: ${amount} FCFA`);
-    console.log(`   💳 Méthode: ${paymentMethod || 'wave'}`);
+    console.log(`   💳 Méthode choisie: ${paymentMethod || 'wave'}`);
+    console.log(`   💳 Méthode Jèko: ${jekoMethod}`);
 
     if (!name || !email || !amount) {
         return res.status(400).json({ error: 'Nom, email et montant requis' });
@@ -316,7 +326,6 @@ app.post('/api/create-payment', async (req, res) => {
     }
 
     try {
-        // ✅ Récupérer l'utilisateur
         const user = await db.getUserByEmail(email);
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé. Veuillez d\'abord vous inscrire.' });
@@ -330,8 +339,7 @@ app.post('/api/create-payment', async (req, res) => {
         const reference = `VM-${email}-${Date.now()}`;
         console.log(`   🔗 Référence: ${reference}`);
 
-        // ✅ Créer la commande avec la méthode de paiement dans flex4
-        const paymentMethodValue = paymentMethod || 'wave';
+        // ✅ Créer la commande avec la méthode
         const order = await db.createOrder({
             reference,
             user_id: user.id,
@@ -339,14 +347,14 @@ app.post('/api/create-payment', async (req, res) => {
             name: originalName,
             amount,
             status: 'pending',
-            flex4: paymentMethodValue  // ✅ Enregistrer la méthode de paiement
+            flex4: paymentMethod || 'wave'
         });
 
         if (!order) {
             throw new Error('Erreur création commande');
         }
         console.log(`   ✅ Commande créée (ID: ${order.id})`);
-        console.log(`   💳 Méthode enregistrée: ${paymentMethodValue}`);
+        console.log(`   💳 Méthode enregistrée: ${paymentMethod || 'wave'}`);
 
         await db.updateUserStatus(email, 'participant');
         console.log(`   ✅ Statut mis à jour: participant`);
@@ -354,7 +362,7 @@ app.post('/api/create-payment', async (req, res) => {
         const amountInCentimes = Math.round(amount * 100);
         console.log(`   💰 Montant: ${amount} FCFA → ${amountInCentimes} centimes`);
 
-        // ✅ Requête Jèko avec la méthode choisie
+        // ✅ Requête Jèko avec la méthode mappée
         const requestBody = {
             storeId: process.env.JEKO_BUSINESS_ID,
             title: `Donation - ${originalName}`,
@@ -367,7 +375,7 @@ app.post('/api/create-payment', async (req, res) => {
             paymentDetails: {
                 type: 'redirect',
                 data: {
-                    paymentMethod: paymentMethodValue,  // ✅ Méthode choisie
+                    paymentMethod: jekoMethod,  // ✅ Utiliser la valeur Jèko
                     successUrl: 'https://virtmarket-test.onrender.com/verify',
                     errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
                 }
@@ -415,7 +423,7 @@ app.post('/api/create-payment', async (req, res) => {
             checkout_url: data.redirectUrl,
             reference: reference,
             order_id: order.id,
-            payment_method: paymentMethodValue
+            payment_method: paymentMethod || 'wave'
         });
 
     } catch (error) {
@@ -855,7 +863,7 @@ app.listen(PORT, () => {
     console.log(`📧 Service: SendGrid`);
     console.log(`\n📋 API disponibles:`);
     console.log(`   POST /api/visiteur (avec conservation du nom)`);
-    console.log(`   POST /api/create-payment (avec méthode de paiement)`);
+    console.log(`   POST /api/create-payment (avec méthodes Jèko: wave, orange, mtn, moov)`);
     console.log(`   GET  /api/paylist`);
     console.log(`   GET  /api/paylist/:reference`);
     console.log(`   GET  /api/payments`);
