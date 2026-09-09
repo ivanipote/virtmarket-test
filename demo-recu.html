@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧾 Demo Reçu - VirtMak</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        .demo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .demo-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0F1B4D;
+            text-align: center;
+        }
+
+        .demo-sub {
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        /* ============================================================ */
+        /* RECU                                                         */
+        /* ============================================================ */
+        #recuContent {
+            background: white;
+            border-radius: 16px;
+            padding: 32px 28px;
+            width: 100%;
+            border: 1px solid #e6e8ef;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .recu-header {
+            text-align: center;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #156FE6;
+            margin-bottom: 16px;
+        }
+
+        .recu-header .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #156FE6;
+            padding: 4px;
+            margin: 0 auto 8px auto;
+            background: white;
+        }
+
+        .recu-header .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .recu-header .brand {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0F1B4D;
+        }
+
+        .recu-header .brand span {
+            color: #156FE6;
+        }
+
+        .recu-header .tagline {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .recu-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #0F1B4D;
+            margin-bottom: 16px;
+            padding: 6px 0;
+            background: #f0f7ff;
+            border-radius: 8px;
+            letter-spacing: 2px;
+        }
+
+        .recu-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 14px;
+            border-bottom: 1px solid #f8f9fc;
+        }
+
+        .recu-row:last-child {
+            border-bottom: none;
+        }
+
+        .recu-row .label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .recu-row .value {
+            font-weight: 600;
+            color: #0F1B4D;
+            text-align: right;
+        }
+
+        .recu-row .value.amount {
+            color: #156FE6;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .recu-row .value .method-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #156FE6;
+            color: white;
+        }
+
+        .recu-row .value .method-badge img {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        .recu-row .value .status-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #e6f7ee;
+            color: #0e7a49;
+        }
+
+        .recu-footer {
+            text-align: center;
+            padding-top: 16px;
+            border-top: 2px solid #f0f2f5;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .recu-footer .thankyou {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0F1B4D;
+        }
+
+        .recu-footer .note {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        /* ============================================================ */
+        /* BOUTONS                                                       */
+        /* ============================================================ */
+        .btn-send {
+            background: linear-gradient(135deg, #156FE6, #0F1B4D);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 350px;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(21, 111, 230, 0.25);
+        }
+
+        .btn-send:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(21, 111, 230, 0.35);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-send .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-edit {
+            background: #f8f9fc;
+            border: 1px solid #e6e8ef;
+            color: #6b7280;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-edit:hover {
+            border-color: #156FE6;
+            color: #156FE6;
+            background: #f0f7ff;
+        }
+
+        .btn-download-link {
+            background: #f8f9fc;
+            border: 1px solid #e6e8ef;
+            color: #156FE6;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-download-link:hover {
+            border-color: #156FE6;
+            background: #f0f7ff;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .status-message {
+            margin-top: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            display: none;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+        }
+
+        .status-message.success {
+            display: block;
+            background: #e6f7ee;
+            color: #0e7a49;
+            border: 1px solid #bfebd3;
+        }
+
+        .status-message.error {
+            display: block;
+            background: #fcebea;
+            color: #c0342a;
+            border: 1px solid #f3c6c2;
+        }
+
+        .status-message.info {
+            display: block;
+            background: #eaf1ff;
+            color: #156FE6;
+            border: 1px solid #c7d9fb;
+        }
+
+        @media (max-width: 500px) {
+            #recuContent { padding: 20px 16px; }
+            .recu-row { font-size: 13px; flex-wrap: wrap; gap: 4px; }
+            .recu-row .value { text-align: left; max-width: 100%; }
+            .recu-title { font-size: 16px; }
+            .btn-send { font-size: 14px; padding: 12px 24px; }
+            .demo-title { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="demo-container">
+
+        <div class="demo-title">🧾 Demo Reçu de paiement</div>
+        <div class="demo-sub">Visualisez, modifiez et recevez votre reçu par email</div>
+
+        <!-- ============================================================ -->
+        <!-- RECU                                                         -->
+        <!-- ============================================================ -->
+        <div id="recuContent">
+
+            <!-- Header -->
+            <div class="recu-header">
+                <div class="logo">
+                    <img src="/logo.png" alt="VirtMak" />
+                </div>
+                <div class="brand">Virt<span>Mak</span></div>
+                <div class="tagline">e-commerce ivoirien</div>
+            </div>
+
+            <!-- Titre -->
+            <div class="recu-title">📋 REÇU DE PAIEMENT</div>
+
+            <!-- Informations -->
+            <div id="recuBody">
+                <div class="recu-row">
+                    <span class="label">Numéro de reçu</span>
+                    <span class="value" id="recuNumber">REC-20260909-001</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Date et heure</span>
+                    <span class="value" id="recuDate">09/09/2026 14:30:25</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Donateur</span>
+                    <span class="value" id="recuName">Ivan Gaël Ipote</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Email</span>
+                    <span class="value" id="recuEmail">ipoteivan23@gmail.com</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Montant</span>
+                    <span class="value amount" id="recuAmount">500 FCFA</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Méthode</span>
+                    <span class="value" id="recuMethod">
+                        <span class="method-badge">
+                            <img src="/wave.png" alt="Wave" />
+                            Wave
+                        </span>
+                    </span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Statut</span>
+                    <span class="value" id="recuStatus">
+                        <span class="status-badge">✅ Paiement confirmé</span>
+                    </span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Référence</span>
+                    <span class="value" style="font-size:12px;color:#6b7280;font-family:'Courier New',monospace;" id="recuRef">VM-ipoteivan23@gmail.com-1738789115440</span>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="recu-footer">
+                <div class="thankyou">Merci pour votre soutien ! ❤️</div>
+                <div class="note">Ce reçu est généré automatiquement. Il fait office de preuve de paiement.</div>
+            </div>
+
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- ACTIONS                                                       -->
+        <!-- ============================================================ -->
+        <div class="actions">
+            <button class="btn-send" id="sendBtn">
+                <i class="fas fa-envelope"></i> Recevoir le reçu par email
+            </button>
+            <button class="btn-edit" id="editBtn">
+                <i class="fas fa-pen"></i> Modifier les données
+            </button>
+        </div>
+
+        <div id="statusMessage" class="status-message"></div>
+
+        <!-- Lien de téléchargement -->
+        <div id="downloadSection" style="display:none;margin-top:12px;width:100%;max-width:350px;text-align:center;">
+            <a href="#" class="btn-download-link" id="downloadLink" target="_blank">
+                <i class="fas fa-download"></i> Télécharger mon reçu
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            console.log('✅ demo-recu.html chargé');
+
+            // ===== RÉFÉRENCES =====
+            const sendBtn = document.getElementById('sendBtn');
+            const editBtn = document.getElementById('editBtn');
+            const recuContent = document.getElementById('recuContent');
+            const statusMessage = document.getElementById('statusMessage');
+            const downloadSection = document.getElementById('downloadSection');
+            const downloadLink = document.getElementById('downloadLink');
+
+            // ===== ÉLÉMENTS MODIFIABLES =====
+            const fields = {
+                number: document.getElementById('recuNumber'),
+                date: document.getElementById('recuDate'),
+                name: document.getElementById('recuName'),
+                email: document.getElementById('recuEmail'),
+                amount: document.getElementById('recuAmount'),
+                method: document.getElementById('recuMethod'),
+                status: document.getElementById('recuStatus'),
+                ref: document.getElementById('recuRef')
+            };
+
+            // ===== DONNÉES PAR DÉFAUT =====
+            let currentData = {
+                number: 'REC-20260909-001',
+                date: '09/09/2026 14:30:25',
+                name: 'Ivan Gaël Ipote',
+                email: 'ipoteivan23@gmail.com',
+                amount: '500 FCFA',
+                method: `<span class="method-badge"><img src="/wave.png" alt="Wave" /> Wave</span>`,
+                status: `<span class="status-badge">✅ Paiement confirmé</span>`,
+                ref: 'VM-ipoteivan23@gmail.com-1738789115440'
+            };
+
+            // ===== MESSAGE =====
+            function showStatus(message, type = 'info') {
+                statusMessage.className = 'status-message ' + type;
+                statusMessage.textContent = message;
+                setTimeout(() => {
+                    statusMessage.className = 'status-message';
+                }, 6000);
+            }
+
+            function hideStatus() {
+                statusMessage.className = 'status-message';
+            }
+
+            // ===== MODIFIER LES DONNÉES =====
+            editBtn.addEventListener('click', function() {
+                const newName = prompt('Nom du donateur :', currentData.name);
+                if (newName) currentData.name = newName;
+
+                const newEmail = prompt('Email :', currentData.email);
+                if (newEmail) currentData.email = newEmail;
+
+                const newAmount = prompt('Montant (FCFA) :', currentData.amount.replace(' FCFA', ''));
+                if (newAmount) currentData.amount = newAmount + ' FCFA';
+
+                const newRef = prompt('Référence :', currentData.ref);
+                if (newRef) currentData.ref = newRef;
+
+                updateRecu();
+            });
+
+            // ===== METTRE À JOUR L'AFFICHAGE =====
+            function updateRecu() {
+                fields.number.textContent = currentData.number;
+                fields.date.textContent = currentData.date;
+                fields.name.textContent = currentData.name;
+                fields.email.textContent = currentData.email;
+                fields.amount.textContent = currentData.amount;
+                fields.method.innerHTML = currentData.method;
+                fields.status.innerHTML = currentData.status;
+                fields.ref.textContent = currentData.ref;
+            }
+
+            // ===== ENVOYER PAR EMAIL =====
+            sendBtn.addEventListener('click', async function() {
+                hideStatus();
+                downloadSection.style.display = 'none';
+
+                const email = prompt('Entrez votre email pour recevoir le reçu :', currentData.email);
+
+                if (!email) {
+                    showStatus('⚠️ Email requis pour l\'envoi.', 'error');
+                    return;
+                }
+
+                if (!email.includes('@')) {
+                    showStatus('⚠️ Email invalide.', 'error');
+                    return;
+                }
+
+                // ✅ Mettre à jour l'email dans les données
+                currentData.email = email;
+                updateRecu();
+
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '<span class="spinner"></span> Envoi en cours...';
+
+                try {
+                    const response = await fetch('/api/send-receipt', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: email,
+                            name: currentData.name,
+                            amount: currentData.amount.replace(' FCFA', ''),
+                            reference: currentData.ref,
+                            date: currentData.date,
+                            number: currentData.number
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showStatus(`✅ Email envoyé à ${email} !`, 'success');
+                        // ✅ Afficher le lien de téléchargement
+                        downloadSection.style.display = 'block';
+                        downloadLink.href = `/api/receipt/${currentData.ref}`;
+                    } else {
+                        showStatus('❌ ' + (data.error || 'Erreur lors de l\'envoi'), 'error');
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    showStatus('❌ Erreur de connexion au serveur', 'error');
+                } finally {
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '<i class="fas fa-envelope"></i> Recevoir le reçu par email';
+                }
+            });
+
+            console.log('✅ demo-recu.html initialisé');
+
+        });
+    </script>
+
+</body>
+</html>
