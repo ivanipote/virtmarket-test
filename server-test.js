@@ -293,6 +293,202 @@ app.post('/api/visiteur', async (req, res) => {
 });
 
 // ================================================================
+// ROUTE : ENVOYER UN REÇU PAR EMAIL
+// ================================================================
+
+app.post('/api/send-receipt', async (req, res) => {
+    const { email, name, amount, reference, date, number } = req.body;
+
+    console.log(`📧 Envoi du reçu à ${email}`);
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email requis' });
+    }
+
+    try {
+        // ✅ Générer le lien de téléchargement
+        const downloadLink = `https://virtmarket-test.onrender.com/api/receipt/${reference}`;
+
+        // ✅ Envoyer l'email avec le lien
+        const msg = {
+            to: email,
+            from: {
+                email: SENDER_EMAIL,
+                name: SENDER_NAME
+            },
+            subject: `🧾 Votre reçu de paiement - ${reference}`,
+            html: `
+                <div style="font-family: 'Segoe UI', system-ui, sans-serif; max-width: 600px; margin: auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e6e8ef; padding: 20px;">
+                    <div style="text-align: center; padding: 10px 0;">
+                        <img src="https://virtmarket-test.onrender.com/logo.png" alt="VirtMak" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #156FE6; padding: 4px;" />
+                        <div style="font-size: 20px; font-weight: 800; color: #0F1B4D;">Virt<span style="color:#156FE6;">Mak</span></div>
+                    </div>
+                    <h2 style="text-align:center;color:#0F1B4D;font-size:20px;">🧾 Votre reçu de paiement</h2>
+                    <p style="font-size:15px;color:#0F1B4D;">Bonjour <strong>${name}</strong>,</p>
+                    <p style="font-size:14px;color:#1a1a2e;">Votre paiement de <strong style="color:#156FE6;">${amount}</strong> a été confirmé.</p>
+                    <div style="background:#f8f9fc;border-radius:12px;padding:12px 16px;border:1px solid #e6e8ef;margin:12px 0;">
+                        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;">
+                            <span style="color:#6b7280;">Numéro</span>
+                            <span style="font-weight:600;">${number}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;">
+                            <span style="color:#6b7280;">Date</span>
+                            <span style="font-weight:600;">${date}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;">
+                            <span style="color:#6b7280;">Montant</span>
+                            <span style="font-weight:700;color:#156FE6;">${amount}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;">
+                            <span style="color:#6b7280;">Référence</span>
+                            <span style="font-weight:600;font-size:12px;">${reference}</span>
+                        </div>
+                    </div>
+                    <div style="text-align:center;margin:16px 0;">
+                        <a href="${downloadLink}" style="background:#156FE6;color:white;padding:12px 32px;border-radius:30px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;">
+                            📄 Télécharger mon reçu
+                        </a>
+                    </div>
+                    <div style="text-align:center;padding-top:12px;border-top:2px solid #f0f2f5;font-size:12px;color:#6b7280;">
+                        Avec toute notre gratitude,<br>
+                        L'équipe <strong style="color:#156FE6;">VirtMak</strong>
+                    </div>
+                </div>
+            `
+        };
+
+        await sgMail.send(msg);
+        console.log(`✅ Email envoyé à ${email}`);
+
+        res.json({ success: true, message: 'Email envoyé avec succès' });
+
+    } catch (error) {
+        console.error('❌ Erreur envoi email:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ================================================================
+// ROUTE : TÉLÉCHARGER LE REÇU EN PDF
+// ================================================================
+
+app.get('/api/receipt/:reference', async (req, res) => {
+    const { reference } = req.params;
+
+    console.log(`📄 Génération du reçu pour: ${reference}`);
+
+    try {
+        // ✅ Récupérer les infos du paiement
+        const order = await db.getOrderByReference(reference);
+
+        if (!order) {
+            return res.status(404).json({ error: 'Commande non trouvée' });
+        }
+
+        // ✅ Récupérer le paiement associé
+        const payment = await db.getPaymentByTransactionId(order.transaction_id);
+
+        const name = order.name || 'Donateur';
+        const email = order.email || 'email@non-renseigne.com';
+        const amount = order.amount || 0;
+        const date = order.updated_at ? new Date(order.updated_at).toLocaleString('fr-FR') : new Date().toLocaleString('fr-FR');
+        const number = `REC-${reference.slice(-9)}`;
+        const method = payment?.payment_method || order.flex4 || 'wave';
+        const status = 'Paiement confirmé ✅';
+
+        // ✅ Mapping des méthodes
+        const methodLabels = {
+            'wave': 'Wave',
+            'orange': 'Orange Money',
+            'mtn': 'MTN MoMo',
+            'moov': 'Moov Money',
+            'mtn_momo': 'MTN MoMo',
+            'orange_money': 'Orange Money',
+            'moov_money': 'Moov Money'
+        };
+        const methodName = methodLabels[method] || 'Wave';
+
+        // ✅ Générer le HTML du reçu
+        const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Reçu de paiement</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background: white;
+                    padding: 40px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                }
+                .recu {
+                    max-width: 500px;
+                    width: 100%;
+                    background: white;
+                    border-radius: 16px;
+                    padding: 32px 28px;
+                    border: 1px solid #e6e8ef;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+                }
+                .recu-header { text-align: center; padding-bottom: 16px; border-bottom: 2px solid #156FE6; margin-bottom: 16px; }
+                .recu-header .logo { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #156FE6; padding: 4px; margin: 0 auto 8px auto; background: white; }
+                .recu-header .logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block; }
+                .recu-header .brand { font-size: 20px; font-weight: 800; color: #0F1B4D; }
+                .recu-header .brand span { color: #156FE6; }
+                .recu-header .tagline { font-size: 12px; color: #6b7280; }
+                .recu-title { text-align: center; font-size: 18px; font-weight: 700; color: #0F1B4D; margin-bottom: 16px; padding: 6px 0; background: #f0f7ff; border-radius: 8px; letter-spacing: 2px; }
+                .recu-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; border-bottom: 1px solid #f8f9fc; }
+                .recu-row:last-child { border-bottom: none; }
+                .recu-row .label { color: #6b7280; font-weight: 500; }
+                .recu-row .value { font-weight: 600; color: #0F1B4D; text-align: right; }
+                .recu-row .value.amount { color: #156FE6; font-size: 18px; font-weight: 800; }
+                .recu-row .value .status-badge { display: inline-block; padding: 2px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; background: #e6f7ee; color: #0e7a49; }
+                .recu-footer { text-align: center; padding-top: 16px; border-top: 2px solid #f0f2f5; margin-top: 16px; font-size: 13px; color: #6b7280; }
+                .recu-footer .thankyou { font-size: 16px; font-weight: 600; color: #0F1B4D; }
+                .recu-footer .note { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+            </style>
+        </head>
+        <body>
+            <div class="recu">
+                <div class="recu-header">
+                    <div class="logo"><img src="https://virtmarket-test.onrender.com/logo.png" alt="VirtMak" /></div>
+                    <div class="brand">Virt<span>Mak</span></div>
+                    <div class="tagline">e-commerce ivoirien</div>
+                </div>
+                <div class="recu-title">📋 REÇU DE PAIEMENT</div>
+                <div class="recu-row"><span class="label">Numéro de reçu</span><span class="value">${number}</span></div>
+                <div class="recu-row"><span class="label">Date et heure</span><span class="value">${date}</span></div>
+                <div class="recu-row"><span class="label">Donateur</span><span class="value">${name}</span></div>
+                <div class="recu-row"><span class="label">Email</span><span class="value">${email}</span></div>
+                <div class="recu-row"><span class="label">Montant</span><span class="value amount">${amount} FCFA</span></div>
+                <div class="recu-row"><span class="label">Méthode</span><span class="value">${methodName}</span></div>
+                <div class="recu-row"><span class="label">Statut</span><span class="value"><span class="status-badge">✅ ${status}</span></span></div>
+                <div class="recu-row"><span class="label">Référence</span><span class="value" style="font-size:12px;color:#6b7280;font-family:'Courier New',monospace;">${reference}</span></div>
+                <div class="recu-footer">
+                    <div class="thankyou">Merci pour votre soutien ! ❤️</div>
+                    <div class="note">Ce reçu est généré automatiquement. Il fait office de preuve de paiement.</div>
+                </div>
+            </div>
+        </body>
+        </html>
+        `;
+
+        // ✅ Envoyer le HTML directement (pour l'instant)
+        // Plus tard, on pourra utiliser html2pdf ou puppeteer pour générer un vrai PDF
+        res.setHeader('Content-Type', 'text/html');
+        res.send(html);
+
+    } catch (error) {
+        console.error('❌ Erreur génération reçu:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// ================================================================
 // 9. API : CRÉER UN PAIEMENT (avec mapping Jèko)
 // ================================================================
 
