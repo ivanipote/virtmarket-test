@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 6.0 - 3 cadres horizontaux
+// VERSION : 6.1 - Correction méthodes + largeur ajustable
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -46,19 +46,40 @@ document.addEventListener('DOMContentLoaded', function() {
         'donateur': { label: 'Donateur', class: 'donateur' }
     };
 
-    // Méthodes de paiement
+    // ============================================================
+    // MÉTHODES DE PAIEMENT - MAPPING COMPLET
+    // ============================================================
+
     const methodLabels = {
+        // Noms courts (frontend)
         'wave': 'Wave',
         'orange': 'Orange Money',
         'mtn': 'MTN MoMo',
-        'moov': 'Moov Money'
+        'moov': 'Moov Money',
+        // Noms Jèko (backend)
+        'mtn_momo': 'MTN MoMo',
+        'orange_money': 'Orange Money',
+        'moov_money': 'Moov Money'
     };
 
     const methodIcons = {
         'wave': '/wave.png',
         'orange': '/om.png',
         'mtn': '/mtn.png',
-        'moov': '/moov.png'
+        'moov': '/moov.png',
+        'mtn_momo': '/mtn.png',
+        'orange_money': '/om.png',
+        'moov_money': '/moov.png'
+    };
+
+    const methodClasses = {
+        'wave': 'wave',
+        'orange': 'orange',
+        'mtn': 'mtn',
+        'moov': 'moov',
+        'mtn_momo': 'mtn',
+        'orange_money': 'orange',
+        'moov_money': 'moov'
     };
 
     // ============================================================
@@ -257,14 +278,16 @@ document.addEventListener('DOMContentLoaded', function() {
             lastMethod = lastOrder.flex4 || 'wave';
         }
 
-        const methodLabel = methodLabels[lastMethod] || 'Wave';
-        const methodIcon = methodIcons[lastMethod] || '/wave.png';
+        const methodKey = lastMethod || 'wave';
+        const methodLabel = methodLabels[methodKey] || 'Wave';
+        const methodIcon = methodIcons[methodKey] || '/wave.png';
+        const methodClass = methodClasses[methodKey] || 'wave';
 
         let methodHtml = '';
         if (lastMethod) {
-            const isMtn = lastMethod === 'mtn';
+            const isMtn = methodClass === 'mtn';
             methodHtml = `
-                <span class="method-badge ${lastMethod}">
+                <span class="method-badge ${methodClass}">
                     <img src="${methodIcon}" alt="${methodLabel}" class="method-logo" />
                     ${methodLabel}
                 </span>
@@ -410,9 +433,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${allItems.map((item, index) => {
                         const statusClass = item.status === 'success' ? 'status-success' : 'status-pending';
                         const statusIcon = item.status === 'success' ? '✅' : '⏳';
-                        const methodName = methodLabels[item.method] || 'Wave';
-                        const methodIcon = methodIcons[item.method] || '/wave.png';
-                        const methodClass = item.method || 'wave';
+                        const methodKey = item.method || 'wave';
+                        const methodName = methodLabels[methodKey] || 'Wave';
+                        const methodIcon = methodIcons[methodKey] || '/wave.png';
+                        const methodClass = methodClasses[methodKey] || 'wave';
 
                         return `
                             <tr>
