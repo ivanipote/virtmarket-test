@@ -54,12 +54,12 @@
     </header>
 
     <!-- ============================================================ -->
-    <!-- LAYOUT - 3 CADRES HORIZONTAUX                                -->
+    <!-- LAYOUT - 3 CADRES HORIZONTAUX                                 -->
     <!-- ============================================================ -->
     <div class="admin-layout">
 
         <!-- ===== CADRE 1 : SIDEBAR ===== -->
-        <aside class="cadre-sidebar">
+        <aside class="cadre-sidebar" id="cadreSidebar">
             <div class="cadre-header">
                 <span class="title"><i class="fas fa-users"></i> Utilisateurs</span>
                 <span class="count" id="sidebarCount">0</span>
@@ -73,9 +73,13 @@
         </aside>
 
         <!-- ===== CADRE 2 : DÉTAILS UTILISATEUR ===== -->
-        <section class="cadre-details">
+        <section class="cadre-details" id="cadreDetails">
             <div class="cadre-header">
                 <span class="title"><i class="fas fa-user-circle"></i> Détails</span>
+                <!-- ✅ Handle de redimensionnement -->
+                <div class="resize-handle" id="resizeHandle2">
+                    <i class="fas fa-grip-vertical"></i>
+                </div>
             </div>
             <div class="cadre-body" id="detailsBody">
                 <div class="empty-detail" id="emptyDetail">
@@ -90,10 +94,14 @@
         </section>
 
         <!-- ===== CADRE 3 : LISTE DES PAIEMENTS ===== -->
-        <section class="cadre-payments">
+        <section class="cadre-payments" id="cadrePayments">
             <div class="cadre-header">
                 <span class="title"><i class="fas fa-credit-card"></i> Paiements</span>
                 <span class="count" id="paymentsCount">0</span>
+                <!-- ✅ Handle de redimensionnement -->
+                <div class="resize-handle" id="resizeHandle3">
+                    <i class="fas fa-grip-vertical"></i>
+                </div>
             </div>
             <div class="cadre-body" id="paymentsList">
                 <div class="empty-payments" id="emptyPayments">
