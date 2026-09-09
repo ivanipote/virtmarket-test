@@ -678,6 +678,10 @@ app.post('/api/admin/verify', async (req, res) => {
 // 18. ROUTE ADMIN : RÉINITIALISER LA BASE
 // ================================================================
 
+// ================================================================
+// ROUTE ADMIN : RÉINITIALISER LA BASE
+// ================================================================
+
 app.post('/api/admin/reset-database', async (req, res) => {
     const { password } = req.body;
 
@@ -693,16 +697,21 @@ app.post('/api/admin/reset-database', async (req, res) => {
     console.log('⚠️ Toutes les données vont être supprimées !');
 
     try {
-        await db.query('TRUNCATE TABLE payments, orders, users RESTART IDENTITY CASCADE');
-        console.log('✅ Base réinitialisée avec succès');
-        console.log('='.repeat(80) + '\n');
-        res.json({ success: true, message: 'Base réinitialisée avec succès' });
+        // ✅ Appeler la nouvelle fonction resetDatabase()
+        const result = await db.resetDatabase();
+
+        if (result) {
+            console.log('✅ Base réinitialisée avec succès');
+            console.log('='.repeat(80) + '\n');
+            res.json({ success: true, message: 'Base réinitialisée avec succès' });
+        } else {
+            throw new Error('Erreur lors de la réinitialisation');
+        }
     } catch (error) {
         console.error('❌ Erreur réinitialisation:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
-
 // ================================================================
 // 19. WEBHOOK JEKO
 // ================================================================
