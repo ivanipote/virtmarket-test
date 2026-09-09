@@ -59,6 +59,10 @@ sgMail.setApiKey(SENDGRID_API_KEY);
 // 4. FONCTION : ENVOI EMAIL
 // ================================================================
 
+// ================================================================
+// 4. FONCTION : ENVOI EMAIL DE REMERCIEMENT AVEC LIEN REÇU
+// ================================================================
+
 async function sendThankYouEmail(email, name, amount, orderId) {
     try {
         const now = new Date();
@@ -67,22 +71,31 @@ async function sendThankYouEmail(email, name, amount, orderId) {
 
         console.log(`📧 Envoi email à ${email} via SendGrid...`);
 
+        // ✅ Lien de téléchargement du reçu
+        const receiptLink = `https://virtmarket-test.onrender.com/download-recu.html?reference=${orderId}`;
+
         const htmlContent = `
             <div style="font-family: 'Segoe UI', system-ui, sans-serif; max-width: 600px; margin: auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e6e8ef; padding: 0;">
+
+                <!-- Header -->
                 <div style="text-align: center; padding: 24px 20px 8px 20px; background: white;">
-                    <div style="font-size: 32px; margin-bottom: 4px;">🙏</div>
+                    <img src="https://virtmarket-test.onrender.com/logo.png" alt="VirtMak" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #156FE6; padding: 4px; margin-bottom: 8px;" />
                     <div style="font-size: 18px; font-weight: 700; color: #0F1B4D; border-bottom: 2px solid #156FE6; padding-bottom: 12px;">
-                        Merci pour votre don
+                        ❤️ Merci pour votre don
                     </div>
                 </div>
+
+                <!-- Corps -->
                 <div style="padding: 0 24px 24px 24px;">
                     <p style="font-size: 15px; font-weight: 600; color: #0F1B4D; margin-bottom: 4px;">
                         Bonjour <span style="color: #156FE6;">${name}</span>,
                     </p>
                     <p style="font-size: 13px; color: #1a1a2e; line-height: 1.6; margin: 6px 0 14px 0;">
                         <strong>Nous vous remercions !!!</strong><br>
-                        Votre don de <strong style="color: #156FE6;">${amount} FCFA</strong> nous aide à construire une plateforme ivoirienne innovante et sécurisée.
+                        Votre don de <strong style="color: #156FE6;">${amount} FCFA</strong> a été confirmé avec succès.
                     </p>
+
+                    <!-- Récapitulatif -->
                     <div style="background: #f8f9fc; border-radius: 12px; padding: 12px 16px; border: 1px solid #e6e8ef; margin: 8px 0 14px 0;">
                         <div style="font-size: 12px; font-weight: 700; color: #0F1B4D; border-bottom: 1px solid #e6e8ef; padding-bottom: 6px; margin-bottom: 6px;">
                             📋 Récapitulatif du don
@@ -108,6 +121,16 @@ async function sendThankYouEmail(email, name, amount, orderId) {
                             <span style="font-weight: 600; color: #0F1B4D;">${orderId}</span>
                         </div>
                     </div>
+
+                    <!-- ✅ BOUTON TÉLÉCHARGER LE REÇU -->
+                    <div style="text-align: center; margin: 16px 0;">
+                        <a href="${receiptLink}" 
+                           style="background: #156FE6; color: white; padding: 12px 32px; border-radius: 30px; text-decoration: none; font-weight: 700; font-size: 15px; display: inline-block; box-shadow: 0 4px 20px rgba(21,111,230,0.25);">
+                            📄 Télécharger mon reçu
+                        </a>
+                    </div>
+
+                    <!-- Signature -->
                     <div style="text-align: center; padding-top: 12px; border-top: 2px solid #f0f2f5; font-size: 12px; color: #6b7280;">
                         <div style="font-weight: 600; color: #0F1B4D;">Avec toute notre gratitude,</div>
                         <div>L'équipe <strong style="color: #156FE6;">VirtMak</strong></div>
@@ -125,7 +148,7 @@ async function sendThankYouEmail(email, name, amount, orderId) {
                 email: SENDER_EMAIL,
                 name: SENDER_NAME
             },
-            subject: `🙏 Merci pour votre don de ${amount} FCFA - VirtMak`,
+            subject: `❤️ Merci pour votre don de ${amount} FCFA - VirtMak`,
             html: htmlContent
         };
 
