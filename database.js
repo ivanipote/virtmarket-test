@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : database.js
 // DESCRIPTION : Gestion de la base de données PostgreSQL
-// VERSION : 3.3 - Ajout migration flex4
+// VERSION : 3.4 - Ajout reset complet
 // ================================================================
 
 const { Pool } = require('pg');
@@ -86,7 +86,7 @@ async function initializeDatabase() {
         `);
         console.log('✅ Table orders créée/vérifiée');
 
-        // ✅ Migration : ajouter la colonne flex4 si elle n'existe pas
+        // Migration : ajouter la colonne flex4 si elle n'existe pas
         await client.query(`
             DO $$ 
             BEGIN
@@ -571,7 +571,44 @@ async function getStats() {
 }
 
 // ================================================================
-// 7. FONCTIONS DE NETTOYAGE (DESACTIVÉES)
+// 7. FONCTION : RESET COMPLET
+// ================================================================
+
+/**
+ * ✅ Supprime TOUTES les données de TOUTES les tables
+ * Utilisé par reset-data.html
+ */
+async function resetDatabase() {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        // Supprimer toutes les données de toutes les tables
+        await client.query(`
+            TRUNCATE TABLE 
+                payments, 
+                orders, 
+                users, 
+                pending_payments, 
+                payments_jeko, 
+                soutiens 
+            RESTART IDENTITY CASCADE
+        `);
+        
+        await client.query('COMMIT');
+        console.log('✅ Base réinitialisée complètement (toutes les tables)');
+        return true;
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('❌ Erreur reset:', error);
+        return false;
+    } finally {
+        client.release();
+    }
+}
+
+// ================================================================
+// 8. FONCTIONS DE NETTOYAGE (DESACTIVÉES)
 // ================================================================
 
 async function cleanOldOrders(minutes = 15) {
@@ -583,7 +620,7 @@ async function cleanOldPayments(minutes = 15) {
 }
 
 // ================================================================
-// 8. EXPORT
+// 9. EXPORT
 // ================================================================
 
 module.exports = {
@@ -591,6 +628,7 @@ module.exports = {
     query: (text, params) => pool.query(text, params),
     
     initialize: initializeDatabase,
+    resetDatabase,  // ✅ NOUVEAU
     
     getOrCreateUser,
     updateUserStatus,
