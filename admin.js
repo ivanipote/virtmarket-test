@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 7.0 - Style moderne + redimensionnement
+// VERSION : 7.1 - Section email de remerciement
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -119,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ✅ Initialiser le redimensionnement pour le cadre 2 (détails) et cadre 3 (payments)
     setupResize('resizeHandle2', 'cadreDetails', 200, 800);
     setupResize('resizeHandle3', 'cadrePayments', 200, 800);
 
@@ -274,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // AFFICHER LE DÉTAIL (CADRE 2) - STYLE MODERNE
+    // AFFICHER LE DÉTAIL (CADRE 2) - AVEC SECTION EMAIL
     // ============================================================
 
     function renderDetail(id) {
@@ -295,6 +294,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const updatedAt = user.updated_at ? new Date(user.updated_at) : null;
 
         const intention = user.flex3 || null;
+
+        // ✅ Récupérer les infos email
+        const emailStatus = user.flex1 || null;
+        const emailMessage = user.flex2 || null;
+
         const statusInfo = statusLabels[status] || statusLabels.visiteur;
 
         const userOrders = getOrdersByEmail(email);
@@ -338,7 +342,27 @@ document.addEventListener('DOMContentLoaded', function() {
             methodHtml = '<span style="color:#9ca3af;font-weight:400;">Aucune</span>';
         }
 
-        // ✅ Construction du HTML avec sections stylées
+        // ✅ EMAIL STATUS
+        let emailStatusHtml = '';
+        let emailStatusClass = '';
+        let emailStatusIcon = '';
+        if (emailStatus === 'succes') {
+            emailStatusHtml = 'Envoyé avec succès';
+            emailStatusClass = 'success';
+            emailStatusIcon = '✅';
+        } else if (emailStatus === 'echec') {
+            emailStatusHtml = 'Échec';
+            emailStatusClass = 'error';
+            emailStatusIcon = '❌';
+        } else {
+            emailStatusHtml = 'Non envoyé';
+            emailStatusClass = 'pending';
+            emailStatusIcon = '⏳';
+        }
+
+        const emailDate = updatedAt ? formatDate(updatedAt) : '-';
+
+        // ✅ Construction du HTML avec section email
         detailContent.innerHTML = `
             <div class="detail-content">
 
@@ -382,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ` : ''}
                 </div>
 
-                <!-- Section 3 : Méthode -->
+                <!-- Section 3 : Méthode de paiement -->
                 <div class="detail-section">
                     <div class="section-title">Méthode de paiement</div>
                     <div class="detail-row">
@@ -395,12 +419,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
+                <!-- ✅ Section 4 : Email de remerciement -->
+                <div class="detail-section" style="border-left: 3px solid ${emailStatus === 'succes' ? '#22c55e' : emailStatus === 'echec' ? '#dc3545' : '#f59e0b'};">
+                    <div class="section-title">
+                        <i class="fas fa-envelope"></i> Email de remerciement
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Statut</span>
+                        <span class="value" style="color:${emailStatus === 'succes' ? '#0e7a49' : emailStatus === 'echec' ? '#c0342a' : '#b45309'};">
+                            ${emailStatusIcon} ${emailStatusHtml}
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Message</span>
+                        <span class="value" style="font-weight:400;color:#6b7280;max-width:50%;font-size:12px;">${emailMessage || '-'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Dernier envoi</span>
+                        <span class="value" style="font-weight:400;color:#6b7280;font-size:12px;">${emailDate}</span>
+                    </div>
+                </div>
+
             </div>
         `;
     }
 
     // ============================================================
-    // AFFICHER LES PAIEMENTS (CADRE 3) - STYLE MODERNE
+    // AFFICHER LES PAIEMENTS (CADRE 3)
     // ============================================================
 
     function renderPayments(id) {
@@ -414,7 +459,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const status = user.calculated_status || 'visiteur';
 
-        // Visiteur : aucun paiement
         if (status === 'visiteur') {
             emptyPayments.style.display = 'block';
             emptyPayments.innerHTML = `
@@ -427,13 +471,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Participant ou Donateur : afficher les paiements
         const userOrders = getOrdersByEmail(user.email);
         const userPayments = getPaymentsByEmail(user.email);
 
         const allItems = [];
 
-        // Ajouter les paiements
         userPayments.forEach(p => {
             allItems.push({
                 type: 'payment',
@@ -445,7 +487,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Ajouter les commandes en attente
         userOrders.filter(o => o.status === 'pending').forEach(o => {
             allItems.push({
                 type: 'order',
@@ -457,7 +498,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Trier par date (plus récent en premier)
         allItems.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         paymentsCount.textContent = allItems.length;
