@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 6.1 - Correction méthodes + largeur ajustable
+// VERSION : 7.0 - Style moderne + redimensionnement
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -51,12 +51,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================================
 
     const methodLabels = {
-        // Noms courts (frontend)
         'wave': 'Wave',
         'orange': 'Orange Money',
         'mtn': 'MTN MoMo',
         'moov': 'Moov Money',
-        // Noms Jèko (backend)
         'mtn_momo': 'MTN MoMo',
         'orange_money': 'Orange Money',
         'moov_money': 'Moov Money'
@@ -81,6 +79,49 @@ document.addEventListener('DOMContentLoaded', function() {
         'orange_money': 'orange',
         'moov_money': 'moov'
     };
+
+    // ============================================================
+    // REDIMENSIONNEMENT DES CADRES
+    // ============================================================
+
+    function setupResize(handleId, targetId, minWidth = 200, maxWidth = 600) {
+        const handle = document.getElementById(handleId);
+        const target = document.getElementById(targetId);
+
+        if (!handle || !target) return;
+
+        let isResizing = false;
+
+        handle.addEventListener('mousedown', function(e) {
+            isResizing = true;
+            document.body.style.cursor = 'ew-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+
+            const rect = target.getBoundingClientRect();
+            const newWidth = e.clientX - rect.left;
+
+            if (newWidth >= minWidth && newWidth <= maxWidth) {
+                target.style.width = newWidth + 'px';
+                target.style.flex = 'none';
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+    }
+
+    // ✅ Initialiser le redimensionnement pour le cadre 2 (détails) et cadre 3 (payments)
+    setupResize('resizeHandle2', 'cadreDetails', 200, 800);
+    setupResize('resizeHandle3', 'cadrePayments', 200, 800);
 
     // ============================================================
     // CHARGER LES DONNÉES
@@ -233,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // AFFICHER LE DÉTAIL (CADRE 2)
+    // AFFICHER LE DÉTAIL (CADRE 2) - STYLE MODERNE
     // ============================================================
 
     function renderDetail(id) {
@@ -261,6 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const successPayments = userPayments.filter(p => p.status === 'success');
         const totalAmount = successPayments.reduce((sum, p) => sum + ((p.amount || 0) / 100), 0);
         const totalOrders = userOrders.length;
+        const totalPending = userOrders.filter(o => o.status === 'pending').length;
 
         const formatDate = (date) => {
             if (!date) return '-';
@@ -296,46 +338,69 @@ document.addEventListener('DOMContentLoaded', function() {
             methodHtml = '<span style="color:#9ca3af;font-weight:400;">Aucune</span>';
         }
 
+        // ✅ Construction du HTML avec sections stylées
         detailContent.innerHTML = `
-            <div class="detail-row">
-                <span class="label">Nom</span>
-                <span class="value">${name}</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Email</span>
-                <span class="value">${email}</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Statut</span>
-                <span class="value"><span class="badge ${statusInfo.class}">${statusInfo.label}</span></span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Inscription</span>
-                <span class="value">${formatDate(createdAt)}</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Total payé</span>
-                <span class="value amount-value">${totalAmount} FCFA</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Commandes</span>
-                <span class="value">${totalOrders}</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Dernière méthode</span>
-                <span class="value">${methodHtml}</span>
-            </div>
-            ${intention ? `
-                <div class="detail-row">
-                    <span class="label">Intention initiale</span>
-                    <span class="value" style="color:#6b7280;font-weight:400;">${intention} FCFA</span>
+            <div class="detail-content">
+
+                <!-- Section 1 : Identité -->
+                <div class="detail-section">
+                    <div class="section-title">Identité</div>
+                    <div class="detail-row">
+                        <span class="label">Nom</span>
+                        <span class="value">${name}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Email</span>
+                        <span class="value">${email}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Statut</span>
+                        <span class="value"><span class="badge ${statusInfo.class}">${statusInfo.label}</span></span>
+                    </div>
                 </div>
-            ` : ''}
+
+                <!-- Section 2 : Finances -->
+                <div class="detail-section">
+                    <div class="section-title">Finances</div>
+                    <div class="detail-row">
+                        <span class="label">Total payé</span>
+                        <span class="value amount-value">${totalAmount} FCFA</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Commandes</span>
+                        <span class="value">${totalOrders}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">En attente</span>
+                        <span class="value">${totalPending}</span>
+                    </div>
+                    ${intention ? `
+                        <div class="detail-row">
+                            <span class="label">Intention initiale</span>
+                            <span class="value" style="color:#6b7280;font-weight:400;">${intention} FCFA</span>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Section 3 : Méthode -->
+                <div class="detail-section">
+                    <div class="section-title">Méthode de paiement</div>
+                    <div class="detail-row">
+                        <span class="label">Dernière méthode</span>
+                        <span class="value">${methodHtml}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Inscription</span>
+                        <span class="value">${formatDate(createdAt)}</span>
+                    </div>
+                </div>
+
+            </div>
         `;
     }
 
     // ============================================================
-    // AFFICHER LES PAIEMENTS (CADRE 3)
+    // AFFICHER LES PAIEMENTS (CADRE 3) - STYLE MODERNE
     // ============================================================
 
     function renderPayments(id) {
@@ -444,12 +509,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <td class="amount-cell">${item.amount} FCFA</td>
                                 <td>
                                     <div class="method-cell">
-                                        <img src="${methodIcon}" alt="${methodName}" class="method-logo" />
+                                        <span class="method-logo ${methodClass}">
+                                            <img src="${methodIcon}" alt="${methodName}" />
+                                        </span>
                                         <span class="method-name ${methodClass}">${methodName}</span>
                                     </div>
                                 </td>
                                 <td class="${statusClass}">${statusIcon} ${item.status}</td>
-                                <td>${formatDate(item.date)}</td>
+                                <td class="date-cell">${formatDate(item.date)}</td>
                                 <td class="ref-cell">${item.reference}</td>
                             </tr>
                         `;
