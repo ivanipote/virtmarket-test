@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 5.0 - Structure 3 cadres
+// VERSION : 6.0 - 3 cadres horizontaux
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -41,24 +41,17 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const statusLabels = {
-        'visiteur': { label: '🟡 Visiteur', class: 'visiteur' },
-        'participant': { label: '🔵 Participant', class: 'participant' },
-        'donateur': { label: '🟢 Donateur', class: 'donateur' }
+        'visiteur': { label: 'Visiteur', class: 'visiteur' },
+        'participant': { label: 'Participant', class: 'participant' },
+        'donateur': { label: 'Donateur', class: 'donateur' }
     };
 
-    // ✅ Méthodes de paiement
+    // Méthodes de paiement
     const methodLabels = {
         'wave': 'Wave',
         'orange': 'Orange Money',
         'mtn': 'MTN MoMo',
         'moov': 'Moov Money'
-    };
-
-    const methodColors = {
-        'wave': '#156FE6',
-        'orange': '#FF6600',
-        'mtn': '#FFCC00',
-        'moov': '#0066CC'
     };
 
     const methodIcons = {
@@ -146,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // RÉCUPÉRER LES COMMANDES D'UN UTILISATEUR
+    // RÉCUPÉRER LES COMMANDES/PALEMENTS D'UN UTILISATEUR
     // ============================================================
 
     function getOrdersByEmail(email) {
@@ -190,11 +183,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let badgeHtml = '';
             if (status === 'visiteur') {
-                badgeHtml = `<span class="user-badge" style="font-size:9px;font-weight:700;padding:1px 8px;border-radius:10px;background:#fef3c7;color:#b45309;">🟡</span>`;
+                badgeHtml = `<span class="user-badge visiteur">Visiteur</span>`;
             } else if (status === 'participant') {
-                badgeHtml = `<span class="user-badge" style="font-size:9px;font-weight:700;padding:1px 8px;border-radius:10px;background:#dbeafe;color:#1d4ed8;">🔵</span>`;
+                badgeHtml = `<span class="user-badge participant">Participant</span>`;
             } else if (status === 'donateur') {
-                badgeHtml = `<span class="user-badge" style="font-size:9px;font-weight:700;padding:1px 8px;border-radius:10px;background:#e6f7ee;color:#0e7a49;">🟢</span>`;
+                badgeHtml = `<span class="user-badge donateur">Donateur</span>`;
             }
 
             return `
@@ -222,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // AFFICHER LE DÉTAIL (CADRE 2)
     // ============================================================
 
-    async function renderDetail(id) {
+    function renderDetail(id) {
         const user = allUsers.find(u => u.id === id);
         if (!user) {
             emptyDetail.style.display = 'flex';
@@ -265,7 +258,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const methodLabel = methodLabels[lastMethod] || 'Wave';
-        const methodColor = methodColors[lastMethod] || '#156FE6';
         const methodIcon = methodIcons[lastMethod] || '/wave.png';
 
         let methodHtml = '';
@@ -283,36 +275,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
         detailContent.innerHTML = `
             <div class="detail-row">
-                <span class="label">👤 Nom</span>
+                <span class="label">Nom</span>
                 <span class="value">${name}</span>
             </div>
             <div class="detail-row">
-                <span class="label">📧 Email</span>
+                <span class="label">Email</span>
                 <span class="value">${email}</span>
             </div>
             <div class="detail-row">
-                <span class="label">📊 Statut</span>
+                <span class="label">Statut</span>
                 <span class="value"><span class="badge ${statusInfo.class}">${statusInfo.label}</span></span>
             </div>
             <div class="detail-row">
-                <span class="label">📅 Inscription</span>
+                <span class="label">Inscription</span>
                 <span class="value">${formatDate(createdAt)}</span>
             </div>
             <div class="detail-row">
-                <span class="label">💰 Total payé</span>
+                <span class="label">Total payé</span>
                 <span class="value amount-value">${totalAmount} FCFA</span>
             </div>
             <div class="detail-row">
-                <span class="label">📦 Commandes</span>
+                <span class="label">Commandes</span>
                 <span class="value">${totalOrders}</span>
             </div>
             <div class="detail-row">
-                <span class="label">💳 Dernière méthode</span>
+                <span class="label">Dernière méthode</span>
                 <span class="value">${methodHtml}</span>
             </div>
             ${intention ? `
                 <div class="detail-row">
-                    <span class="label">💡 Intention initiale</span>
+                    <span class="label">Intention initiale</span>
                     <span class="value" style="color:#6b7280;font-weight:400;">${intention} FCFA</span>
                 </div>
             ` : ''}
@@ -334,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const status = user.calculated_status || 'visiteur';
 
-        // ✅ Pour un visiteur : aucun paiement
+        // Visiteur : aucun paiement
         if (status === 'visiteur') {
             emptyPayments.style.display = 'block';
             emptyPayments.innerHTML = `
@@ -347,11 +339,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // ✅ Pour participant et donateur : afficher les paiements
+        // Participant ou Donateur : afficher les paiements
         const userOrders = getOrdersByEmail(user.email);
         const userPayments = getPaymentsByEmail(user.email);
 
-        // Fusionner orders et payments
         const allItems = [];
 
         // Ajouter les paiements
@@ -420,7 +411,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         const statusClass = item.status === 'success' ? 'status-success' : 'status-pending';
                         const statusIcon = item.status === 'success' ? '✅' : '⏳';
                         const methodName = methodLabels[item.method] || 'Wave';
-                        const methodColor = methodColors[item.method] || '#156FE6';
                         const methodIcon = methodIcons[item.method] || '/wave.png';
                         const methodClass = item.method || 'wave';
 
