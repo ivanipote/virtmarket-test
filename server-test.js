@@ -55,10 +55,42 @@ if (!SENDER_EMAIL) {
 
 sgMail.setApiKey(SENDGRID_API_KEY);
 
+
+
+
 // ================================================================
-// 4. FONCTION : ENVOI EMAIL
+// 4. FONCTION : ADLIN GESTION
+// ================================================================
+// ================================================================
+// CONFIGURATION ADMIN LOGIN
 // ================================================================
 
+const ADMIN_LOGIN_USER = process.env.ADMIN_LOGIN_USER || 'ipote233@';
+const ADMIN_LOGIN_PASSWORD = process.env.ADMIN_LOGIN_PASSWORD || '050358';
+
+console.log('✅ Admin login configuré');
+
+// ================================================================
+// ROUTE : VÉRIFIER LES IDENTIFIANTS ADMIN
+// ================================================================
+
+app.post('/api/admin/verify', async (req, res) => {
+    const { username, password } = req.body;
+
+    console.log(`🔐 Tentative de connexion admin: ${username}`);
+
+    if (!username || !password) {
+        return res.status(400).json({ success: false, error: 'Identifiants requis' });
+    }
+
+    if (username === ADMIN_LOGIN_USER && password === ADMIN_LOGIN_PASSWORD) {
+        console.log('✅ Connexion admin réussie');
+        res.json({ success: true, message: 'Authentification réussie' });
+    } else {
+        console.log('❌ Échec de connexion admin');
+        res.status(401).json({ success: false, error: 'Identifiants incorrects' });
+    }
+});
 // ================================================================
 // 4. FONCTION : ENVOI EMAIL DE REMERCIEMENT AVEC LIEN REÇU
 // ================================================================
