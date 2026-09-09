@@ -35,7 +35,7 @@
 
         <div class="header-right">
             <div class="header-stats">
-                <span class="stat-item" id="statTotalItem">
+                <span class="stat-item">
                     💰 Total <span class="stat-value" id="statTotal">0 FCFA</span>
                 </span>
             </div>
@@ -44,7 +44,7 @@
                     <i class="fas fa-sync-alt"></i> <span>Rafraîchir</span>
                 </button>
                 <a href="/pay.html" class="btn-paybeta">
-                    🔵 PayBETA
+                    🔵 <span>PayBETA</span>
                 </a>
             </div>
         </div>
@@ -55,31 +55,62 @@
     <!-- ============================================================ -->
     <div class="admin-layout">
 
-        <!-- SIDEBAR -->
-        <aside class="admin-sidebar">
-            <div class="sidebar-header">
-                <span class="sidebar-title"><i class="fas fa-users"></i> Utilisateurs</span>
-                <span class="sidebar-count" id="sidebarCount">0</span>
+        <!-- ========================================================== -->
+        <!-- TOP ROW : CADRE 1 + CADRE 2                                 -->
+        <!-- ========================================================== -->
+        <div class="top-row">
+
+            <!-- ===== CADRE 1 : SIDEBAR ===== -->
+            <aside class="cadre-sidebar">
+                <div class="cadre-header">
+                    <span class="title"><i class="fas fa-users"></i> Utilisateurs</span>
+                    <span class="count" id="sidebarCount">0</span>
+                </div>
+                <div class="cadre-body" id="usersList">
+                    <div class="empty-users" id="emptyUsers">
+                        <i class="fas fa-inbox"></i>
+                        <p>Aucun utilisateur</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- ===== CADRE 2 : DÉTAILS UTILISATEUR ===== -->
+            <main class="cadre-details" id="detailsContainer">
+                <div class="cadre-header">
+                    <span class="title"><i class="fas fa-user-circle"></i> Détails</span>
+                </div>
+                <div class="cadre-body" id="detailsBody">
+                    <div class="empty-detail" id="emptyDetail">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        <h3>Aucun utilisateur sélectionné</h3>
+                        <p>Cliquez sur un utilisateur dans la liste de gauche</p>
+                    </div>
+                    <div id="detailContent" style="display:none;">
+                        <!-- Rempli par JS -->
+                    </div>
+                </div>
+            </main>
+
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- CADRE 3 : LISTE DES PAIEMENTS                               -->
+        <!-- ========================================================== -->
+        <section class="cadre-payments">
+            <div class="cadre-header">
+                <span class="title"><i class="fas fa-credit-card"></i> Historique des paiements</span>
+                <span class="count" id="paymentsCount">0</span>
             </div>
-            <div class="users-list" id="usersList">
-                <div class="empty-users" id="emptyUsers">
-                    <i class="fas fa-inbox"></i>
-                    <p>Aucun utilisateur</p>
+            <div class="cadre-body" id="paymentsList">
+                <div class="empty-payments" id="emptyPayments">
+                    <i class="fas fa-credit-card"></i>
+                    <p>Aucun paiement</p>
+                </div>
+                <div id="paymentsContent" style="display:none;">
+                    <!-- Rempli par JS -->
                 </div>
             </div>
-        </aside>
-
-        <!-- CONTENU -->
-        <main class="admin-content" id="adminContent">
-            <div class="empty-detail" id="emptyDetail">
-                <i class="fas fa-hand-holding-heart"></i>
-                <h3>Aucun utilisateur sélectionné</h3>
-                <p>Cliquez sur un utilisateur dans la liste de gauche</p>
-            </div>
-            <div class="detail-scroll" id="detailContainer" style="display:none;">
-                <!-- Rempli par JS -->
-            </div>
-        </main>
+        </section>
 
     </div>
 
