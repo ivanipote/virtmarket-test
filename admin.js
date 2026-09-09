@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 4.2 - Correction du total
+// VERSION : 5.0 - Structure 3 cadres
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -11,7 +11,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const usersList = document.getElementById('usersList');
     const emptyUsers = document.getElementById('emptyUsers');
     const emptyDetail = document.getElementById('emptyDetail');
-    const detailContainer = document.getElementById('detailContainer');
+    const detailContent = document.getElementById('detailContent');
+    const detailsBody = document.getElementById('detailsBody');
+    const paymentsList = document.getElementById('paymentsList');
+    const emptyPayments = document.getElementById('emptyPayments');
+    const paymentsContent = document.getElementById('paymentsContent');
     const refreshBtn = document.getElementById('refreshBtn');
 
     const statTotal = document.getElementById('statTotal');
@@ -19,14 +23,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const countVisiteur = document.getElementById('countVisiteur');
     const countParticipant = document.getElementById('countParticipant');
     const countDonateur = document.getElementById('countDonateur');
-
     const sidebarCount = document.getElementById('sidebarCount');
+    const paymentsCount = document.getElementById('paymentsCount');
+
     const filterBtns = document.querySelectorAll('.filter-btn');
 
     let allUsers = [];
     let selectedId = null;
     let currentFilter = 'all';
     let allOrders = [];
+    let allPayments = [];
 
     const statusColors = {
         'visiteur': '#eab308',
@@ -38,6 +44,28 @@ document.addEventListener('DOMContentLoaded', function() {
         'visiteur': { label: '🟡 Visiteur', class: 'visiteur' },
         'participant': { label: '🔵 Participant', class: 'participant' },
         'donateur': { label: '🟢 Donateur', class: 'donateur' }
+    };
+
+    // ✅ Méthodes de paiement
+    const methodLabels = {
+        'wave': 'Wave',
+        'orange': 'Orange Money',
+        'mtn': 'MTN MoMo',
+        'moov': 'Moov Money'
+    };
+
+    const methodColors = {
+        'wave': '#156FE6',
+        'orange': '#FF6600',
+        'mtn': '#FFCC00',
+        'moov': '#0066CC'
+    };
+
+    const methodIcons = {
+        'wave': '/wave.png',
+        'orange': '/om.png',
+        'mtn': '/mtn.png',
+        'moov': '/moov.png'
     };
 
     // ============================================================
@@ -52,12 +80,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const ordersRes = await fetch('/api/paylist');
             const ordersData = await ordersRes.json();
 
+            const paymentsRes = await fetch('/api/payments');
+            const paymentsData = await paymentsRes.json();
+
             if (usersData.success && usersData.users) {
                 allUsers = usersData.users;
             }
 
             if (ordersData.success && ordersData.orders) {
                 allOrders = ordersData.orders;
+            }
+
+            if (paymentsData.success && paymentsData.payments) {
+                allPayments = paymentsData.payments;
             }
 
             renderStats();
@@ -67,13 +102,16 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!selectedId && allUsers.length > 0) {
                 selectedId = allUsers[0].id;
                 renderDetail(selectedId);
+                renderPayments(selectedId);
             } else if (selectedId) {
                 const exists = allUsers.some(u => u.id === selectedId);
                 if (!exists && allUsers.length > 0) {
                     selectedId = allUsers[0].id;
                     renderDetail(selectedId);
+                    renderPayments(selectedId);
                 } else if (exists) {
                     renderDetail(selectedId);
+                    renderPayments(selectedId);
                 }
             }
         } catch (error) {
@@ -82,14 +120,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // STATS - Correction du total
+    // STATS
     // ============================================================
 
     function renderStats() {
-        // ✅ Utiliser total_amount (montant en FCFA) au lieu de success_payments (nombre)
-        const totalAmount = allUsers.reduce((sum, u) => {
-            return sum + (u.total_amount || 0);
-        }, 0);
+        const totalAmount = allPayments
+            .filter(p => p.status === 'success')
+            .reduce((sum, p) => sum + ((p.amount || 0) / 100), 0);
         statTotal.textContent = totalAmount + ' FCFA';
     }
 
@@ -109,7 +146,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // AFFICHER LES UTILISATEURS
+    // RÉCUPÉRER LES COMMANDES D'UN UTILISATEUR
+    // ============================================================
+
+    function getOrdersByEmail(email) {
+        return allOrders.filter(o => o.email === email);
+    }
+
+    function getPaymentsByEmail(email) {
+        return allPayments.filter(p => p.email === email || p.user_email === email);
+    }
+
+    // ============================================================
+    // AFFICHER LES UTILISATEURS (CADRE 1)
     // ============================================================
 
     function renderUsers() {
@@ -139,11 +188,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const isActive = u.id === selectedId;
             const initial = name.charAt(0).toUpperCase();
 
+            let badgeHtml = '';
+            if (status === 'visiteur') {
+                badgeHtml = `<span class="user-badge" style="font-size:9px;font-weight:700;padding:1px 8px;border-radius:10px;background:#fef3c7;color:#b45309;">🟡</span>`;
+            } else if (status === 'participant') {
+                badgeHtml = `<span class="user-badge" style="font-size:9px;font-weight:700;padding:1px 8px;border-radius:10px;background:#dbeafe;color:#1d4ed8;">🔵</span>`;
+            } else if (status === 'donateur') {
+                badgeHtml = `<span class="user-badge" style="font-size:9px;font-weight:700;padding:1px 8px;border-radius:10px;background:#e6f7ee;color:#0e7a49;">🟢</span>`;
+            }
+
             return `
                 <div class="user-item ${isActive ? 'active' : ''}" data-id="${u.id}">
-                    <span class="user-avatar" style="background:${statusColors[status] || '#6b7280'};">${initial}</span>
-                    <span class="user-status-dot ${status}"></span>
+                    <span class="avatar" style="background:${statusColors[status] || '#6b7280'};">${initial}</span>
+                    <span class="status-dot ${status}"></span>
                     <span class="user-name">${name}</span>
+                    ${badgeHtml}
                 </div>
             `;
         }).join('');
@@ -154,32 +213,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedId = id;
                 renderUsers();
                 renderDetail(id);
+                renderPayments(id);
             });
         });
     }
 
     // ============================================================
-    // RÉCUPÉRER LES COMMANDES D'UN UTILISATEUR
-    // ============================================================
-
-    function getOrdersByEmail(email) {
-        return allOrders.filter(o => o.email === email);
-    }
-
-    // ============================================================
-    // AFFICHER LE DÉTAIL D'UN UTILISATEUR
+    // AFFICHER LE DÉTAIL (CADRE 2)
     // ============================================================
 
     async function renderDetail(id) {
         const user = allUsers.find(u => u.id === id);
         if (!user) {
             emptyDetail.style.display = 'flex';
-            detailContainer.style.display = 'none';
+            detailContent.style.display = 'none';
             return;
         }
 
         emptyDetail.style.display = 'none';
-        detailContainer.style.display = 'block';
+        detailContent.style.display = 'block';
 
         const status = user.calculated_status || 'visiteur';
         const name = user.name || 'Anonyme';
@@ -187,15 +239,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const createdAt = user.created_at ? new Date(user.created_at) : null;
         const updatedAt = user.updated_at ? new Date(user.updated_at) : null;
 
-        // Intention (flex3)
         const intention = user.flex3 || null;
-
         const statusInfo = statusLabels[status] || statusLabels.visiteur;
 
-        // Récupérer les commandes
         const userOrders = getOrdersByEmail(email);
-        const pendingOrders = userOrders.filter(o => o.status === 'pending');
-        const successOrders = userOrders.filter(o => o.status === 'success');
+        const userPayments = getPaymentsByEmail(email);
+        const successPayments = userPayments.filter(p => p.status === 'success');
+        const totalAmount = successPayments.reduce((sum, p) => sum + ((p.amount || 0) / 100), 0);
+        const totalOrders = userOrders.length;
 
         const formatDate = (date) => {
             if (!date) return '-';
@@ -203,201 +254,195 @@ document.addEventListener('DOMContentLoaded', function() {
                    new Date(date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         };
 
-        // ===== COMMANDES HTML =====
-        let ordersHtml = '';
-        if (userOrders.length > 0) {
-            ordersHtml = `
-                <div style="margin-top:16px;padding-top:12px;border-top:2px solid #f0f2f5;">
-                    <div class="payment-history-title">
-                        <span class="title">📦 Historique des commandes (${userOrders.length})</span>
-                        <span class="total">Total : ${userOrders.reduce((sum, o) => sum + (o.amount || 0), 0)} FCFA</span>
-                    </div>
-                    <div class="payment-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Montant</th>
-                                    <th>Statut</th>
-                                    <th>Date</th>
-                                    <th>Référence</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${userOrders.map((o, index) => {
-                                    const statusClass = o.status === 'success' ? 'status-success' : 'status-pending';
-                                    const statusIcon = o.status === 'success' ? '✅' : '⏳';
-                                    return `
-                                        <tr>
-                                            <td>${index + 1}</td>
-                                            <td class="amount-cell">${o.amount || 0} FCFA</td>
-                                            <td class="${statusClass}">${statusIcon} ${o.status || 'pending'}</td>
-                                            <td>${formatDate(o.created_at)}</td>
-                                            <td class="ref-cell">${o.reference || '-'}</td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
+        // Dernière méthode utilisée
+        let lastMethod = null;
+        if (successPayments.length > 0) {
+            const lastPayment = successPayments[0];
+            lastMethod = lastPayment.payment_method || lastPayment.flex4 || 'wave';
+        } else if (userOrders.length > 0) {
+            const lastOrder = userOrders[0];
+            lastMethod = lastOrder.flex4 || 'wave';
         }
 
-        // ===== STATUS FOOTER =====
-        let statusFooterHtml = '';
-        if (status === 'visiteur') {
-            statusFooterHtml = `
-                <div class="status-item">
-                    <span class="status-label"><i class="fas fa-clock" style="color:#eab308;"></i> En attente</span>
-                    <span class="status-time pending">
-                        ${formatDate(createdAt)}
-                        <span class="badge pending">⏳ En attente</span>
-                    </span>
-                </div>
-                ${intention ? `
-                    <div class="status-item" style="border-top:1px solid #f0f2f5;padding-top:6px;margin-top:4px;">
-                        <span class="status-label"><i class="fas fa-money-bill-wave" style="color:#eab308;"></i> Intention</span>
-                        <span class="status-time" style="color:#156FE6;font-weight:700;">${intention} FCFA</span>
-                    </div>
-                ` : ''}
+        const methodLabel = methodLabels[lastMethod] || 'Wave';
+        const methodColor = methodColors[lastMethod] || '#156FE6';
+        const methodIcon = methodIcons[lastMethod] || '/wave.png';
+
+        let methodHtml = '';
+        if (lastMethod) {
+            const isMtn = lastMethod === 'mtn';
+            methodHtml = `
+                <span class="method-badge ${lastMethod}">
+                    <img src="${methodIcon}" alt="${methodLabel}" class="method-logo" />
+                    ${methodLabel}
+                </span>
             `;
-        } else if (status === 'participant') {
-            statusFooterHtml = `
-                <div class="status-item">
-                    <span class="status-label"><i class="fas fa-link" style="color:#3b82f6;"></i> Lien généré</span>
-                    <span class="status-time pending">
-                        ${formatDate(updatedAt)}
-                        <span class="badge pending">⏳ En attente</span>
-                    </span>
-                </div>
-                ${pendingOrders.length > 0 ? `
-                    <div class="status-item" style="border-top:1px solid #f0f2f5;padding-top:6px;margin-top:4px;">
-                        <span class="status-label"><i class="fas fa-money-bill-wave" style="color:#3b82f6;"></i> Montant</span>
-                        <span class="status-time" style="color:#156FE6;font-weight:700;">${pendingOrders[0].amount || 0} FCFA</span>
-                    </div>
-                ` : ''}
-                ${intention ? `
-                    <div class="status-item" style="border-top:1px solid #f0f2f5;padding-top:6px;margin-top:4px;">
-                        <span class="status-label"><i class="fas fa-lightbulb" style="color:#3b82f6;"></i> Intention</span>
-                        <span class="status-time" style="color:#6b7280;font-weight:400;">${intention} FCFA</span>
-                    </div>
-                ` : ''}
-            `;
-        } else if (status === 'donateur') {
-            const totalPaye = successOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
-            statusFooterHtml = `
-                <div class="status-item">
-                    <span class="status-label"><i class="fas fa-check-circle" style="color:#22c55e;"></i> Paiement réussi</span>
-                    <span class="status-time success">
-                        ${formatDate(updatedAt)}
-                        <span class="badge success">✅ Succès</span>
-                    </span>
-                </div>
-                ${totalPaye > 0 ? `
-                    <div class="status-item" style="border-top:1px solid #f0f2f5;padding-top:6px;margin-top:4px;">
-                        <span class="status-label"><i class="fas fa-money-bill-wave" style="color:#22c55e;"></i> Total payé</span>
-                        <span class="status-time" style="color:#156FE6;font-weight:700;">
-                            ${totalPaye} FCFA
-                        </span>
-                    </div>
-                ` : ''}
-                ${intention ? `
-                    <div class="status-item" style="border-top:1px solid #f0f2f5;padding-top:6px;margin-top:4px;">
-                        <span class="status-label"><i class="fas fa-lightbulb" style="color:#6b7280;"></i> Intention initiale</span>
-                        <span class="status-time" style="color:#6b7280;font-weight:400;">${intention} FCFA</span>
-                    </div>
-                ` : ''}
-            `;
+        } else {
+            methodHtml = '<span style="color:#9ca3af;font-weight:400;">Aucune</span>';
         }
 
-        // ===== RENDER =====
-        detailContainer.innerHTML = `
-            <div class="detail-card">
-                <div class="detail-header">
-                    <span class="detail-title"><i class="fas fa-user"></i> Détail utilisateur</span>
-                    <span class="detail-id">#${user.id}</span>
-                </div>
-
-                <div class="detail-row">
-                    <span class="label">👤 Nom</span>
-                    <span class="value">${name}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="label">📧 Email</span>
-                    <span class="value">${email}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="label">📊 Statut</span>
-                    <span class="value"><span class="status-badge ${statusInfo.class}">${statusInfo.label}</span></span>
-                </div>
-                <div class="detail-row">
-                    <span class="label">📅 Date d'inscription</span>
-                    <span class="value">${formatDate(createdAt)}</span>
-                </div>
-
-                <!-- STATUS FOOTER -->
-                <div class="detail-status-footer">
-                    ${statusFooterHtml}
-                </div>
-
-                <!-- HISTORIQUE DES COMMANDES -->
-                ${ordersHtml}
-
-                <!-- ACTIONS -->
-                <div class="detail-actions">
-                    <button class="copy-btn" data-copy="${email}">
-                        <i class="fas fa-copy"></i> Copier l'email
-                    </button>
-                    <button class="copy-btn" data-copy="${name}">
-                        <i class="fas fa-copy"></i> Copier le nom
-                    </button>
-                    ${user.id ? `
-                        <button class="copy-btn" data-copy="#${user.id}">
-                            <i class="fas fa-copy"></i> Copier l'ID
-                        </button>
-                    ` : ''}
-                </div>
+        detailContent.innerHTML = `
+            <div class="detail-row">
+                <span class="label">👤 Nom</span>
+                <span class="value">${name}</span>
             </div>
+            <div class="detail-row">
+                <span class="label">📧 Email</span>
+                <span class="value">${email}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">📊 Statut</span>
+                <span class="value"><span class="badge ${statusInfo.class}">${statusInfo.label}</span></span>
+            </div>
+            <div class="detail-row">
+                <span class="label">📅 Inscription</span>
+                <span class="value">${formatDate(createdAt)}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">💰 Total payé</span>
+                <span class="value amount-value">${totalAmount} FCFA</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">📦 Commandes</span>
+                <span class="value">${totalOrders}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">💳 Dernière méthode</span>
+                <span class="value">${methodHtml}</span>
+            </div>
+            ${intention ? `
+                <div class="detail-row">
+                    <span class="label">💡 Intention initiale</span>
+                    <span class="value" style="color:#6b7280;font-weight:400;">${intention} FCFA</span>
+                </div>
+            ` : ''}
         `;
+    }
 
-        // ===== COPIE =====
-        document.querySelectorAll('.detail-card .copy-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const text = this.dataset.copy;
-                navigator.clipboard.writeText(text).then(() => {
-                    this.style.background = '#e6f7ee';
-                    this.style.color = '#156FE6';
-                    this.innerHTML = '<i class="fas fa-check"></i> Copié !';
-                    setTimeout(() => {
-                        this.style.background = '#f8f9fc';
-                        this.style.color = '#6b7280';
-                        const label = this.textContent.includes('email') ? "Copier l'email" :
-                                     this.textContent.includes('nom') ? "Copier le nom" :
-                                     "Copier l'ID";
-                        this.innerHTML = `<i class="fas fa-copy"></i> ${label}`;
-                    }, 2000);
-                }).catch(() => {
-                    const input = document.createElement('input');
-                    input.value = text;
-                    document.body.appendChild(input);
-                    input.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(input);
-                    this.style.background = '#e6f7ee';
-                    this.style.color = '#156FE6';
-                    this.innerHTML = '<i class="fas fa-check"></i> Copié !';
-                    setTimeout(() => {
-                        this.style.background = '#f8f9fc';
-                        this.style.color = '#6b7280';
-                        const label = this.textContent.includes('email') ? "Copier l'email" :
-                                     this.textContent.includes('nom') ? "Copier le nom" :
-                                     "Copier l'ID";
-                        this.innerHTML = `<i class="fas fa-copy"></i> ${label}`;
-                    }, 2000);
-                });
+    // ============================================================
+    // AFFICHER LES PAIEMENTS (CADRE 3)
+    // ============================================================
+
+    function renderPayments(id) {
+        const user = allUsers.find(u => u.id === id);
+        if (!user) {
+            emptyPayments.style.display = 'block';
+            paymentsContent.style.display = 'none';
+            paymentsCount.textContent = '0';
+            return;
+        }
+
+        const status = user.calculated_status || 'visiteur';
+
+        // ✅ Pour un visiteur : aucun paiement
+        if (status === 'visiteur') {
+            emptyPayments.style.display = 'block';
+            emptyPayments.innerHTML = `
+                <i class="fas fa-credit-card"></i>
+                <p>Aucun paiement</p>
+                <span style="font-size:11px;color:#d8dbe4;">Ce visiteur n'a pas encore effectué de paiement</span>
+            `;
+            paymentsContent.style.display = 'none';
+            paymentsCount.textContent = '0';
+            return;
+        }
+
+        // ✅ Pour participant et donateur : afficher les paiements
+        const userOrders = getOrdersByEmail(user.email);
+        const userPayments = getPaymentsByEmail(user.email);
+
+        // Fusionner orders et payments
+        const allItems = [];
+
+        // Ajouter les paiements
+        userPayments.forEach(p => {
+            allItems.push({
+                type: 'payment',
+                amount: (p.amount || 0) / 100,
+                status: p.status || 'success',
+                method: p.payment_method || p.flex4 || 'wave',
+                date: p.created_at,
+                reference: p.reference || p.transaction_id || '-'
             });
         });
+
+        // Ajouter les commandes en attente
+        userOrders.filter(o => o.status === 'pending').forEach(o => {
+            allItems.push({
+                type: 'order',
+                amount: o.amount || 0,
+                status: 'pending',
+                method: o.flex4 || 'wave',
+                date: o.created_at,
+                reference: o.reference || '-'
+            });
+        });
+
+        // Trier par date (plus récent en premier)
+        allItems.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        paymentsCount.textContent = allItems.length;
+
+        if (allItems.length === 0) {
+            emptyPayments.style.display = 'block';
+            emptyPayments.innerHTML = `
+                <i class="fas fa-credit-card"></i>
+                <p>Aucun paiement</p>
+                <span style="font-size:11px;color:#d8dbe4;">Aucune transaction enregistrée</span>
+            `;
+            paymentsContent.style.display = 'none';
+            return;
+        }
+
+        emptyPayments.style.display = 'none';
+        paymentsContent.style.display = 'block';
+
+        const formatDate = (date) => {
+            if (!date) return '-';
+            return new Date(date).toLocaleDateString('fr-FR') + ' ' + 
+                   new Date(date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        };
+
+        paymentsContent.innerHTML = `
+            <table class="payments-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Montant</th>
+                        <th>Méthode</th>
+                        <th>Statut</th>
+                        <th>Date</th>
+                        <th>Référence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${allItems.map((item, index) => {
+                        const statusClass = item.status === 'success' ? 'status-success' : 'status-pending';
+                        const statusIcon = item.status === 'success' ? '✅' : '⏳';
+                        const methodName = methodLabels[item.method] || 'Wave';
+                        const methodColor = methodColors[item.method] || '#156FE6';
+                        const methodIcon = methodIcons[item.method] || '/wave.png';
+                        const methodClass = item.method || 'wave';
+
+                        return `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td class="amount-cell">${item.amount} FCFA</td>
+                                <td>
+                                    <div class="method-cell">
+                                        <img src="${methodIcon}" alt="${methodName}" class="method-logo" />
+                                        <span class="method-name ${methodClass}">${methodName}</span>
+                                    </div>
+                                </td>
+                                <td class="${statusClass}">${statusIcon} ${item.status}</td>
+                                <td>${formatDate(item.date)}</td>
+                                <td class="ref-cell">${item.reference}</td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        `;
     }
 
     // ============================================================
@@ -416,10 +461,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedId = id;
                 renderUsers();
                 renderDetail(id);
+                renderPayments(id);
             } else {
                 selectedId = null;
                 emptyDetail.style.display = 'flex';
-                detailContainer.style.display = 'none';
+                detailContent.style.display = 'none';
+                emptyPayments.style.display = 'block';
+                paymentsContent.style.display = 'none';
+                paymentsCount.textContent = '0';
             }
         });
     });
