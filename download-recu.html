@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧾 Reçu de paiement - VirtMak</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        /* ============================================================ */
+        /* CONTENEUR PRINCIPAL                                          */
+        /* ============================================================ */
+        .container {
+            max-width: 480px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        /* ============================================================ */
+        /* RECU                                                         */
+        /* ============================================================ */
+        #recuContent {
+            background: white;
+            border-radius: 20px;
+            padding: 32px 28px 24px 28px;
+            width: 100%;
+            border: 1px solid #e6e8ef;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 0.3s;
+        }
+
+        /* ===== HEADER ===== */
+        .recu-header {
+            text-align: center;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #156FE6;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, #f0f7ff, white);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .recu-header .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 3px solid #156FE6;
+            padding: 4px;
+            margin: 0 auto 6px auto;
+            background: white;
+        }
+
+        .recu-header .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .recu-header .brand {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0F1B4D;
+        }
+
+        .recu-header .brand span {
+            color: #156FE6;
+        }
+
+        /* ===== TITRE ===== */
+        .recu-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            background: #156FE6;
+            padding: 6px 0;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        /* ===== MESSAGE ===== */
+        .recu-message {
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            margin: 8px 0 14px 0;
+            padding: 8px 12px;
+            background: #f0f7ff;
+            border-radius: 8px;
+            font-style: italic;
+        }
+
+        /* ===== DÉTAILS ===== */
+        .recu-details {
+            margin: 10px 0;
+        }
+
+        .recu-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #f8f9fc;
+        }
+
+        .recu-row:last-child {
+            border-bottom: none;
+        }
+
+        .recu-row .label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .recu-row .value {
+            font-weight: 600;
+            color: #0F1B4D;
+            text-align: right;
+        }
+
+        .recu-row .value.amount {
+            color: #156FE6;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .recu-row .value .method-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #e6e8ef;
+            padding: 3px;
+            background: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+
+        .recu-row .value .method-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .recu-row .value .method-logo.wave { border-color: #156FE6; }
+        .recu-row .value .method-logo.orange { border-color: #FF6600; }
+        .recu-row .value .method-logo.mtn { border-color: #FFCC00; }
+        .recu-row .value .method-logo.moov { border-color: #0066CC; }
+
+        .recu-row .value .method-name {
+            font-size: 13px;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
+        .recu-row .value .method-name.wave { color: #156FE6; }
+        .recu-row .value .method-name.orange { color: #FF6600; }
+        .recu-row .value .method-name.mtn { color: #b45309; }
+        .recu-row .value .method-name.moov { color: #0066CC; }
+
+        .recu-row .value .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #e6f7ee;
+            color: #0e7a49;
+        }
+
+        .recu-row .value .ref-cell {
+            font-size: 11px;
+            color: #6b7280;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* ===== FOOTER ===== */
+        .recu-footer {
+            text-align: center;
+            padding-top: 12px;
+            border-top: 2px solid #f0f2f5;
+            margin-top: 14px;
+        }
+
+        .recu-footer .powered {
+            font-size: 11px;
+            color: #9ca3af;
+            letter-spacing: 1px;
+        }
+
+        .recu-footer .powered strong {
+            color: white;
+            background: #156FE6;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+
+        /* ============================================================ */
+        /* BOUTON TÉLÉCHARGER                                           */
+        /* ============================================================ */
+        .btn-download {
+            background: linear-gradient(135deg, #156FE6, #0F1B4D);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 350px;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(21, 111, 230, 0.25);
+        }
+
+        .btn-download:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(21, 111, 230, 0.35);
+        }
+
+        .btn-download:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-download .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ============================================================ */
+        /* LOADING STATE                                                */
+        /* ============================================================ */
+        .loading-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        .loading-state .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e6e8ef;
+            border-top-color: #156FE6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        .loading-state p {
+            font-size: 14px;
+        }
+
+        /* ============================================================ */
+        /* ERROR STATE                                                  */
+        /* ============================================================ */
+        .error-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #dc3545;
+        }
+
+        .error-state i {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .error-state h3 {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .error-state p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .error-state .btn-back {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 10px 24px;
+            background: #f8f9fc;
+            border: 1px solid #e6e8ef;
+            border-radius: 30px;
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .error-state .btn-back:hover {
+            border-color: #156FE6;
+            color: #156FE6;
+            background: #f0f7ff;
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE                                                    */
+        /* ============================================================ */
+        @media (max-width: 500px) {
+            #recuContent { padding: 20px 16px; }
+            .recu-row { font-size: 12px; flex-wrap: wrap; gap: 4px; }
+            .recu-row .value { text-align: left; max-width: 100%; }
+            .recu-title { font-size: 14px; }
+            .recu-header .logo { width: 44px; height: 44px; }
+            .recu-header .brand { font-size: 16px; }
+            .btn-download { font-size: 14px; padding: 12px 24px; }
+            .recu-row .value .method-logo { width: 24px; height: 24px; }
+            .recu-row .value .method-name { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ============================================================ -->
+        <!-- LOADING                                                       -->
+        <!-- ============================================================ -->
+        <div id="loadingState" class="loading-state">
+            <div class="spinner"></div>
+            <p>Chargement de votre reçu...</p>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- ERROR                                                         -->
+        <!-- ============================================================ -->
+        <div id="errorState" class="error-state" style="display:none;">
+            <i class="fas fa-exclamation-circle"></i>
+            <h3>Reçu non trouvé</h3>
+            <p>Le reçu que vous recherchez n'existe pas ou a été supprimé.</p>
+            <a href="/virtmak.html" class="btn-back">Retour à l'accueil</a>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- RECU                                                         -->
+        <!-- ============================================================ -->
+        <div id="recuContainer" style="display:none;width:100%;">
+
+            <!-- RECU CONTENT -->
+            <div id="recuContent">
+                <!-- Header -->
+                <div class="recu-header">
+                    <div class="logo">
+                        <img src="/logo.png" alt="VirtMak" />
+                    </div>
+                    <div class="brand">Virt<span>Mak</span></div>
+                </div>
+
+                <!-- Titre -->
+                <div class="recu-title">📋 REÇU DE PAIEMENT</div>
+
+                <!-- Message -->
+                <div class="recu-message">Nos sincères remerciements.</div>
+
+                <!-- Détails -->
+                <div class="recu-details" id="recuDetails">
+                    <!-- Rempli par JS -->
+                </div>
+
+                <!-- Footer -->
+                <div class="recu-footer">
+                    <div class="powered">⚡ powered by <strong>megane</strong></div>
+                </div>
+            </div>
+
+            <!-- BOUTON TÉLÉCHARGER -->
+            <div style="display:flex;justify-content:center;margin-top:20px;width:100%;">
+                <button class="btn-download" id="downloadBtn">
+                    <i class="fas fa-download"></i> Télécharger en PDF
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            console.log('✅ download-recu.html chargé');
+
+            // ===== RÉFÉRENCES =====
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const recuContainer = document.getElementById('recuContainer');
+            const recuDetails = document.getElementById('recuDetails');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const recuContent = document.getElementById('recuContent');
+
+            // ===== RÉCUPÉRER LA RÉFÉRENCE =====
+            const urlParams = new URLSearchParams(window.location.search);
+            const reference = urlParams.get('reference');
+
+            console.log('🔗 Référence:', reference);
+
+            if (!reference) {
+                loadingState.style.display = 'none';
+                errorState.style.display = 'block';
+                errorState.querySelector('h3').textContent = 'Référence manquante';
+                errorState.querySelector('p').textContent = 'Aucune référence de reçu n\'a été fournie.';
+                return;
+            }
+
+            // ===== CHARGER LES DONNÉES =====
+            async function loadReceipt() {
+                try {
+                    const response = await fetch(`/api/receipt-data/${encodeURIComponent(reference)}`);
+                    const data = await response.json();
+
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.error || 'Reçu non trouvé');
+                    }
+
+                    console.log('✅ Données reçues:', data);
+
+                    // ✅ Afficher le reçu
+                    displayReceipt(data);
+                    loadingState.style.display = 'none';
+                    recuContainer.style.display = 'block';
+
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    loadingState.style.display = 'none';
+                    errorState.style.display = 'block';
+                    errorState.querySelector('p').textContent = error.message || 'Impossible de charger le reçu.';
+                }
+            }
+
+            // ===== AFFICHER LE REÇU =====
+            function displayReceipt(data) {
+                const {
+                    name,
+                    email,
+                    amount,
+                    date,
+                    number,
+                    method,
+                    status,
+                    reference: ref
+                } = data;
+
+                // ✅ Méthodes
+                const methodLabels = {
+                    'wave': { name: 'Wave', icon: '/wave.png', class: 'wave', color: '#156FE6' },
+                    'orange': { name: 'Orange Money', icon: '/om.png', class: 'orange', color: '#FF6600' },
+                    'mtn': { name: 'MTN MoMo', icon: '/mtn.png', class: 'mtn', color: '#b45309' },
+                    'moov': { name: 'Moov Money', icon: '/moov.png', class: 'moov', color: '#0066CC' },
+                    'mtn_momo': { name: 'MTN MoMo', icon: '/mtn.png', class: 'mtn', color: '#b45309' },
+                    'orange_money': { name: 'Orange Money', icon: '/om.png', class: 'orange', color: '#FF6600' },
+                    'moov_money': { name: 'Moov Money', icon: '/moov.png', class: 'moov', color: '#0066CC' }
+                };
+
+                const methodInfo = methodLabels[method] || methodLabels['wave'];
+                const methodName = methodInfo.name;
+                const methodIcon = methodInfo.icon;
+                const methodClass = methodInfo.class;
+
+                // ✅ Construction du HTML
+                recuDetails.innerHTML = `
+                    <div class="recu-row">
+                        <span class="label">Numéro</span>
+                        <span class="value">${number}</span>
+                    </div>
+                    <div class="recu-row">
+                        <span class="label">Date et heure</span>
+                        <span class="value">${date}</span>
+                    </div>
+                    <div class="recu-row">
+                        <span class="label">Donateur</span>
+                        <span class="value">${name}</span>
+                    </div>
+                    <div class="recu-row">
+                        <span class="label">Email</span>
+                        <span class="value">${email}</span>
+                    </div>
+                    <div class="recu-row">
+                        <span class="label">Montant</span>
+                        <span class="value amount">${amount} FCFA</span>
+                    </div>
+                    <div class="recu-row">
+                        <span class="label">Méthode</span>
+                        <span class="value">
+                            <span class="method-logo ${methodClass}">
+                                <img src="${methodIcon}" alt="${methodName}" />
+                            </span>
+                            <span class="method-name ${methodClass}">${methodName}</span>
+                        </span>
+                    </div>
+                    <div class="recu-row">
+                        <span class="label">Statut</span>
+                        <span class="value"><span class="status-badge">✅ ${status}</span></span>
+                    </div>
+                    <div class="recu-row">
+                        <span class="label">Référence</span>
+                        <span class="value ref-cell">${ref}</span>
+                    </div>
+                `;
+            }
+
+            // ===== TÉLÉCHARGER EN PDF =====
+            downloadBtn.addEventListener('click', function() {
+                console.log('🔄 Génération du PDF...');
+
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = '<span class="spinner"></span> Génération...';
+
+                const opt = {
+                    margin: [10, 10, 10, 10],
+                    filename: `recu-${reference.slice(-9)}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, letterRendering: true, useCORS: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+
+                html2pdf().set(opt).from(recuContent).save()
+                    .then(function() {
+                        console.log('✅ PDF généré avec succès !');
+                        downloadBtn.disabled = false;
+                        downloadBtn.innerHTML = '<i class="fas fa-download"></i> Télécharger en PDF';
+                    })
+                    .catch(function(error) {
+                        console.error('❌ Erreur génération PDF:', error);
+                        downloadBtn.disabled = false;
+                        downloadBtn.innerHTML = '<i class="fas fa-download"></i> Télécharger en PDF';
+                        alert('❌ Erreur lors de la génération du PDF');
+                    });
+            });
+
+            // ===== INIT =====
+            loadReceipt();
+
+            console.log('✅ download-recu.html initialisé');
+
+        });
+    </script>
+
+</body>
+</html>

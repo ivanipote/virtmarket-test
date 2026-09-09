@@ -372,20 +372,22 @@ app.post('/api/send-receipt', async (req, res) => {
 // ROUTE : TÉLÉCHARGER LE REÇU EN PDF
 // ================================================================
 
-app.get('/api/receipt/:reference', async (req, res) => {
+// ================================================================
+// ROUTE : RÉCUPÉRER LES DONNÉES D'UN REÇU
+// ================================================================
+
+app.get('/api/receipt-data/:reference', async (req, res) => {
     const { reference } = req.params;
 
-    console.log(`📄 Génération du reçu pour: ${reference}`);
+    console.log(`📄 Récupération des données du reçu: ${reference}`);
 
     try {
-        // ✅ Récupérer les infos du paiement
         const order = await db.getOrderByReference(reference);
 
         if (!order) {
-            return res.status(404).json({ error: 'Commande non trouvée' });
+            return res.status(404).json({ success: false, error: 'Commande non trouvée' });
         }
 
-        // ✅ Récupérer le paiement associé
         const payment = await db.getPaymentByTransactionId(order.transaction_id);
 
         const name = order.name || 'Donateur';
@@ -394,98 +396,23 @@ app.get('/api/receipt/:reference', async (req, res) => {
         const date = order.updated_at ? new Date(order.updated_at).toLocaleString('fr-FR') : new Date().toLocaleString('fr-FR');
         const number = `REC-${reference.slice(-9)}`;
         const method = payment?.payment_method || order.flex4 || 'wave';
-        const status = 'Paiement confirmé ✅';
+        const status = 'Paiement confirmé';
 
-        // ✅ Mapping des méthodes
-        const methodLabels = {
-            'wave': 'Wave',
-            'orange': 'Orange Money',
-            'mtn': 'MTN MoMo',
-            'moov': 'Moov Money',
-            'mtn_momo': 'MTN MoMo',
-            'orange_money': 'Orange Money',
-            'moov_money': 'Moov Money'
-        };
-        const methodName = methodLabels[method] || 'Wave';
-
-        // ✅ Générer le HTML du reçu
-        const html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Reçu de paiement</title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body {
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background: white;
-                    padding: 40px;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 100vh;
-                }
-                .recu {
-                    max-width: 500px;
-                    width: 100%;
-                    background: white;
-                    border-radius: 16px;
-                    padding: 32px 28px;
-                    border: 1px solid #e6e8ef;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-                }
-                .recu-header { text-align: center; padding-bottom: 16px; border-bottom: 2px solid #156FE6; margin-bottom: 16px; }
-                .recu-header .logo { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #156FE6; padding: 4px; margin: 0 auto 8px auto; background: white; }
-                .recu-header .logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block; }
-                .recu-header .brand { font-size: 20px; font-weight: 800; color: #0F1B4D; }
-                .recu-header .brand span { color: #156FE6; }
-                .recu-header .tagline { font-size: 12px; color: #6b7280; }
-                .recu-title { text-align: center; font-size: 18px; font-weight: 700; color: #0F1B4D; margin-bottom: 16px; padding: 6px 0; background: #f0f7ff; border-radius: 8px; letter-spacing: 2px; }
-                .recu-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; border-bottom: 1px solid #f8f9fc; }
-                .recu-row:last-child { border-bottom: none; }
-                .recu-row .label { color: #6b7280; font-weight: 500; }
-                .recu-row .value { font-weight: 600; color: #0F1B4D; text-align: right; }
-                .recu-row .value.amount { color: #156FE6; font-size: 18px; font-weight: 800; }
-                .recu-row .value .status-badge { display: inline-block; padding: 2px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; background: #e6f7ee; color: #0e7a49; }
-                .recu-footer { text-align: center; padding-top: 16px; border-top: 2px solid #f0f2f5; margin-top: 16px; font-size: 13px; color: #6b7280; }
-                .recu-footer .thankyou { font-size: 16px; font-weight: 600; color: #0F1B4D; }
-                .recu-footer .note { font-size: 11px; color: #9ca3af; margin-top: 4px; }
-            </style>
-        </head>
-        <body>
-            <div class="recu">
-                <div class="recu-header">
-                    <div class="logo"><img src="https://virtmarket-test.onrender.com/logo.png" alt="VirtMak" /></div>
-                    <div class="brand">Virt<span>Mak</span></div>
-                    <div class="tagline">e-commerce ivoirien</div>
-                </div>
-                <div class="recu-title">📋 REÇU DE PAIEMENT</div>
-                <div class="recu-row"><span class="label">Numéro de reçu</span><span class="value">${number}</span></div>
-                <div class="recu-row"><span class="label">Date et heure</span><span class="value">${date}</span></div>
-                <div class="recu-row"><span class="label">Donateur</span><span class="value">${name}</span></div>
-                <div class="recu-row"><span class="label">Email</span><span class="value">${email}</span></div>
-                <div class="recu-row"><span class="label">Montant</span><span class="value amount">${amount} FCFA</span></div>
-                <div class="recu-row"><span class="label">Méthode</span><span class="value">${methodName}</span></div>
-                <div class="recu-row"><span class="label">Statut</span><span class="value"><span class="status-badge">✅ ${status}</span></span></div>
-                <div class="recu-row"><span class="label">Référence</span><span class="value" style="font-size:12px;color:#6b7280;font-family:'Courier New',monospace;">${reference}</span></div>
-                <div class="recu-footer">
-                    <div class="thankyou">Merci pour votre soutien ! ❤️</div>
-                    <div class="note">Ce reçu est généré automatiquement. Il fait office de preuve de paiement.</div>
-                </div>
-            </div>
-        </body>
-        </html>
-        `;
-
-        // ✅ Envoyer le HTML directement (pour l'instant)
-        // Plus tard, on pourra utiliser html2pdf ou puppeteer pour générer un vrai PDF
-        res.setHeader('Content-Type', 'text/html');
-        res.send(html);
+        res.json({
+            success: true,
+            name,
+            email,
+            amount,
+            date,
+            number,
+            method,
+            status,
+            reference
+        });
 
     } catch (error) {
-        console.error('❌ Erreur génération reçu:', error);
-        res.status(500).json({ error: error.message });
+        console.error('❌ Erreur récupération reçu:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 // ================================================================
