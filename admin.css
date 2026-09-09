@@ -1,6 +1,6 @@
 /* ================================================================
    admin.css - Styles pour le tableau de bord admin
-   VERSION : 7.0 - Styles des cadres + redimensionnement
+   VERSION : 7.1 - Correction des logos
    ================================================================ */
 
 * {
@@ -580,7 +580,7 @@ body {
 }
 
 /* ============================================================ */
-/* CADRE 3 : PAYMENTS TABLE                                      */
+/* CADRE 3 : PAYMENTS TABLE (CORRIGÉ)                           */
 /* ============================================================ */
 .payments-table {
     width: 100%;
@@ -625,23 +625,35 @@ body {
     font-weight: 600;
 }
 
+/* ✅ METHODE CELL - CORRIGÉE */
 .payments-table .method-cell {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .payments-table .method-cell .method-logo {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 2px solid #e6e8ef;
     padding: 4px;
     background: white;
-    object-fit: contain;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
+.payments-table .method-cell .method-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* ✅ Couleurs des bordures des logos */
 .payments-table .method-cell .method-logo.wave { border-color: #156FE6; }
 .payments-table .method-cell .method-logo.orange { border-color: #FF6600; }
 .payments-table .method-cell .method-logo.mtn { border-color: #FFCC00; }
@@ -727,8 +739,8 @@ body {
         display: none;
     }
     .payments-table .method-cell .method-logo {
-        width: 26px;
-        height: 26px;
+        width: 28px;
+        height: 28px;
         padding: 3px;
     }
 }
