@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧾 Générateur de reçu - VirtMak</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --navy: #0F1B4D;
+            --blue: #156FE6;
+            --blue-light: #eef5ff;
+            --ink: #1a1a2e;
+            --muted: #6b7280;
+            --line: #e9ecf3;
+            --bg: #eef1f7;
+            --green: #0e7a49;
+            --green-bg: #e6f7ee;
+        }
+
+        body {
+            font-family: 'Manrope', 'Segoe UI', sans-serif;
+            background:
+                radial-gradient(circle at 15% 8%, rgba(21,111,230,0.08), transparent 45%),
+                radial-gradient(circle at 85% 92%, rgba(15,27,77,0.06), transparent 40%),
+                var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 48px 20px 60px;
+            color: var(--ink);
+        }
+
+        .page-head {
+            text-align: center;
+            margin-bottom: 34px;
+            max-width: 420px;
+        }
+
+        .page-head .kicker {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--blue);
+            margin-bottom: 8px;
+        }
+
+        .page-head h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        .page-head p {
+            font-size: 13.5px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .generate-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, var(--blue), var(--navy));
+            color: white;
+            border: none;
+            padding: 17px 38px;
+            border-radius: 50px;
+            font-family: inherit;
+            font-size: 15.5px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(21, 111, 230, 0.28);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 36px rgba(21, 111, 230, 0.35);
+        }
+
+        .btn-generate:active {
+            transform: translateY(0);
+        }
+
+        .btn-generate i {
+            font-size: 15px;
+        }
+
+        .generate-hint {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .receipt-wrap {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 30px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            animation: riseIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .receipt-wrap.visible {
+            display: flex;
+        }
+
+        @keyframes riseIn {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #recuContent {
+            background: white;
+            border-radius: 22px;
+            padding: 0;
+            width: 100%;
+            border: 1px solid var(--line);
+            box-shadow: 0 18px 50px rgba(15, 27, 77, 0.08);
+            overflow: hidden;
+        }
+
+        .recu-band {
+            height: 6px;
+            background: linear-gradient(90deg, var(--blue), var(--navy));
+        }
+
+        .recu-header {
+            text-align: center;
+            padding: 26px 24px 18px;
+            border-bottom: 1px dashed var(--line);
+        }
+
+        .recu-header .logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 2.5px solid var(--blue);
+            padding: 3px;
+            margin: 0 auto 10px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .recu-header .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .recu-header .brand {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: -0.2px;
+        }
+
+        .recu-header .brand span {
+            color: var(--blue);
+        }
+
+        .recu-header .tagline {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+            letter-spacing: 0.3px;
+        }
+
+        .recu-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 24px;
+            background: var(--blue-light);
+        }
+
+        .recu-title-row .recu-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .recu-body {
+            padding: 20px 24px 6px;
+        }
+
+        .recu-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 0;
+            font-size: 13.5px;
+            border-bottom: 1px solid #f4f5f9;
+        }
+
+        .recu-row:last-child {
+            border-bottom: none;
+        }
+
+        .recu-row .label {
+            color: var(--muted);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .recu-row .value {
+            font-weight: 700;
+            color: var(--navy);
+            text-align: right;
+        }
+
+        .recu-row .value.amount {
+            color: var(--blue);
+            font-size: 21px;
+            font-weight: 800;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+        }
+
+        .recu-row .value .method-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .recu-row .value .method-badge .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.85);
+        }
+
+        .recu-row .value .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            background: var(--green-bg);
+            color: var(--green);
+        }
+
+        .recu-row .value.ref {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.2px;
+        }
+
+        .recu-footer {
+            text-align: center;
+            padding: 18px 24px 26px;
+            margin-top: 4px;
+            border-top: 1px dashed var(--line);
+        }
+
+        .recu-footer .thankyou {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .recu-footer .note {
+            font-size: 10.5px;
+            color: #9ca3af;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .btn-download,
+        .btn-regenerate {
+            font-family: inherit;
+            border: none;
+            border-radius: 40px;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 13px 24px;
+            transition: all 0.2s;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, var(--blue), var(--navy));
+            color: white;
+            box-shadow: 0 6px 20px rgba(21, 111, 230, 0.22);
+        }
+
+        .btn-download:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(21, 111, 230, 0.3);
+        }
+
+        .btn-download:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-regenerate {
+            background: white;
+            color: var(--navy);
+            border: 1.5px solid var(--line);
+        }
+
+        .btn-regenerate:hover {
+            border-color: var(--blue);
+            color: var(--blue);
+            background: var(--blue-light);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 460px) {
+            body { padding: 34px 14px 40px; }
+            .page-head h1 { font-size: 21px; }
+            .recu-header { padding: 22px 18px 16px; }
+            .recu-body { padding: 16px 18px 4px; }
+            .recu-footer { padding: 16px 18px 22px; }
+            .recu-row { font-size: 12.5px; }
+            .recu-row .value.amount { font-size: 19px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-head">
+        <div class="kicker">Aperçu · Génération de reçus</div>
+        <h1>🧾 Générateur de reçu</h1>
+        <p>Cliquez sur le bouton pour générer un reçu de paiement avec des données d'exemple.</p>
+    </div>
+
+    <div class="generate-zone">
+        <button class="btn-generate" id="genBtn">
+            <i class="fas fa-wand-magic-sparkles"></i>
+            Générer un reçu
+        </button>
+        <span class="generate-hint">Un reçu aléatoire sera créé instantanément</span>
+    </div>
+
+    <div class="receipt-wrap" id="receiptWrap">
+
+        <div id="recuContent">
+            <div class="recu-band"></div>
+
+            <div class="recu-header">
+                <div class="logo">
+                    <img src="/logo.png" alt="VirtMak" onerror="this.style.display='none'" />
+                </div>
+                <div class="brand">Virt<span>Mak</span></div>
+                <div class="tagline">e-commerce ivoirien</div>
+            </div>
+
+            <div class="recu-title-row">
+                <span class="recu-title">Reçu de paiement</span>
+            </div>
+
+            <div class="recu-body" id="recuBody">
+                <div class="recu-row">
+                    <span class="label">N° de reçu</span>
+                    <span class="value" id="recuNumber">-</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Date et heure</span>
+                    <span class="value" id="recuDate">-</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Donateur</span>
+                    <span class="value" id="recuName">-</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Email</span>
+                    <span class="value" id="recuEmail" style="font-size:12px;">-</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Montant</span>
+                    <span class="value amount" id="recuAmount">-</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Méthode</span>
+                    <span class="value" id="recuMethod">-</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Statut</span>
+                    <span class="value" id="recuStatus">-</span>
+                </div>
+                <div class="recu-row">
+                    <span class="label">Référence</span>
+                    <span class="value ref" id="recuRef">-</span>
+                </div>
+            </div>
+
+            <div class="recu-footer">
+                <div class="thankyou">Merci pour votre soutien ! ❤️</div>
+                <div class="note">Ce reçu est généré automatiquement. Il fait office de preuve de paiement.</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn-download" id="downloadBtn">
+                <i class="fas fa-download"></i> Télécharger en PDF
+            </button>
+            <button class="btn-regenerate" id="regenBtn">
+                <i class="fas fa-arrows-rotate"></i> Régénérer
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const genBtn = document.getElementById('genBtn');
+            const regenBtn = document.getElementById('regenBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const receiptWrap = document.getElementById('receiptWrap');
+            const recuContent = document.getElementById('recuContent');
+
+            const fields = {
+                number: document.getElementById('recuNumber'),
+                date: document.getElementById('recuDate'),
+                name: document.getElementById('recuName'),
+                email: document.getElementById('recuEmail'),
+                amount: document.getElementById('recuAmount'),
+                method: document.getElementById('recuMethod'),
+                status: document.getElementById('recuStatus'),
+                ref: document.getElementById('recuRef')
+            };
+
+            const firstNames = ['Ivan Gaël', 'Aya Christelle', 'Kouassi Junior', 'Mariam', 'Yao Serge',
+                                  'Fatou', 'N\'Guessan Prisca', 'Bakary', 'Adjoua Ruth', 'Souleymane'];
+            const lastNames = ['Ipote', 'Koffi', 'Traoré', 'Diomandé', 'Yao', 'Kouamé',
+                                 'Bamba', 'Ouattara', 'N\'Dri', 'Coulibaly'];
+            const emailDomains = ['gmail.com', 'yahoo.fr', 'outlook.com', 'hotmail.com'];
+
+            const methods = [
+                { key: 'wave',   label: 'Wave',        color: '#1DC9F5' },
+                { key: 'orange', label: 'Orange Money', color: '#FF6600' },
+                { key: 'mtn',    label: 'MTN MoMo',     color: '#e0ab00' },
+                { key: 'moov',   label: 'Moov Money',   color: '#0091DA' },
+                { key: 'djamo',  label: 'Djamo',        color: '#6C5CE7' }
+            ];
+
+            function pick(arr) {
+                return arr[Math.floor(Math.random() * arr.length)];
+            }
+
+            function randomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            function pad(n) {
+                return String(n).padStart(2, '0');
+            }
+
+            function slugify(str) {
+                return str
+                    .toLowerCase()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^a-z0-9]+/g, '.')
+                    .replace(/^\.+|\.+$/g, '');
+            }
+
+            function generateReceiptData() {
+                const first = pick(firstNames);
+                const last = pick(lastNames);
+                const fullName = `${first} ${last}`;
+                const email = `${slugify(first)}.${slugify(last)}${randomInt(1, 99)}@${pick(emailDomains)}`;
+
+                const now = new Date();
+                now.setDate(now.getDate() - randomInt(0, 5));
+                now.setHours(randomInt(7, 21), randomInt(0, 59), randomInt(0, 59));
+
+                const dateStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+                const number = `REC-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${String(randomInt(1, 999)).padStart(3, '0')}`;
+
+                const amountValues = [500, 1000, 1500, 2000, 2500, 5000, 10000];
+                const amount = pick(amountValues);
+
+                const method = pick(methods);
+
+                const ref = `VM-${email}-${now.getTime()}`;
+
+                return {
+                    number,
+                    date: dateStr,
+                    name: fullName,
+                    email,
+                    amount: `${amount.toLocaleString('fr-FR')} FCFA`,
+                    method,
+                    ref
+                };
+            }
+
+            function renderReceipt(data) {
+                fields.number.textContent = data.number;
+                fields.date.textContent = data.date;
+                fields.name.textContent = data.name;
+                fields.email.textContent = data.email;
+                fields.amount.textContent = data.amount;
+                fields.method.innerHTML = `<span class="method-badge" style="background:${data.method.color}"><span class="dot"></span>${data.method.label}</span>`;
+                fields.status.innerHTML = `<span class="status-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z" fill="#0e7a49"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Paiement confirmé</span>`;
+                fields.ref.textContent = data.ref;
+            }
+
+            function generateAndShow() {
+                const data = generateReceiptData();
+                renderReceipt(data);
+
+                if (!receiptWrap.classList.contains('visible')) {
+                    receiptWrap.classList.add('visible');
+                } else {
+                    receiptWrap.style.animation = 'none';
+                    void receiptWrap.offsetWidth;
+                    receiptWrap.style.animation = '';
+                }
+            }
+
+            genBtn.addEventListener('click', generateAndShow);
+            regenBtn.addEventListener('click', generateAndShow);
+
+            downloadBtn.addEventListener('click', async function() {
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = '<span class="spinner"></span> Génération...';
+
+                // ✅ On attend que les polices (Manrope, Playfair Display) soient
+                // bien chargées, sinon html2canvas peut capturer une police de
+                // secours ou couper des éléments avant que le rendu ne soit stable.
+                try {
+                    if (document.fonts && document.fonts.ready) {
+                        await document.fonts.ready;
+                    }
+                } catch (e) {
+                    console.warn('⚠️ document.fonts.ready non supporté, on continue quand même');
+                }
+
+                // ✅ Petit délai supplémentaire pour laisser le navigateur
+                // terminer le layout final (badges, SVG, etc.) avant la capture.
+                await new Promise(resolve => setTimeout(resolve, 150));
+
+                const opt = {
+                    margin: [8, 8, 8, 8],
+                    filename: `${fields.number.textContent}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2,
+                        letterRendering: true,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false
+                    },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+
+                html2pdf().set(opt).from(recuContent).save()
+                    .then(function() {
+                        downloadBtn.disabled = false;
+                        downloadBtn.innerHTML = '<i class="fas fa-download"></i> Télécharger en PDF';
+                    })
+                    .catch(function(error) {
+                        console.error('❌ Erreur génération PDF:', error);
+                        downloadBtn.disabled = false;
+                        downloadBtn.innerHTML = '<i class="fas fa-download"></i> Télécharger en PDF';
+                        alert('❌ Erreur lors de la génération du PDF');
+                    });
+            });
+
+        });
+    </script>
+
+</body>
+</html>
