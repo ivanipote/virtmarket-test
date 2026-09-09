@@ -20,85 +20,79 @@
 
         <div class="header-filters">
             <button class="filter-btn active" data-filter="all">
-                📋 Tous <span class="badge-count" id="countAll">0</span>
+                Tous <span class="badge-count" id="countAll">0</span>
             </button>
             <button class="filter-btn" data-filter="visiteur">
-                🟡 Visiteurs <span class="badge-count" id="countVisiteur">0</span>
+                Visiteurs <span class="badge-count" id="countVisiteur">0</span>
             </button>
             <button class="filter-btn" data-filter="participant">
-                🔵 Participants <span class="badge-count" id="countParticipant">0</span>
+                Participants <span class="badge-count" id="countParticipant">0</span>
             </button>
             <button class="filter-btn" data-filter="donateur">
-                🟢 Donateurs <span class="badge-count" id="countDonateur">0</span>
+                Donateurs <span class="badge-count" id="countDonateur">0</span>
             </button>
         </div>
 
         <div class="header-right">
             <div class="header-stats">
                 <span class="stat-item">
-                    💰 Total <span class="stat-value" id="statTotal">0 FCFA</span>
+                    Total <span class="stat-value" id="statTotal">0 FCFA</span>
                 </span>
             </div>
             <div class="header-actions">
                 <button class="btn-refresh" id="refreshBtn">
                     <i class="fas fa-sync-alt"></i> <span>Rafraîchir</span>
                 </button>
-                <a href="/pay.html" class="btn-paybeta">
-                    🔵 <span>PayBETA</span>
+                <a href="/virtmak.html" class="btn-virtmak">
+                    <i class="fas fa-home"></i> <span>VirtMak</span>
+                </a>
+                <a href="/reset-data.html" class="btn-reset">
+                    <i class="fas fa-trash-alt"></i> <span>Reset DB</span>
                 </a>
             </div>
         </div>
     </header>
 
     <!-- ============================================================ -->
-    <!-- LAYOUT                                                        -->
+    <!-- LAYOUT - 3 CADRES HORIZONTAUX                                -->
     <!-- ============================================================ -->
     <div class="admin-layout">
 
-        <!-- ========================================================== -->
-        <!-- TOP ROW : CADRE 1 + CADRE 2                                 -->
-        <!-- ========================================================== -->
-        <div class="top-row">
-
-            <!-- ===== CADRE 1 : SIDEBAR ===== -->
-            <aside class="cadre-sidebar">
-                <div class="cadre-header">
-                    <span class="title"><i class="fas fa-users"></i> Utilisateurs</span>
-                    <span class="count" id="sidebarCount">0</span>
+        <!-- ===== CADRE 1 : SIDEBAR ===== -->
+        <aside class="cadre-sidebar">
+            <div class="cadre-header">
+                <span class="title"><i class="fas fa-users"></i> Utilisateurs</span>
+                <span class="count" id="sidebarCount">0</span>
+            </div>
+            <div class="cadre-body" id="usersList">
+                <div class="empty-users" id="emptyUsers">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucun utilisateur</p>
                 </div>
-                <div class="cadre-body" id="usersList">
-                    <div class="empty-users" id="emptyUsers">
-                        <i class="fas fa-inbox"></i>
-                        <p>Aucun utilisateur</p>
-                    </div>
-                </div>
-            </aside>
+            </div>
+        </aside>
 
-            <!-- ===== CADRE 2 : DÉTAILS UTILISATEUR ===== -->
-            <main class="cadre-details" id="detailsContainer">
-                <div class="cadre-header">
-                    <span class="title"><i class="fas fa-user-circle"></i> Détails</span>
+        <!-- ===== CADRE 2 : DÉTAILS UTILISATEUR ===== -->
+        <section class="cadre-details">
+            <div class="cadre-header">
+                <span class="title"><i class="fas fa-user-circle"></i> Détails</span>
+            </div>
+            <div class="cadre-body" id="detailsBody">
+                <div class="empty-detail" id="emptyDetail">
+                    <i class="fas fa-hand-holding-heart"></i>
+                    <h3>Aucun utilisateur sélectionné</h3>
+                    <p>Cliquez sur un utilisateur dans la liste de gauche</p>
                 </div>
-                <div class="cadre-body" id="detailsBody">
-                    <div class="empty-detail" id="emptyDetail">
-                        <i class="fas fa-hand-holding-heart"></i>
-                        <h3>Aucun utilisateur sélectionné</h3>
-                        <p>Cliquez sur un utilisateur dans la liste de gauche</p>
-                    </div>
-                    <div id="detailContent" style="display:none;">
-                        <!-- Rempli par JS -->
-                    </div>
+                <div id="detailContent" style="display:none;">
+                    <!-- Rempli par JS -->
                 </div>
-            </main>
+            </div>
+        </section>
 
-        </div>
-
-        <!-- ========================================================== -->
-        <!-- CADRE 3 : LISTE DES PAIEMENTS                               -->
-        <!-- ========================================================== -->
+        <!-- ===== CADRE 3 : LISTE DES PAIEMENTS ===== -->
         <section class="cadre-payments">
             <div class="cadre-header">
-                <span class="title"><i class="fas fa-credit-card"></i> Historique des paiements</span>
+                <span class="title"><i class="fas fa-credit-card"></i> Paiements</span>
                 <span class="count" id="paymentsCount">0</span>
             </div>
             <div class="cadre-body" id="paymentsList">

@@ -1,6 +1,6 @@
 /* ================================================================
    admin.css - Styles pour le tableau de bord admin
-   VERSION : 5.0 - Structure 3 cadres
+   VERSION : 6.0 - 3 cadres horizontaux
    ================================================================ */
 
 * {
@@ -142,14 +142,14 @@ body {
 .admin-header .header-right .header-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .admin-header .header-right .header-actions .btn-refresh {
     background: rgba(255, 255, 255, 0.12);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 30px;
     cursor: pointer;
     font-size: 12px;
@@ -164,11 +164,11 @@ body {
     background: rgba(255, 255, 255, 0.25);
 }
 
-.admin-header .header-right .header-actions .btn-paybeta {
+.admin-header .header-right .header-actions .btn-virtmak {
     background: rgba(255, 255, 255, 0.12);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
-    padding: 6px 16px;
+    padding: 5px 14px;
     border-radius: 30px;
     cursor: pointer;
     font-size: 12px;
@@ -180,47 +180,91 @@ body {
     gap: 6px;
 }
 
-.admin-header .header-right .header-actions .btn-paybeta:hover {
+.admin-header .header-right .header-actions .btn-virtmak:hover {
     background: rgba(255, 255, 255, 0.25);
 }
 
+.admin-header .header-right .header-actions .btn-reset {
+    background: rgba(220, 53, 69, 0.15);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    padding: 5px 14px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-header .header-right .header-actions .btn-reset:hover {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
 /* ============================================================ */
-/* LAYOUT                                                        */
+/* LAYOUT - 3 CADRES HORIZONTAUX                                */
 /* ============================================================ */
 .admin-layout {
     display: flex;
-    flex-direction: column;
+    gap: 12px;
     height: calc(100vh - 60px);
     margin-top: 60px;
     padding: 12px 16px 12px 16px;
-    gap: 12px;
 }
 
 /* ============================================================ */
-/* TOP ROW : CADRE 1 + CADRE 2                                   */
-/* ============================================================ */
-.top-row {
-    display: flex;
-    gap: 12px;
-    flex: 1;
-    min-height: 0;
-}
-
-/* ============================================================ */
-/* CADRE 1 : SIDEBAR                                             */
+/* CADRE 1 : SIDEBAR (fixe)                                      */
 /* ============================================================ */
 .cadre-sidebar {
-    width: 280px;
-    min-width: 220px;
+    width: 260px;
+    min-width: 200px;
+    max-width: 320px;
     background: white;
     border-radius: 16px;
     border: 1px solid #e6e8ef;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
-.cadre-sidebar .cadre-header {
+/* ============================================================ */
+/* CADRE 2 : DÉTAILS (flexible)                                  */
+/* ============================================================ */
+.cadre-details {
+    flex: 1;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e6e8ef;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* ============================================================ */
+/* CADRE 3 : PAIEMENTS (flexible)                                */
+/* ============================================================ */
+.cadre-payments {
+    flex: 1;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e6e8ef;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* ============================================================ */
+/* CADRE HEADER                                                  */
+/* ============================================================ */
+.cadre-header {
     padding: 10px 16px;
     border-bottom: 1px solid #f0f0f5;
     flex-shrink: 0;
@@ -230,7 +274,7 @@ body {
     background: #fafbfc;
 }
 
-.cadre-sidebar .cadre-header .title {
+.cadre-header .title {
     font-size: 12px;
     font-weight: 700;
     color: #6b7280;
@@ -238,7 +282,12 @@ body {
     letter-spacing: 0.5px;
 }
 
-.cadre-sidebar .cadre-header .count {
+.cadre-header .title i {
+    color: #156FE6;
+    margin-right: 6px;
+}
+
+.cadre-header .count {
     font-size: 12px;
     font-weight: 600;
     color: #156FE6;
@@ -247,24 +296,29 @@ body {
     border-radius: 20px;
 }
 
-.cadre-sidebar .cadre-body {
+/* ============================================================ */
+/* CADRE BODY (scroll interne)                                   */
+/* ============================================================ */
+.cadre-body {
     flex: 1;
     overflow-y: auto;
     padding: 8px 10px;
 }
 
-.cadre-sidebar .cadre-body::-webkit-scrollbar {
+.cadre-body::-webkit-scrollbar {
     width: 4px;
 }
-.cadre-sidebar .cadre-body::-webkit-scrollbar-thumb {
+.cadre-body::-webkit-scrollbar-thumb {
     background: #d8dbe4;
     border-radius: 10px;
 }
-.cadre-sidebar .cadre-body::-webkit-scrollbar-track {
+.cadre-body::-webkit-scrollbar-track {
     background: transparent;
 }
 
-/* ----- User item ----- */
+/* ============================================================ */
+/* CADRE 1 : USER ITEM                                           */
+/* ============================================================ */
 .user-item {
     display: flex;
     align-items: center;
@@ -319,73 +373,36 @@ body {
     white-space: nowrap;
 }
 
-/* ----- Empty users ----- */
-.empty-users {
-    text-align: center;
-    padding: 30px 20px;
-    color: #9ca3af;
-}
-
-.empty-users i {
-    font-size: 32px;
-    color: #d8dbe4;
-    display: block;
-    margin-bottom: 8px;
-}
-
-.empty-users p {
-    font-size: 13px;
-}
-
-/* ============================================================ */
-/* CADRE 2 : DÉTAILS UTILISATEUR                                */
-/* ============================================================ */
-.cadre-details {
-    flex: 1;
-    background: white;
-    border-radius: 16px;
-    border: 1px solid #e6e8ef;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.cadre-details .cadre-header {
-    padding: 10px 16px;
-    border-bottom: 1px solid #f0f0f5;
-    flex-shrink: 0;
-    background: #fafbfc;
-}
-
-.cadre-details .cadre-header .title {
-    font-size: 12px;
+.user-item .user-badge {
+    font-size: 9px;
     font-weight: 700;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.cadre-details .cadre-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 14px 16px;
-}
-
-.cadre-details .cadre-body::-webkit-scrollbar {
-    width: 4px;
-}
-.cadre-details .cadre-body::-webkit-scrollbar-thumb {
-    background: #d8dbe4;
+    padding: 1px 8px;
     border-radius: 10px;
 }
-.cadre-details .cadre-body::-webkit-scrollbar-track {
-    background: transparent;
+
+.user-item .user-badge.visiteur {
+    background: #fef3c7;
+    color: #b45309;
 }
 
-/* ----- Empty detail ----- */
-.empty-detail {
+.user-item .user-badge.participant {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.user-item .user-badge.donateur {
+    background: #e6f7ee;
+    color: #0e7a49;
+}
+
+/* ============================================================ */
+/* EMPTY STATES                                                 */
+/* ============================================================ */
+.empty-users,
+.empty-detail,
+.empty-payments {
     text-align: center;
-    padding: 40px 20px;
+    padding: 30px 20px;
     color: #9ca3af;
     display: flex;
     flex-direction: column;
@@ -394,11 +411,19 @@ body {
     height: 100%;
 }
 
-.empty-detail i {
-    font-size: 40px;
+.empty-users i,
+.empty-detail i,
+.empty-payments i {
+    font-size: 32px;
     color: #d8dbe4;
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
+}
+
+.empty-users p,
+.empty-detail p,
+.empty-payments p {
+    font-size: 13px;
 }
 
 .empty-detail h3 {
@@ -407,11 +432,14 @@ body {
     margin-bottom: 4px;
 }
 
-.empty-detail p {
-    font-size: 13px;
+.empty-payments span {
+    font-size: 11px;
+    color: #d8dbe4;
 }
 
-/* ----- Detail rows ----- */
+/* ============================================================ */
+/* CADRE 2 : DETAIL ROWS                                         */
+/* ============================================================ */
 .detail-row {
     display: flex;
     justify-content: space-between;
@@ -460,6 +488,11 @@ body {
     color: #0e7a49;
 }
 
+.detail-row .value .amount-value {
+    color: #156FE6;
+    font-weight: 800;
+}
+
 .detail-row .value .method-badge {
     display: inline-flex;
     align-items: center;
@@ -499,87 +532,9 @@ body {
     filter: brightness(0) invert(1);
 }
 
-.detail-row .value .amount-value {
-    color: #156FE6;
-    font-weight: 800;
-}
-
 /* ============================================================ */
-/* CADRE 3 : LISTE DES PAIEMENTS                                */
+/* CADRE 3 : PAYMENTS TABLE                                      */
 /* ============================================================ */
-.cadre-payments {
-    background: white;
-    border-radius: 16px;
-    border: 1px solid #e6e8ef;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex: 0 0 220px;
-}
-
-.cadre-payments .cadre-header {
-    padding: 10px 16px;
-    border-bottom: 1px solid #f0f0f5;
-    flex-shrink: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #fafbfc;
-}
-
-.cadre-payments .cadre-header .title {
-    font-size: 12px;
-    font-weight: 700;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.cadre-payments .cadre-header .count {
-    font-size: 12px;
-    font-weight: 600;
-    color: #156FE6;
-    background: #eaf1ff;
-    padding: 2px 12px;
-    border-radius: 20px;
-}
-
-.cadre-payments .cadre-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px 12px;
-}
-
-.cadre-payments .cadre-body::-webkit-scrollbar {
-    width: 4px;
-}
-.cadre-payments .cadre-body::-webkit-scrollbar-thumb {
-    background: #d8dbe4;
-    border-radius: 10px;
-}
-.cadre-payments .cadre-body::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-/* ----- Empty payments ----- */
-.empty-payments {
-    text-align: center;
-    padding: 30px 20px;
-    color: #9ca3af;
-}
-
-.empty-payments i {
-    font-size: 32px;
-    color: #d8dbe4;
-    display: block;
-    margin-bottom: 8px;
-}
-
-.empty-payments p {
-    font-size: 13px;
-}
-
-/* ----- Payments table ----- */
 .payments-table {
     width: 100%;
     font-size: 12px;
@@ -659,6 +614,13 @@ body {
     .admin-header .header-filters .filter-btn { font-size: 11px; padding: 4px 10px; }
 }
 
+@media (max-width: 992px) {
+    .cadre-sidebar {
+        width: 200px;
+        min-width: 160px;
+    }
+}
+
 @media (max-width: 768px) {
     .admin-header {
         padding: 8px 12px;
@@ -674,22 +636,22 @@ body {
     .admin-header .header-filters .filter-btn .badge-count { font-size: 8px; padding: 0 4px; }
     .admin-header .header-right .header-stats .stat-item { font-size: 11px; padding: 3px 10px; }
     .admin-header .header-right .header-actions .btn-refresh span,
-    .admin-header .header-right .header-actions .btn-paybeta span { display: none; }
+    .admin-header .header-right .header-actions .btn-virtmak span,
+    .admin-header .header-right .header-actions .btn-reset span { display: none; }
     .admin-header .header-right .header-actions .btn-refresh { font-size: 14px; padding: 6px 10px; }
-    .admin-header .header-right .header-actions .btn-paybeta { font-size: 12px; padding: 6px 12px; }
+    .admin-header .header-right .header-actions .btn-virtmak { font-size: 12px; padding: 6px 10px; }
+    .admin-header .header-right .header-actions .btn-reset { font-size: 12px; padding: 6px 10px; }
 
     .admin-layout {
+        flex-direction: column;
         padding: 8px 10px;
         gap: 8px;
         height: calc(100vh - 56px);
         margin-top: 56px;
     }
-    .top-row {
-        flex-direction: column;
-        min-height: 0;
-    }
     .cadre-sidebar {
         width: 100%;
+        max-width: none;
         min-width: unset;
         max-height: 200px;
     }
@@ -697,7 +659,7 @@ body {
         min-height: 150px;
     }
     .cadre-payments {
-        flex: 0 0 180px;
+        min-height: 150px;
     }
 }
 
@@ -710,7 +672,8 @@ body {
 
     .cadre-sidebar { max-height: 150px; }
     .cadre-details { min-height: 120px; }
-    .cadre-payments { flex: 0 0 150px; }
+    .cadre-payments { min-height: 120px; }
+
     .payments-table { font-size: 10px; }
     .payments-table thead th, .payments-table tbody td { padding: 4px 6px; }
     .payments-table .method-cell .method-logo { width: 16px; height: 16px; }
