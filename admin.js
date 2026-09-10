@@ -1,13 +1,111 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 7.1 - Section email de remerciement
+// VERSION : 8.0 - Avec overlay de connexion
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
 
     console.log('✅ admin.js chargé');
 
-    // ===== RÉFÉRENCES =====
+    // ============================================================
+    // 1. GESTION DE LA CONNEXION
+    // ============================================================
+
+    const loginOverlay = document.getElementById('loginOverlay');
+    const loginForm = document.getElementById('loginForm');
+    const loginUser = document.getElementById('loginUser');
+    const loginPass = document.getElementById('loginPass');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginError = document.getElementById('loginError');
+
+    // ✅ Vérifier si l'utilisateur est déjà connecté (session)
+    // Pour l'instant, on utilise une variable en mémoire
+    let isAuthenticated = false;
+
+    // ✅ Fonctions de l'overlay
+    function showLoginError(message) {
+        loginError.textContent = message || '❌ Identifiants incorrects';
+        loginError.className = 'login-error show';
+    }
+
+    function hideLoginError() {
+        loginError.className = 'login-error';
+    }
+
+    function showLoginOverlay() {
+        loginOverlay.classList.remove('hidden');
+        loginUser.value = '';
+        loginPass.value = '';
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se connecter';
+        hideLoginError();
+        loginUser.focus();
+    }
+
+    function hideLoginOverlay() {
+        loginOverlay.classList.add('hidden');
+    }
+
+    // ✅ Vérifier les identifiants
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        hideLoginError();
+
+        const username = loginUser.value.trim();
+        const password = loginPass.value.trim();
+
+        if (!username || !password) {
+            showLoginError('❌ Veuillez remplir tous les champs');
+            return;
+        }
+
+        // Désactiver le bouton
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<span class="spinner"></span> Vérification...';
+
+        try {
+            const response = await fetch('/api/admin/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // ✅ Connexion réussie
+                isAuthenticated = true;
+                console.log('✅ Connexion admin réussie');
+                hideLoginOverlay();
+                // Charger les données
+                loadData();
+            } else {
+                // ❌ Échec
+                showLoginError(data.error || '❌ Identifiants incorrects');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se connecter';
+                loginUser.focus();
+                loginUser.select();
+            }
+        } catch (error) {
+            console.error('❌ Erreur connexion:', error);
+            showLoginError('❌ Erreur de connexion au serveur');
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se connecter';
+        }
+    });
+
+    // ✅ Effacer l'erreur en tapant
+    loginUser.addEventListener('input', hideLoginError);
+    loginPass.addEventListener('input', hideLoginError);
+
+    // ✅ Afficher l'overlay au chargement
+    showLoginOverlay();
+
+    // ============================================================
+    // 2. RÉFÉRENCES DU DASHBOARD
+    // ============================================================
+
     const usersList = document.getElementById('usersList');
     const emptyUsers = document.getElementById('emptyUsers');
     const emptyDetail = document.getElementById('emptyDetail');
@@ -47,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // ============================================================
-    // MÉTHODES DE PAIEMENT - MAPPING COMPLET
+    // 3. MÉTHODES DE PAIEMENT - MAPPING
     // ============================================================
 
     const methodLabels = {
@@ -81,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // ============================================================
-    // REDIMENSIONNEMENT DES CADRES
+    // 4. REDIMENSIONNEMENT DES CADRES
     // ============================================================
 
     function setupResize(handleId, targetId, minWidth = 200, maxWidth = 600) {
@@ -123,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupResize('resizeHandle3', 'cadrePayments', 200, 800);
 
     // ============================================================
-    // CHARGER LES DONNÉES
+    // 5. CHARGER LES DONNÉES
     // ============================================================
 
     async function loadData() {
@@ -174,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // STATS
+    // 6. STATS
     // ============================================================
 
     function renderStats() {
@@ -185,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // FILTRES
+    // 7. FILTRES
     // ============================================================
 
     function renderFilters() {
@@ -200,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // RÉCUPÉRER LES COMMANDES/PALEMENTS D'UN UTILISATEUR
+    // 8. RÉCUPÉRER LES COMMANDES/PALEMENTS
     // ============================================================
 
     function getOrdersByEmail(email) {
@@ -212,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // AFFICHER LES UTILISATEURS (CADRE 1)
+    // 9. AFFICHER LES UTILISATEURS (CADRE 1)
     // ============================================================
 
     function renderUsers() {
@@ -273,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // AFFICHER LE DÉTAIL (CADRE 2) - AVEC SECTION EMAIL
+    // 10. AFFICHER LE DÉTAIL (CADRE 2)
     // ============================================================
 
     function renderDetail(id) {
@@ -294,11 +392,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const updatedAt = user.updated_at ? new Date(user.updated_at) : null;
 
         const intention = user.flex3 || null;
-
-        // ✅ Récupérer les infos email
-        const emailStatus = user.flex1 || null;
-        const emailMessage = user.flex2 || null;
-
         const statusInfo = statusLabels[status] || statusLabels.visiteur;
 
         const userOrders = getOrdersByEmail(email);
@@ -343,6 +436,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // ✅ EMAIL STATUS
+        const emailStatus = user.flex1 || null;
+        const emailMessage = user.flex2 || null;
+
         let emailStatusHtml = '';
         let emailStatusClass = '';
         let emailStatusIcon = '';
@@ -362,11 +458,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const emailDate = updatedAt ? formatDate(updatedAt) : '-';
 
-        // ✅ Construction du HTML avec section email
         detailContent.innerHTML = `
             <div class="detail-content">
 
-                <!-- Section 1 : Identité -->
                 <div class="detail-section">
                     <div class="section-title">Identité</div>
                     <div class="detail-row">
@@ -383,7 +477,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- Section 2 : Finances -->
                 <div class="detail-section">
                     <div class="section-title">Finances</div>
                     <div class="detail-row">
@@ -406,7 +499,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     ` : ''}
                 </div>
 
-                <!-- Section 3 : Méthode de paiement -->
                 <div class="detail-section">
                     <div class="section-title">Méthode de paiement</div>
                     <div class="detail-row">
@@ -419,7 +511,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <!-- ✅ Section 4 : Email de remerciement -->
                 <div class="detail-section" style="border-left: 3px solid ${emailStatus === 'succes' ? '#22c55e' : emailStatus === 'echec' ? '#dc3545' : '#f59e0b'};">
                     <div class="section-title">
                         <i class="fas fa-envelope"></i> Email de remerciement
@@ -445,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // AFFICHER LES PAIEMENTS (CADRE 3)
+    // 11. AFFICHER LES PAIEMENTS (CADRE 3)
     // ============================================================
 
     function renderPayments(id) {
@@ -567,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================================
-    // FILTRES
+    // 12. FILTRES
     // ============================================================
 
     filterBtns.forEach(btn => {
@@ -595,24 +686,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ============================================================
-    // RAFRAÎCHIR
+    // 13. RAFRAÎCHIR
     // ============================================================
 
     refreshBtn.addEventListener('click', function() {
-        loadData();
+        if (isAuthenticated) {
+            loadData();
+        }
     });
 
     // ============================================================
-    // AUTO-REFRESH
+    // 14. AUTO-REFRESH
     // ============================================================
 
-    setInterval(loadData, 30000);
+    setInterval(function() {
+        if (isAuthenticated) {
+            loadData();
+        }
+    }, 30000);
 
     // ============================================================
-    // INIT
+    // 15. INIT
     // ============================================================
 
-    loadData();
+    // L'overlay est affiché par défaut
+    // loadData() sera appelé après la connexion
 
     console.log('✅ admin.js initialisé');
 
