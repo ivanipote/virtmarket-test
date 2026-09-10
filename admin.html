@@ -10,6 +10,67 @@
 <body>
 
     <!-- ============================================================ -->
+    <!-- OVERLAY DE CONNEXION - 2 CADRES                               -->
+    <!-- ============================================================ -->
+    <div class="login-overlay" id="loginOverlay">
+
+        <div class="login-wrapper">
+
+            <!-- CADRE 1 : INFO -->
+            <div class="login-info">
+                <div class="login-logo">
+                    <img src="/logo.png" alt="VirtMak" />
+                </div>
+                <h1>🔐 Administration</h1>
+                <p class="welcome">
+                    Bienvenue sur le tableau de bord <strong>VirtMak</strong>.
+                    <br><br>
+                    Ici vous pouvez :
+                </p>
+                <ul class="features">
+                    <li><i class="fas fa-users"></i> Gérer les utilisateurs</li>
+                    <li><i class="fas fa-credit-card"></i> Suivre les paiements</li>
+                    <li><i class="fas fa-chart-line"></i> Analyser les statistiques</li>
+                    <li><i class="fas fa-envelope"></i> Voir les statuts d'envoi des emails</li>
+                </ul>
+                <p class="secure">
+                    <i class="fas fa-lock"></i> Accès sécurisé
+                </p>
+            </div>
+
+            <!-- CADRE 2 : LOGIN -->
+            <div class="login-form">
+                <h2>Connexion</h2>
+                <p class="sub">Entrez vos identifiants pour accéder à l'admin</p>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-user"></i></span>
+                            <input type="text" id="loginUser" placeholder="Nom d'utilisateur" autocomplete="off" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-key"></i></span>
+                            <input type="password" id="loginPass" placeholder="Code à 6 chiffres" maxlength="6" autocomplete="off" />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                    </button>
+
+                    <div id="loginError" class="login-error">❌ Identifiants incorrects</div>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
     <!-- HEADER                                                        -->
     <!-- ============================================================ -->
     <header class="admin-header">
@@ -76,7 +137,6 @@
         <section class="cadre-details" id="cadreDetails">
             <div class="cadre-header">
                 <span class="title"><i class="fas fa-user-circle"></i> Détails</span>
-                <!-- ✅ Handle de redimensionnement -->
                 <div class="resize-handle" id="resizeHandle2">
                     <i class="fas fa-grip-vertical"></i>
                 </div>
@@ -98,7 +158,6 @@
             <div class="cadre-header">
                 <span class="title"><i class="fas fa-credit-card"></i> Paiements</span>
                 <span class="count" id="paymentsCount">0</span>
-                <!-- ✅ Handle de redimensionnement -->
                 <div class="resize-handle" id="resizeHandle3">
                     <i class="fas fa-grip-vertical"></i>
                 </div>
