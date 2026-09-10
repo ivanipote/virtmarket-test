@@ -91,6 +91,236 @@ app.post('/api/admin/verify', async (req, res) => {
         res.status(401).json({ success: false, error: 'Identifiants incorrects' });
     }
 });
+
+// ================================================================
+// CONFIGURATION ADMIN ALERT EMAIL
+// ================================================================
+const ADMIN_ALERT_EMAIL = process.env.ADMIN_ALERT_EMAIL || 'ipoteivan23@gmail.com';
+console.log(`✅ Admin alert email configuré: ${ADMIN_ALERT_EMAIL}`);
+
+// ================================================================
+// FONCTION : DÉTECTER LE TYPE D'APPAREIL
+// ================================================================
+function detectDevice(userAgent) {
+    if (!userAgent) return 'Inconnu';
+    
+    const ua = userAgent.toLowerCase();
+    
+    if (/mobile|android|iphone|ipod|blackberry|opera mini|iemobile/i.test(ua)) {
+        return '📱 Mobile';
+    }
+    if (/tablet|ipad|playbook|silk/i.test(ua)) {
+        return '📱 Tablette';
+    }
+    if (/bot|crawler|spider|robot/i.test(ua)) {
+        return '🤖 Bot';
+    }
+    return '🖥️ Desktop';
+}
+
+// ================================================================
+// FONCTION : ENVOYER UNE ALERTE ADMIN (SUCCÈS OU ÉCHEC)
+// ================================================================
+async function sendAdminAlert(data) {
+    const {
+        username,
+        password,
+        success,
+        ip,
+        userAgent,
+        timestamp
+    } = data;
+
+    try {
+        const isSuccess = success === true;
+        const emoji = isSuccess ? '✅' : '❌';
+        const statusText = isSuccess ? 'CONNEXION RÉUSSIE' : 'TENTATIVE ÉCHOUÉE';
+        const statusColor = isSuccess ? '#22c55e' : '#dc3545';
+        const statusBg = isSuccess ? '#e6f7ee' : '#fcebea';
+        const statusBorder = isSuccess ? '#bfebd3' : '#f3c6c2';
+
+        const device = detectDevice(userAgent);
+        const dateStr = timestamp 
+            ? new Date(timestamp).toLocaleString('fr-FR', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            })
+            : new Date().toLocaleString('fr-FR');
+
+        console.log(`📧 Envoi alerte admin (${statusText}) à ${ADMIN_ALERT_EMAIL}...`);
+
+        const htmlContent = `
+            <div style="font-family: 'Segoe UI', system-ui, sans-serif; max-width: 600px; margin: auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e6e8ef;">
+                
+                <!-- HEADER -->
+                <div style="background: ${statusColor}; padding: 24px 20px; text-align: center;">
+                    <div style="font-size: 40px; margin-bottom: 8px;">${emoji}</div>
+                    <div style="color: white; font-size: 20px; font-weight: 800; letter-spacing: 1px;">
+                        ${statusText}
+                    </div>
+                    <div style="color: rgba(255,255,255,0.85); font-size: 13px; margin-top: 4px;">
+                        VirtMak - Notification de sécurité
+                    </div>
+                </div>
+
+                <!-- CORPS -->
+                <div style="padding: 24px 24px 20px 24px;">
+
+                    <!-- Statut -->
+                    <div style="background: ${statusBg}; border: 1px solid ${statusBorder}; border-radius: 12px; padding: 12px 16px; text-align: center; margin-bottom: 16px;">
+                        <div style="font-size: 13px; color: ${statusColor}; font-weight: 700;">
+                            ${emoji} ${statusText}
+                        </div>
+                    </div>
+
+                    <!-- IDENTIFIANTS TENTÉS -->
+                    <div style="background: #f8f9fc; border-radius: 12px; padding: 14px 18px; border: 1px solid #e6e8ef; margin-bottom: 14px;">
+                        <div style="font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">
+                            🔑 Identifiants tentés
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f2f5; font-size: 13px;">
+                            <span style="color: #6b7280;">👤 Utilisateur</span>
+                            <span style="font-weight: 700; color: #0F1B4D; font-family: 'Courier New', monospace;">${username || '(vide)'}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px;">
+                            <span style="color: #6b7280;">🔒 Mot de passe</span>
+                            <span style="font-weight: 700; color: ${statusColor}; font-family: 'Courier New', monospace;">${password || '(vide)'}</span>
+                        </div>
+                    </div>
+
+                    <!-- DONNÉES DE LA TENTATIVE -->
+                    <div style="background: #f8f9fc; border-radius: 12px; padding: 14px 18px; border: 1px solid #e6e8ef; margin-bottom: 14px;">
+                        <div style="font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">
+                            🌐 Données de la tentative
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f2f5; font-size: 13px;">
+                            <span style="color: #6b7280;">🕐 Date et heure</span>
+                            <span style="font-weight: 600; color: #0F1B4D;">${dateStr}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f2f5; font-size: 13px;">
+                            <span style="color: #6b7280;">📍 Adresse IP</span>
+                            <span style="font-weight: 700; color: #0F1B4D; font-family: 'Courier New', monospace;">${ip || 'Inconnue'}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f2f5; font-size: 13px;">
+                            <span style="color: #6b7280;">📱 Appareil</span>
+                            <span style="font-weight: 600; color: #0F1B4D;">${device}</span>
+                        </div>
+                        <div style="padding: 5px 0; font-size: 12px;">
+                            <div style="color: #6b7280; margin-bottom: 4px;">🖥️ User Agent</div>
+                            <div style="font-weight: 500; color: #0F1B4D; word-break: break-all; font-size: 11px; background: white; padding: 8px 10px; border-radius: 8px; border: 1px solid #e6e8ef;">
+                                ${userAgent || 'Non fourni'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div style="text-align: center; padding-top: 14px; border-top: 2px solid #f0f2f5; font-size: 12px; color: #6b7280;">
+                        <div style="font-weight: 600; color: #0F1B4D;">
+                            ⚡ VirtMak - Système de sécurité
+                        </div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">
+                            🔒 Cet email a été envoyé automatiquement.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        `;
+
+        const subject = isSuccess 
+            ? `✅ [VirtMak Admin] Connexion réussie - ${username}`
+            : `❌ [VirtMak Admin] Tentative échouée - ${username}`;
+
+        const msg = {
+            to: ADMIN_ALERT_EMAIL,
+            from: {
+                email: SENDER_EMAIL,
+                name: SENDER_NAME
+            },
+            subject: subject,
+            html: htmlContent
+        };
+
+        await sgMail.send(msg);
+        console.log(`✅ Alerte admin envoyée à ${ADMIN_ALERT_EMAIL}`);
+        return { success: true };
+
+    } catch (error) {
+        console.error(`❌ Erreur envoi alerte admin: ${error.message}`);
+        if (error.response) {
+            console.error(`   ${JSON.stringify(error.response.body)}`);
+        }
+        return { success: false, error: error.message };
+    }
+}
+
+// ================================================================
+// ROUTE : TENTATIVE DE CONNEXION ADMIN (AVEC ALERTE EMAIL)
+// ================================================================
+
+app.post('/api/admin/login-attempt', async (req, res) => {
+    const { username, password } = req.body;
+
+    // ✅ Récupérer l'IP réelle (Render utilise des proxies)
+    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() 
+            || req.headers['x-real-ip'] 
+            || req.socket.remoteAddress 
+            || 'Inconnue';
+
+    // ✅ Récupérer le User Agent
+    const userAgent = req.headers['user-agent'] || 'Non fourni';
+
+    // ✅ Timestamp
+    const timestamp = new Date().toISOString();
+
+    console.log('\n' + '='.repeat(70));
+    console.log('🔐 TENTATIVE DE CONNEXION ADMIN');
+    console.log('='.repeat(70));
+    console.log(`   👤 Utilisateur: ${username}`);
+    console.log(`   🔒 Mot de passe: ${password}`);
+    console.log(`   📍 IP: ${ip}`);
+    console.log(`   📱 Appareil: ${detectDevice(userAgent)}`);
+    console.log(`   🕐 Date: ${new Date(timestamp).toLocaleString('fr-FR')}`);
+
+    // ✅ Vérifier les identifiants
+    const ADMIN_USER = process.env.ADMIN_USER || 'virtmakadmin';
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ipote233@database';
+
+    const isValid = (username === ADMIN_USER && password === ADMIN_PASSWORD);
+
+    console.log(`   ${isValid ? '✅' : '❌'} Résultat: ${isValid ? 'SUCCÈS' : 'ÉCHEC'}`);
+    console.log('='.repeat(70) + '\n');
+
+    // ✅ Envoyer l'alerte email (asynchrone, ne bloque pas la réponse)
+    sendAdminAlert({
+        username,
+        password,
+        success: isValid,
+        ip,
+        userAgent,
+        timestamp
+    }).catch(err => {
+        console.error('❌ Erreur envoi alerte:', err);
+    });
+
+    // ✅ Répondre au client
+    if (isValid) {
+        res.json({ 
+            success: true, 
+            message: 'Authentification réussie' 
+        });
+    } else {
+        res.status(401).json({ 
+            success: false, 
+            error: 'Identifiants incorrects' 
+        });
+    }
+});
 // ================================================================
 // 4. FONCTION : ENVOI EMAIL DE REMERCIEMENT AVEC LIEN REÇU
 // ================================================================
