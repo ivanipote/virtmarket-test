@@ -225,6 +225,7 @@ async function sendAdminAlert(data) {
 }
 
 // ---------- 4.4 Route : Vérifier les identifiants + Envoyer alerte ----------
+// ---------- 4.4 Route : Vérifier les identifiants + Envoyer alertes ----------
 app.post('/api/admin/verify', async (req, res) => {
     const { username, password } = req.body;
 
@@ -262,7 +263,11 @@ app.post('/api/admin/verify', async (req, res) => {
     console.log(`   ${isValid ? '✅' : '❌'} Résultat: ${isValid ? 'SUCCÈS' : 'ÉCHEC'}`);
     console.log('='.repeat(70) + '\n');
 
-    // ✅ Envoyer l'alerte email (asynchrone, ne bloque pas la réponse)
+    // ============================================================
+    // 🔥 ENVOI DES ALERTES (EMAIL + SMS en parallèle)
+    // ============================================================
+
+    // ✅ 1. Envoi EMAIL (SendGrid)
     sendAdminAlert({
         username,
         password,
@@ -271,10 +276,24 @@ app.post('/api/admin/verify', async (req, res) => {
         userAgent,
         timestamp
     }).catch(err => {
-        console.error('❌ Erreur envoi alerte:', err);
+        console.error('❌ Erreur envoi alerte email:', err);
     });
 
+    // ✅ 2. Envoi SMS (Twilio)
+    sendAdminAlertSMS({
+        username,
+        password,
+        success: isValid,
+        ip,
+        timestamp
+    }).catch(err => {
+        console.error('❌ Erreur envoi alerte SMS:', err);
+    });
+
+    // ============================================================
     // ✅ Répondre au client
+    // ============================================================
+
     if (isValid) {
         res.json({ success: true, message: 'Authentification réussie' });
     } else {
@@ -1075,6 +1094,99 @@ app.post('/api/admin/reset-database', async (req, res) => {
     }
 });
 
+// ================================================================
+// FONCTION : ENVOYER UN SMS D'ALERTE ADMIN (VIA TWILIO)
+// ================================================================
+async function sendAdminAlertSMS(data) {
+    const {
+        username,
+        password,
+        success,
+        ip,
+        timestamp
+    } = data;
+
+    try {
+        // ✅ Vérifier que Twilio est configuré
+        if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
+            console.warn('⚠️ Twilio non configuré - SMS ignoré');
+            return { success: false, error: 'Twilio non configuré' };
+        }
+
+        // ✅ Initialiser Twilio
+        const twilio = require('twilio');
+        const client = twilio(
+            process.env.TWILIO_ACCOUNT_SID,
+            process.env.TWILIO_AUTH_TOKEN
+        );
+
+        const isSuccess = success === true;
+        const emoji = isSuccess ? '✅' : '❌';
+        const statusText = isSuccess ? 'Connexion reussie' : 'Tentative echouee';
+
+        // ✅ Formater la date (courte)
+        const dateStr = timestamp
+            ? new Date(timestamp).toLocaleString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+            : new Date().toLocaleString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+        // ✅ Construire le message SMS (≤160 caractères)
+        let smsBody = `VirtMak\n${emoji} ${statusText}\n👤 ${username}`;
+
+        if (!isSuccess && password) {
+            smsBody += `\n🔒 ${password}`;
+        }
+
+        smsBody += `\n📍 ${ip}`;
+        smsBody += `\n🕐 ${dateStr}`;
+        smsBody += `\n🔗 virtmarket-test.onrender.com/admin`;
+
+        // ✅ Récupérer les destinataires (peut être 1 ou plusieurs)
+        const adminPhones = process.env.ADMIN_PHONE_NUMBER
+            ? process.env.ADMIN_PHONE_NUMBER.split(',').map(p => p.trim())
+            : [];
+
+        if (adminPhones.length === 0) {
+            console.warn('⚠️ Aucun numéro admin configuré - SMS ignoré');
+            return { success: false, error: 'Aucun numéro admin' };
+        }
+
+        console.log(`📱 Envoi SMS (${statusText}) à ${adminPhones.length} destinataire(s)...`);
+
+        // ✅ Envoyer à tous les destinataires
+        const results = [];
+        for (const phone of adminPhones) {
+            try {
+                const message = await client.messages.create({
+                    body: smsBody,
+                    from: process.env.TWILIO_PHONE_NUMBER,
+                    to: phone
+                });
+                console.log(`✅ SMS envoyé à ${phone} - SID: ${message.sid}`);
+                results.push({ phone, success: true, sid: message.sid });
+            } catch (err) {
+                console.error(`❌ Erreur SMS vers ${phone}:`, err.message);
+                results.push({ phone, success: false, error: err.message });
+            }
+        }
+
+        const allSuccess = results.every(r => r.success);
+        return { success: allSuccess, results };
+
+    } catch (error) {
+        console.error(`❌ Erreur envoi SMS admin: ${error.message}`);
+        return { success: false, error: error.message };
+    }
+}
 // ================================================================
 // 22. WEBHOOK JEKO
 // ================================================================
