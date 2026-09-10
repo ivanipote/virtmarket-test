@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 8.0 - Avec overlay de connexion
+// VERSION : 8.1 - Avec alerte email sur tentative de connexion
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -64,7 +64,9 @@ document.addEventListener('DOMContentLoaded', function() {
         loginBtn.innerHTML = '<span class="spinner"></span> Vérification...';
 
         try {
-            const response = await fetch('/api/admin/verify', {
+            // ✅ NOUVELLE ROUTE : /api/admin/login-attempt
+            // Envoie un email d'alerte à ipoteivan23@gmail.com (succès OU échec)
+            const response = await fetch('/api/admin/login-attempt', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
