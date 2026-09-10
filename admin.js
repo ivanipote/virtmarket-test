@@ -1,6 +1,6 @@
 // ================================================================
 // admin.js - Logique du tableau de bord admin
-// VERSION : 8.1 - Avec alerte email sur tentative de connexion
+// VERSION : 8.2 - Alerte email intégrée via /api/admin/verify
 // ================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ✅ Vérifier les identifiants
+    // ✅ Le serveur envoie automatiquement une alerte email (succès OU échec)
     loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         hideLoginError();
@@ -64,13 +65,19 @@ document.addEventListener('DOMContentLoaded', function() {
         loginBtn.innerHTML = '<span class="spinner"></span> Vérification...';
 
         try {
-            // ✅ NOUVELLE ROUTE : /api/admin/login-attempt
-            // Envoie un email d'alerte à ipoteivan23@gmail.com (succès OU échec)
-            const response = await fetch('/api/admin/login-attempt', {
+            // ✅ Appel à la route /api/admin/verify
+            // → Le serveur vérifie ET envoie une alerte email à ipoteivan23@gmail.com
+            const response = await fetch('/api/admin/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
+
+            // ✅ Vérifier que la réponse est bien du JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Réponse invalide du serveur');
+            }
 
             const data = await response.json();
 
@@ -426,7 +433,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let methodHtml = '';
         if (lastMethod) {
-            const isMtn = methodClass === 'mtn';
             methodHtml = `
                 <span class="method-badge ${methodClass}">
                     <img src="${methodIcon}" alt="${methodLabel}" class="method-logo" />
@@ -442,19 +448,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const emailMessage = user.flex2 || null;
 
         let emailStatusHtml = '';
-        let emailStatusClass = '';
         let emailStatusIcon = '';
         if (emailStatus === 'succes') {
             emailStatusHtml = 'Envoyé avec succès';
-            emailStatusClass = 'success';
             emailStatusIcon = '✅';
         } else if (emailStatus === 'echec') {
             emailStatusHtml = 'Échec';
-            emailStatusClass = 'error';
             emailStatusIcon = '❌';
         } else {
             emailStatusHtml = 'Non envoyé';
-            emailStatusClass = 'pending';
             emailStatusIcon = '⏳';
         }
 
