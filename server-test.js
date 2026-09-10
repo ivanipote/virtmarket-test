@@ -1,7 +1,7 @@
 // ================================================================
 // FICHIER : server-test.js
 // DESCRIPTION : Serveur principal - Virtual Market
-// VERSION : 6.6 - Correction des méthodes de paiement Jèko
+// VERSION : 6.7 - Alerte email sur tentative de connexion admin
 // ================================================================
 
 require('dotenv').config();
@@ -55,57 +55,24 @@ if (!SENDER_EMAIL) {
 
 sgMail.setApiKey(SENDGRID_API_KEY);
 
-
-
-
 // ================================================================
-// 4. FONCTION : ADLIN GESTION
-// ================================================================
-// ================================================================
-// CONFIGURATION ADMIN LOGIN
+// 4. ADMIN LOGIN + ALERTE EMAIL
 // ================================================================
 
+// ---------- 4.1 Configuration Admin ----------
 const ADMIN_LOGIN_USER = process.env.ADMIN_LOGIN_USER || 'ipote233@';
 const ADMIN_LOGIN_PASSWORD = process.env.ADMIN_LOGIN_PASSWORD || '050358';
+const ADMIN_ALERT_EMAIL = process.env.ADMIN_ALERT_EMAIL || 'ipoteivan23@gmail.com';
 
 console.log('✅ Admin login configuré');
-
-// ================================================================
-// ROUTE : VÉRIFIER LES IDENTIFIANTS ADMIN
-// ================================================================
-
-app.post('/api/admin/verify', async (req, res) => {
-    const { username, password } = req.body;
-
-    console.log(`🔐 Tentative de connexion admin: ${username}`);
-
-    if (!username || !password) {
-        return res.status(400).json({ success: false, error: 'Identifiants requis' });
-    }
-
-    if (username === ADMIN_LOGIN_USER && password === ADMIN_LOGIN_PASSWORD) {
-        console.log('✅ Connexion admin réussie');
-        res.json({ success: true, message: 'Authentification réussie' });
-    } else {
-        console.log('❌ Échec de connexion admin');
-        res.status(401).json({ success: false, error: 'Identifiants incorrects' });
-    }
-});
-
-// ================================================================
-// CONFIGURATION ADMIN ALERT EMAIL
-// ================================================================
-const ADMIN_ALERT_EMAIL = process.env.ADMIN_ALERT_EMAIL || 'ipoteivan23@gmail.com';
 console.log(`✅ Admin alert email configuré: ${ADMIN_ALERT_EMAIL}`);
 
-// ================================================================
-// FONCTION : DÉTECTER LE TYPE D'APPAREIL
-// ================================================================
+// ---------- 4.2 Détecter le type d'appareil ----------
 function detectDevice(userAgent) {
     if (!userAgent) return 'Inconnu';
-    
+
     const ua = userAgent.toLowerCase();
-    
+
     if (/mobile|android|iphone|ipod|blackberry|opera mini|iemobile/i.test(ua)) {
         return '📱 Mobile';
     }
@@ -118,9 +85,7 @@ function detectDevice(userAgent) {
     return '🖥️ Desktop';
 }
 
-// ================================================================
-// FONCTION : ENVOYER UNE ALERTE ADMIN (SUCCÈS OU ÉCHEC)
-// ================================================================
+// ---------- 4.3 Envoyer une alerte admin ----------
 async function sendAdminAlert(data) {
     const {
         username,
@@ -140,11 +105,11 @@ async function sendAdminAlert(data) {
         const statusBorder = isSuccess ? '#bfebd3' : '#f3c6c2';
 
         const device = detectDevice(userAgent);
-        const dateStr = timestamp 
-            ? new Date(timestamp).toLocaleString('fr-FR', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
+        const dateStr = timestamp
+            ? new Date(timestamp).toLocaleString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
@@ -156,7 +121,7 @@ async function sendAdminAlert(data) {
 
         const htmlContent = `
             <div style="font-family: 'Segoe UI', system-ui, sans-serif; max-width: 600px; margin: auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e6e8ef;">
-                
+
                 <!-- HEADER -->
                 <div style="background: ${statusColor}; padding: 24px 20px; text-align: center;">
                     <div style="font-size: 40px; margin-bottom: 8px;">${emoji}</div>
@@ -232,7 +197,7 @@ async function sendAdminAlert(data) {
             </div>
         `;
 
-        const subject = isSuccess 
+        const subject = isSuccess
             ? `✅ [VirtMak Admin] Connexion réussie - ${username}`
             : `❌ [VirtMak Admin] Tentative échouée - ${username}`;
 
@@ -259,17 +224,14 @@ async function sendAdminAlert(data) {
     }
 }
 
-// ================================================================
-// ROUTE : TENTATIVE DE CONNEXION ADMIN (AVEC ALERTE EMAIL)
-// ================================================================
-
-app.post('/api/admin/login-attempt', async (req, res) => {
+// ---------- 4.4 Route : Vérifier les identifiants + Envoyer alerte ----------
+app.post('/api/admin/verify', async (req, res) => {
     const { username, password } = req.body;
 
     // ✅ Récupérer l'IP réelle (Render utilise des proxies)
-    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() 
-            || req.headers['x-real-ip'] 
-            || req.socket.remoteAddress 
+    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim()
+            || req.headers['x-real-ip']
+            || req.socket.remoteAddress
             || 'Inconnue';
 
     // ✅ Récupérer le User Agent
@@ -278,7 +240,7 @@ app.post('/api/admin/login-attempt', async (req, res) => {
     // ✅ Timestamp
     const timestamp = new Date().toISOString();
 
-    console.log('\n' + '='.repeat(70));
+    console.log(`\n${'='.repeat(70)}`);
     console.log('🔐 TENTATIVE DE CONNEXION ADMIN');
     console.log('='.repeat(70));
     console.log(`   👤 Utilisateur: ${username}`);
@@ -287,11 +249,15 @@ app.post('/api/admin/login-attempt', async (req, res) => {
     console.log(`   📱 Appareil: ${detectDevice(userAgent)}`);
     console.log(`   🕐 Date: ${new Date(timestamp).toLocaleString('fr-FR')}`);
 
-    // ✅ Vérifier les identifiants
-    const ADMIN_USER = process.env.ADMIN_USER || 'virtmakadmin';
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ipote233@database';
+    // ✅ Vérifier les champs obligatoires
+    if (!username || !password) {
+        console.log('   ❌ Champs manquants');
+        console.log('='.repeat(70) + '\n');
+        return res.status(400).json({ success: false, error: 'Identifiants requis' });
+    }
 
-    const isValid = (username === ADMIN_USER && password === ADMIN_PASSWORD);
+    // ✅ Vérifier les identifiants
+    const isValid = (username === ADMIN_LOGIN_USER && password === ADMIN_LOGIN_PASSWORD);
 
     console.log(`   ${isValid ? '✅' : '❌'} Résultat: ${isValid ? 'SUCCÈS' : 'ÉCHEC'}`);
     console.log('='.repeat(70) + '\n');
@@ -310,25 +276,20 @@ app.post('/api/admin/login-attempt', async (req, res) => {
 
     // ✅ Répondre au client
     if (isValid) {
-        res.json({ 
-            success: true, 
-            message: 'Authentification réussie' 
-        });
+        res.json({ success: true, message: 'Authentification réussie' });
     } else {
-        res.status(401).json({ 
-            success: false, 
-            error: 'Identifiants incorrects' 
-        });
+        res.status(401).json({ success: false, error: 'Identifiants incorrects' });
     }
 });
+
 // ================================================================
-// 4. FONCTION : ENVOI EMAIL DE REMERCIEMENT AVEC LIEN REÇU
+// 5. FONCTION : ENVOI EMAIL DE REMERCIEMENT AVEC LIEN REÇU
 // ================================================================
 
 async function sendThankYouEmail(email, name, amount, orderId) {
     try {
         const now = new Date();
-        const dateStr = now.toLocaleDateString('fr-FR') + ' ' + 
+        const dateStr = now.toLocaleDateString('fr-FR') + ' ' +
                         now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
         console.log(`📧 Envoi email à ${email} via SendGrid...`);
@@ -386,7 +347,7 @@ async function sendThankYouEmail(email, name, amount, orderId) {
 
                     <!-- ✅ BOUTON TÉLÉCHARGER LE REÇU -->
                     <div style="text-align: center; margin: 16px 0;">
-                        <a href="${receiptLink}" 
+                        <a href="${receiptLink}"
                            style="background: #156FE6; color: white; padding: 12px 32px; border-radius: 30px; text-decoration: none; font-weight: 700; font-size: 15px; display: inline-block; box-shadow: 0 4px 20px rgba(21,111,230,0.25);">
                             📄 Télécharger mon reçu
                         </a>
@@ -428,7 +389,7 @@ async function sendThankYouEmail(email, name, amount, orderId) {
 }
 
 // ================================================================
-// 5. FONCTION : RÉCUPÉRER LES UTILISATEURS AVEC STATUT ET TOTAL
+// 6. FONCTION : RÉCUPÉRER LES UTILISATEURS AVEC STATUT ET TOTAL
 // ================================================================
 
 async function getUsersWithStatus() {
@@ -468,7 +429,7 @@ async function getUsersWithStatus() {
 }
 
 // ================================================================
-// 6. ROUTES PAGES STATIQUES
+// 7. ROUTES PAGES STATIQUES
 // ================================================================
 
 app.get('/', (req, res) => res.sendFile(__dirname + '/virtmak.html'));
@@ -482,7 +443,7 @@ app.get('/testmail.html', (req, res) => res.sendFile(__dirname + '/testmail.html
 app.get('/reset-data.html', (req, res) => res.sendFile(__dirname + '/reset-data.html'));
 
 // ================================================================
-// 7. ROUTE : TEST SENDGRID
+// 8. ROUTE : TEST SENDGRID
 // ================================================================
 
 app.post('/api/test-email', async (req, res) => {
@@ -509,7 +470,7 @@ app.post('/api/test-email', async (req, res) => {
 });
 
 // ================================================================
-// 8. API : VISITEUR
+// 9. API : VISITEUR
 // ================================================================
 
 app.post('/api/visiteur', async (req, res) => {
@@ -536,7 +497,7 @@ app.post('/api/visiteur', async (req, res) => {
         if (existingUser) {
             console.log(`   ℹ️ Utilisateur existant: ${existingUser.name} (email: ${email})`);
             console.log(`   ℹ️ Nom original conservé: ${existingUser.name}`);
-            
+
             if (amount) {
                 await db.query(
                     'UPDATE users SET flex3 = $1, updated_at = NOW() WHERE email = $2',
@@ -545,7 +506,7 @@ app.post('/api/visiteur', async (req, res) => {
                 existingUser.flex3 = String(amount);
             }
             user = existingUser;
-            
+
             if (user.status !== 'visiteur') {
                 await db.updateUserStatus(email, 'visiteur');
                 user.status = 'visiteur';
@@ -578,7 +539,7 @@ app.post('/api/visiteur', async (req, res) => {
 });
 
 // ================================================================
-// ROUTE : ENVOYER UN REÇU PAR EMAIL
+// 10. ROUTE : ENVOYER UN REÇU PAR EMAIL
 // ================================================================
 
 app.post('/api/send-receipt', async (req, res) => {
@@ -654,11 +615,7 @@ app.post('/api/send-receipt', async (req, res) => {
 });
 
 // ================================================================
-// ROUTE : TÉLÉCHARGER LE REÇU EN PDF
-// ================================================================
-
-// ================================================================
-// ROUTE : RÉCUPÉRER LES DONNÉES D'UN REÇU
+// 11. ROUTE : RÉCUPÉRER LES DONNÉES D'UN REÇU
 // ================================================================
 
 app.get('/api/receipt-data/:reference', async (req, res) => {
@@ -700,8 +657,9 @@ app.get('/api/receipt-data/:reference', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
 // ================================================================
-// 9. API : CRÉER UN PAIEMENT (avec mapping Jèko)
+// 12. API : CRÉER UN PAIEMENT (avec mapping Jèko)
 // ================================================================
 
 app.post('/api/create-payment', async (req, res) => {
@@ -738,7 +696,7 @@ app.post('/api/create-payment', async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé. Veuillez d\'abord vous inscrire.' });
         }
-        
+
         const originalName = user.name;
         console.log(`   ✅ Utilisateur: ${originalName} (${user.status})`);
         console.log(`   ℹ️ Nom original conservé: ${originalName}`);
@@ -783,7 +741,7 @@ app.post('/api/create-payment', async (req, res) => {
             paymentDetails: {
                 type: 'redirect',
                 data: {
-                    paymentMethod: jekoMethod,  // ✅ Utiliser la valeur Jèko
+                    paymentMethod: jekoMethod,
                     successUrl: 'https://virtmarket-test.onrender.com/verify',
                     errorUrl: 'https://virtmarket-test.onrender.com/virtmak.html'
                 }
@@ -841,7 +799,7 @@ app.post('/api/create-payment', async (req, res) => {
 });
 
 // ================================================================
-// 10. API : PAYLIST
+// 13. API : PAYLIST
 // ================================================================
 
 app.get('/api/paylist', async (req, res) => {
@@ -869,7 +827,7 @@ app.get('/api/paylist/:reference', async (req, res) => {
 });
 
 // ================================================================
-// 11. API : PAIEMENTS
+// 14. API : PAIEMENTS
 // ================================================================
 
 app.get('/api/payments', async (req, res) => {
@@ -897,7 +855,7 @@ app.get('/api/payment/:id', async (req, res) => {
 });
 
 // ================================================================
-// 12. API : UTILISATEURS
+// 15. API : UTILISATEURS
 // ================================================================
 
 app.get('/api/users', async (req, res) => {
@@ -912,12 +870,12 @@ app.get('/api/users', async (req, res) => {
 
 app.get('/api/users/filter/:status', async (req, res) => {
     const { status } = req.params;
-    
+
     const validStatuses = ['visiteur', 'participant', 'donateur'];
     if (!validStatuses.includes(status)) {
-        return res.status(400).json({ 
-            success: false, 
-            error: 'Statut invalide. Utilisez: visiteur, participant, donateur' 
+        return res.status(400).json({
+            success: false,
+            error: 'Statut invalide. Utilisez: visiteur, participant, donateur'
         });
     }
 
@@ -965,7 +923,7 @@ app.get('/api/users/visiteurs', async (req, res) => {
 });
 
 // ================================================================
-// 13. API : USER PAR EMAIL
+// 16. API : USER PAR EMAIL
 // ================================================================
 
 app.get('/api/user/:email', async (req, res) => {
@@ -975,7 +933,7 @@ app.get('/api/user/:email', async (req, res) => {
         if (!user) {
             return res.status(404).json({ success: false, error: 'Utilisateur non trouvé' });
         }
-        
+
         const orders = await db.getOrdersByEmail(email);
         const payments = await db.getPaymentsByEmail(email);
         const successCount = payments.filter(p => p.status === 'success').length;
@@ -983,9 +941,9 @@ app.get('/api/user/:email', async (req, res) => {
         const totalAmount = payments
             .filter(p => p.status === 'success')
             .reduce((sum, p) => sum + (p.amount / 100), 0);
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             user: {
                 ...user,
                 success_payments: successCount,
@@ -1000,7 +958,7 @@ app.get('/api/user/:email', async (req, res) => {
 });
 
 // ================================================================
-// 14. API : STATISTIQUES
+// 17. API : STATISTIQUES
 // ================================================================
 
 app.get('/api/stats', async (req, res) => {
@@ -1014,7 +972,7 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // ================================================================
-// 15. API : UPDATE STATUS
+// 18. API : UPDATE STATUS
 // ================================================================
 
 app.post('/api/update-status', async (req, res) => {
@@ -1043,7 +1001,7 @@ app.post('/api/update-status', async (req, res) => {
 });
 
 // ================================================================
-// 16. API : COMMANDES D'UN UTILISATEUR
+// 19. API : COMMANDES D'UN UTILISATEUR
 // ================================================================
 
 app.get('/api/orders/user/:email', async (req, res) => {
@@ -1066,10 +1024,10 @@ app.get('/api/orders/user/:email', async (req, res) => {
 });
 
 // ================================================================
-// 17. ROUTE ADMIN : VÉRIFIER LES IDENTIFIANTS
+// 20. ROUTE ADMIN : VÉRIFIER LES IDENTIFIANTS (ANCIENNE VERSION)
 // ================================================================
 
-app.post('/api/admin/verify', async (req, res) => {
+app.post('/api/admin/verify-old', async (req, res) => {
     const { username, password } = req.body;
 
     const ADMIN_USER = process.env.ADMIN_USER || 'virtmakadmin';
@@ -1083,11 +1041,7 @@ app.post('/api/admin/verify', async (req, res) => {
 });
 
 // ================================================================
-// 18. ROUTE ADMIN : RÉINITIALISER LA BASE
-// ================================================================
-
-// ================================================================
-// ROUTE ADMIN : RÉINITIALISER LA BASE
+// 21. ROUTE ADMIN : RÉINITIALISER LA BASE
 // ================================================================
 
 app.post('/api/admin/reset-database', async (req, res) => {
@@ -1120,8 +1074,9 @@ app.post('/api/admin/reset-database', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
 // ================================================================
-// 19. WEBHOOK JEKO
+// 22. WEBHOOK JEKO
 // ================================================================
 
 app.post('/webhook', async (req, res) => {
@@ -1269,7 +1224,7 @@ app.post('/webhook', async (req, res) => {
 });
 
 // ================================================================
-// 20. DÉMARRAGE
+// 23. DÉMARRAGE
 // ================================================================
 
 app.listen(PORT, () => {
@@ -1293,5 +1248,6 @@ app.listen(PORT, () => {
     console.log(`   GET  /api/user/:email`);
     console.log(`   GET  /api/stats`);
     console.log(`   POST /api/update-status`);
+    console.log(`   POST /api/admin/verify (avec alerte email)`);
     console.log(`   POST /webhook`);
 });
